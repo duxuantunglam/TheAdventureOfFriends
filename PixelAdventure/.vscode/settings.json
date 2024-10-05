@@ -56,5 +56,11 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "PixelAdventure.sln"
+    "dotnet.defaultSolution": "PixelAdventure.sln",
+    "cSpell.words": [
+        "Behaviour",
+        "Raycast",
+        "Rigidbody"
+    ],
+    "dotnet.preferCSharpExtension": true
 }
