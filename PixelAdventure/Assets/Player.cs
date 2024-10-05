@@ -44,10 +44,7 @@ public class Player : MonoBehaviour
         }
     }
 
-    private void Jump()
-    {
-        rb.velocity = new Vector2(rb.velocity.x, jumpForce);
-    }
+    private void Jump() => rb.velocity = new Vector2(rb.velocity.x, jumpForce);
 
     private void HandleCollision()
     {
@@ -56,6 +53,8 @@ public class Player : MonoBehaviour
 
     private void HandleAnimations() {
         anim.SetFloat("xVelocity", rb.velocity.x);
+        anim.SetFloat("yVelocity", rb.velocity.y);
+        anim.SetBool("isGrounded", isGrounded);
     }
 
     private void HandleMovement() {
