@@ -56,5 +56,5 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "Game2DPlatformer.sln"
+    "dotnet.defaultSolution": "PixelAdventure.sln"
 }
