@@ -13,15 +13,18 @@ public class Player : MonoBehaviour
     [SerializeField] private float moveSpeed;
     [SerializeField] private float jumpForce;
     [SerializeField] private float doubleJumpForce;
-    public bool canDoubleJump;
+    private bool canDoubleJump;
 
     [Header("Collision info")]
     [SerializeField] private float groundCheckDistance;
+    [SerializeField] private float wallCheckDistance;
     [SerializeField] private LayerMask whatIsGround;
     private bool isGrounded;
     private bool isAirBorne;
+    private bool isWallDetected;
 
     private float xInput;
+    private float yInput;
 
     private bool facingRight = true;
 
@@ -36,11 +39,23 @@ public class Player : MonoBehaviour
     private void Update()
     {
         UpdateAirborneStatus();
-        HandleCollision();
         HandleInput();
+        HandleWallSlide();
         HandleMovement();
         HandleFlip();
+        HandleCollision();
         HandleAnimations();
+    }
+
+    private void HandleWallSlide() {
+        bool canWallSlide = isWallDetected && rb.velocity.y < 0;
+        float yModifier = yInput < 0 ? 1 : .05f;
+
+        if (canWallSlide == false) {
+            return;
+        }
+
+        rb.velocity = new Vector2(rb.velocity.x, rb.velocity.y * yModifier);
     }
 
     private void UpdateAirborneStatus() {
@@ -64,6 +79,7 @@ public class Player : MonoBehaviour
     private void HandleInput()
     {
         xInput = Input.GetAxis("Horizontal");
+        yInput = Input.GetAxis("Vertical");
 
         if (Input.GetKeyDown(KeyCode.Space))
         {
@@ -89,20 +105,26 @@ public class Player : MonoBehaviour
     private void HandleCollision()
     {
         isGrounded = Physics2D.Raycast(transform.position, Vector2.down, groundCheckDistance, whatIsGround);
+        isWallDetected = Physics2D.Raycast(transform.position, Vector2.right * facingDir, wallCheckDistance, whatIsGround);
     }
 
     private void HandleAnimations() {
         anim.SetFloat("xVelocity", rb.velocity.x);
         anim.SetFloat("yVelocity", rb.velocity.y);
         anim.SetBool("isGrounded", isGrounded);
+        anim.SetBool("isWallDetected", isWallDetected);
     }
 
     private void HandleMovement() {
+        if (isWallDetected) {
+            return;
+        }
+
         rb.velocity = new Vector2(xInput * moveSpeed, rb.velocity.y);
     }
 
     private void HandleFlip() {
-        if (rb.velocity.x < 0 && facingRight || rb.velocity.x > 0 && !facingRight) {
+        if (xInput < 0 && facingRight || xInput > 0 && !facingRight) {
             Flip();
         }
     }
@@ -116,5 +138,6 @@ public class Player : MonoBehaviour
     private void OnDrawGizmos()
     {
         Gizmos.DrawLine(transform.position, new Vector2(transform.position.x, transform.position.y - groundCheckDistance));
+        Gizmos.DrawLine(transform.position, new Vector2(transform.position.x + (wallCheckDistance * facingDir) , transform.position.y));
     }
 }
