@@ -562,9 +562,10 @@ MonoBehaviour:
   moveSpeed: 8
   jumpForce: 14
   doubleJumpForce: 11
+  bufferJumpWindow: 0.25
   wallJumpDuration: 0.6
   wallJumpForce: {x: 7, y: 14}
-  knockBackDuration: 0.65
+  knockBackDuration: 0.7
   knockBackPower: {x: 5, y: 7}
   groundCheckDistance: 1.06
   wallCheckDistance: 0.75
