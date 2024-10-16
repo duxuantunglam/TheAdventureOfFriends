@@ -6,8 +6,15 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager instance;
 
+    public int fruitCollected;
+
     private void Awake()
     {
-        instance = this;
+        if (instance == null)
+            instance = this;
+        else 
+            Destroy(gameObject);
     }
+
+    public void AddFruit() => fruitCollected++;
 }
