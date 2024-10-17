@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Scripting;
 
@@ -38,13 +39,13 @@ public class Player : MonoBehaviour
     private bool isGrounded;
     private bool isAirBorne;
     private bool isWallDetected;
-
     private float xInput;
     private float yInput;
-
     private bool facingRight = true;
-
     private int facingDir = 1;          //facingDirection
+
+    [Header("VFX")]
+    [SerializeField] private GameObject deathVFX;
 
     private void Awake()
     {
@@ -56,9 +57,8 @@ public class Player : MonoBehaviour
     {
         UpdateAirborneStatus();
 
-        if (isKnocked) {
+        if (isKnocked)
             return;
-        }
 
         HandleInput();
         HandleWallSlide();
@@ -68,17 +68,18 @@ public class Player : MonoBehaviour
         HandleAnimations();
     }
 
-    public void KnockBack() {
-        if (isKnocked) {
+    public void KnockBack()
+    {
+        if (isKnocked)
             return;
-        }
 
         StartCoroutine(KnockBackRoutine());
         anim.SetTrigger("knockback");
         rb.velocity = new Vector2(knockBackPower.x * -facingDir, knockBackPower.y);
     }
 
-    private IEnumerator KnockBackRoutine() {
+    private IEnumerator KnockBackRoutine()
+    {
         isKnocked = true;
 
         yield return new WaitForSeconds(knockBackDuration);
@@ -86,24 +87,24 @@ public class Player : MonoBehaviour
         isKnocked = false;
     }
 
-    private void UpdateAirborneStatus() {
-        if (isGrounded && isAirBorne) {
+    private void UpdateAirborneStatus()
+    {
+        if (isGrounded && isAirBorne)
             HandleLanding();
-        }
-        else if (isGrounded && !isAirBorne) {
+        else if (isGrounded && !isAirBorne)
             BecomeAirborne();
-        }
     }
 
-    private void BecomeAirborne() {
+    private void BecomeAirborne()
+    {
         isAirBorne = true;
 
-        if (rb.velocity.y < 0) {
+        if (rb.velocity.y < 0)
             ActiveCoyoteJump();
-        }
     }
 
-    private void HandleLanding() {
+    private void HandleLanding()
+    {
         isAirBorne = false;
         canDoubleJump = true;
 
@@ -123,14 +124,16 @@ public class Player : MonoBehaviour
     }
 
 #region Buffer & Coyote jump
-    private void RequestBufferJump() {
-        if (isAirBorne) {
+    private void RequestBufferJump()
+    {
+        if (isAirBorne)
             bufferJumpActivated = Time.time;
-        }
     }
 
-    private void AttemptBufferJump() {
-        if (Time.time < bufferJumpActivated + bufferJumpWindow) {
+    private void AttemptBufferJump()
+    {
+        if (Time.time < bufferJumpActivated + bufferJumpWindow)
+        {
             bufferJumpActivated = Time.time - 1;
             Jump();
         }
@@ -141,31 +144,31 @@ public class Player : MonoBehaviour
     private void CancelCoyoteJump() => coyoteJumpActivated = Time.time - 1;
 #endregion
 
-    private void JumpButton() {
+    private void JumpButton()
+    {
         bool coyoteJumpAvailable = Time.time < coyoteJumpActivated + coyoteJumpWindow;
 
-        if (isGrounded || coyoteJumpAvailable) {
+        if (isGrounded || coyoteJumpAvailable)
             Jump();
-        }
-        else if (isWallDetected && !isGrounded) {
+        else if (isWallDetected && !isGrounded)
             WallJump();
-        }
-        else if (canDoubleJump) {
+        else if (canDoubleJump)
             DoubleJump();
-        }
 
         CancelCoyoteJump();
     }
 
     private void Jump() => rb.velocity = new Vector2(rb.velocity.x, jumpForce);
 
-    private void DoubleJump() {
+    private void DoubleJump()
+    {
         isWallJumping = false;
         canDoubleJump = false;
         rb.velocity = new Vector2(rb.velocity.x, doubleJumpForce);
     }
 
-    private void WallJump() {
+    private void WallJump()
+    {
         canDoubleJump = true;
         rb.velocity = new Vector2(wallJumpForce.x * -facingDir, wallJumpForce.y);
 
@@ -175,7 +178,8 @@ public class Player : MonoBehaviour
         StartCoroutine(WallJumpRoutine());
     }
 
-    private IEnumerator WallJumpRoutine() {
+    private IEnumerator WallJumpRoutine()
+    {
         isWallJumping = true;
 
         yield return new WaitForSeconds(wallJumpDuration);
@@ -183,13 +187,19 @@ public class Player : MonoBehaviour
         isWallJumping = false;
     }
 
-    private void HandleWallSlide() {
+    public void Die()
+    {
+        GameObject newDeathVFX = Instantiate(deathVFX, transform.position, Quaternion.identity);
+        Destroy(gameObject);
+    }
+
+    private void HandleWallSlide()
+    {
         bool canWallSlide = isWallDetected && rb.velocity.y < 0;
         float yModifier = yInput < 0 ? 1 : .05f;
 
-        if (canWallSlide == false) {
+        if (canWallSlide == false)
             return;
-        }
 
         rb.velocity = new Vector2(rb.velocity.x, rb.velocity.y * yModifier);
     }
@@ -200,31 +210,32 @@ public class Player : MonoBehaviour
         isWallDetected = Physics2D.Raycast(transform.position, Vector2.right * facingDir, wallCheckDistance, whatIsGround);
     }
 
-    private void HandleAnimations() {
+    private void HandleAnimations()
+    {
         anim.SetFloat("xVelocity", rb.velocity.x);
         anim.SetFloat("yVelocity", rb.velocity.y);
         anim.SetBool("isGrounded", isGrounded);
         anim.SetBool("isWallDetected", isWallDetected);
     }
 
-    private void HandleMovement() {
-        if (isWallDetected) {
+    private void HandleMovement()
+    {
+        if (isWallDetected)
             return;
-        }
-        if (isWallJumping) {
+        if (isWallJumping)
             return;
-        }
 
         rb.velocity = new Vector2(xInput * moveSpeed, rb.velocity.y);
     }
 
-    private void HandleFlip() {
-        if (xInput < 0 && facingRight || xInput > 0 && !facingRight) {
+    private void HandleFlip()
+    {
+        if (xInput < 0 && facingRight || xInput > 0 && !facingRight)
             Flip();
-        }
     }
 
-    private void Flip() {
+    private void Flip()
+    {
         facingDir = facingDir * (-1);
         transform.Rotate(0, 180, 0);
         facingRight = !facingRight;
