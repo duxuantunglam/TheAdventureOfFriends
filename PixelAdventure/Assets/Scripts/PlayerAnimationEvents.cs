@@ -2,13 +2,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerAnimation : MonoBehaviour
+public class PlayerAnimationEvents : MonoBehaviour
 {
     private Player player;
 
     private void Awake()
     {
-        player = GetComponentInChildren<Player>();
+        player = GetComponentInParent<Player>();
     }
 
     public void FinishRespawn() => player.RespawnFinished(true);

@@ -80,6 +80,7 @@ public class Player : MonoBehaviour
         HandleFlip();
         HandleCollision();
         HandleAnimations();
+
     }
 
     public void RespawnFinished(bool finished)
