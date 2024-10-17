@@ -17,6 +17,9 @@ public class GameManager : MonoBehaviour
     public int fruitCollected;
     public int totalFruit;
 
+    [Header("Checkpoint")]
+    public bool canReactive;
+
     private void Awake()
     {
         if (instance == null)

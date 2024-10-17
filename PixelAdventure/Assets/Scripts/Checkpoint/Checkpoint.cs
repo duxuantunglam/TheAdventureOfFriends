@@ -14,6 +14,11 @@ public class Checkpoint : MonoBehaviour
         anim = GetComponent<Animator>();
     }
 
+    private void Start()
+    {
+        canBeReactive = GameManager.instance.canReactive;
+    }
+
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (active && canBeReactive == false)
