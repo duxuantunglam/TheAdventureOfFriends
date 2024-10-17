@@ -1,12 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Mathematics;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public enum FruitType {Apple, Banana, Cherry, Kiwi, Melon, Orange, Pineapple, Strawberry}
 
 public class Fruit : MonoBehaviour
 {
     [SerializeField] private FruitType fruitType;
+    [SerializeField] private GameObject pickupVFX;
 
     private GameManager gameManager;
     private Animator anim;
@@ -44,6 +47,8 @@ public class Fruit : MonoBehaviour
         {
             gameManager.AddFruit();
             Destroy(gameObject);
+
+            GameObject newFx = Instantiate(pickupVFX, transform.position, Quaternion.identity);
         }
     }
 }
