@@ -6,6 +6,10 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager instance;
 
+    [Header("Player")]
+    [SerializeField] private GameObject playerPrefab;
+    [SerializeField] Transform respawnPoint;
+    [SerializeField] private float respawnDelay;
     public Player player;
 
     [Header("Fruit Management")]
@@ -18,6 +22,16 @@ public class GameManager : MonoBehaviour
             instance = this;
         else 
             Destroy(gameObject);
+    }
+
+    public void respawnPlayer() => StartCoroutine(RespawnCoroutine());
+
+    private IEnumerator RespawnCoroutine()
+    {
+        yield return new WaitForSeconds(respawnDelay);
+
+        GameObject newPlayer = Instantiate(playerPrefab, respawnPoint.position, Quaternion.identity);
+        player = newPlayer.GetComponent<Player>();
     }
 
     public void AddFruit() => fruitCollected++;

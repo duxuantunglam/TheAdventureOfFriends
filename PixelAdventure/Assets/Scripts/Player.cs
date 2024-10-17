@@ -9,11 +9,15 @@ public class Player : MonoBehaviour
 {
     private Rigidbody2D rb;
     private Animator anim;
+    private CapsuleCollider2D cd;
+
+    private bool canBeController = false;
 
     [Header("Movement")]
     [SerializeField] private float moveSpeed;
     [SerializeField] private float jumpForce;
     [SerializeField] private float doubleJumpForce;
+    private float defaultGravityScale;
     private bool canDoubleJump;
 
     [Header("Buffer & Coyote jump")]
@@ -51,11 +55,21 @@ public class Player : MonoBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponentInChildren<Animator>();
+        cd = GetComponent<CapsuleCollider2D>();
+    }
+
+    private void Start()
+    {
+        defaultGravityScale = rb.gravityScale;
+        RespawnFinished(false);
     }
 
     private void Update()
     {
         UpdateAirborneStatus();
+
+        if (canBeController == false)
+            return;
 
         if (isKnocked)
             return;
@@ -66,6 +80,23 @@ public class Player : MonoBehaviour
         HandleFlip();
         HandleCollision();
         HandleAnimations();
+    }
+
+    public void RespawnFinished(bool finished)
+    {
+
+        if (finished)
+        {
+            rb.gravityScale = defaultGravityScale;
+            canBeController = true;
+            cd.enabled = true;
+        }
+        else
+        {
+            rb.gravityScale = 0;
+            canBeController = false;
+            cd.enabled = false;
+        }
     }
 
     public void KnockBack()
