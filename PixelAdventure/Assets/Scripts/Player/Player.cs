@@ -106,17 +106,19 @@ public class Player : MonoBehaviour
             return;
 
         StartCoroutine(KnockBackRoutine());
-        anim.SetTrigger("knockback");
+        
         rb.velocity = new Vector2(knockBackPower.x * -facingDir, knockBackPower.y);
     }
 
     private IEnumerator KnockBackRoutine()
     {
         isKnocked = true;
+        anim.SetBool("isKnocked", true);
 
         yield return new WaitForSeconds(knockBackDuration);
 
         isKnocked = false;
+        anim.SetBool("isKnocked", false);
     }
 
     private void UpdateAirborneStatus()
