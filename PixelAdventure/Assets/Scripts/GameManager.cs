@@ -8,7 +8,7 @@ public class GameManager : MonoBehaviour
 
     [Header("Player")]
     [SerializeField] private GameObject playerPrefab;
-    [SerializeField] Transform respawnPoint;
+    [SerializeField] private Transform respawnPoint;
     [SerializeField] private float respawnDelay;
     public Player player;
 
@@ -19,6 +19,9 @@ public class GameManager : MonoBehaviour
 
     [Header("Checkpoint")]
     public bool canReactive;
+
+    [Header("Traps")]
+    public GameObject arrowPrefab;
 
     private void Awake()
     {
@@ -54,4 +57,17 @@ public class GameManager : MonoBehaviour
     public void AddFruit() => fruitCollected++;
 
     public bool FruitHaveRandomLook() => fruitAreRandom;
+
+    public void CreateObject(GameObject prefab, Transform target, float delay = 0)
+    {
+        StartCoroutine(CreateObjectCoroutine(prefab, target, delay));
+    }
+    private IEnumerator CreateObjectCoroutine(GameObject prefab,Transform target,float delay)
+    {
+        Vector3 newPosition = target.position;
+
+        yield return new WaitForSeconds(delay);
+
+        GameObject newObject = Instantiate(prefab, newPosition, Quaternion.identity);
+    }
 }
