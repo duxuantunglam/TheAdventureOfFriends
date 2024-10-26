@@ -16503,13 +16503,17 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1896059449296708816, guid: baa0f5a03b5025745a70bba02a37fa2a, type: 3}
+      propertyPath: pushForce
+      value: 13
+      objectReference: {fileID: 0}
     - target: {fileID: 2331466156716676012, guid: baa0f5a03b5025745a70bba02a37fa2a, type: 3}
       propertyPath: m_Name
       value: Trap_SpikedBall
       objectReference: {fileID: 0}
     - target: {fileID: 6453300013709905854, guid: baa0f5a03b5025745a70bba02a37fa2a, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 18.2
+      value: 17
       objectReference: {fileID: 0}
     - target: {fileID: 6453300013709905854, guid: baa0f5a03b5025745a70bba02a37fa2a, type: 3}
       propertyPath: m_LocalPosition.y
