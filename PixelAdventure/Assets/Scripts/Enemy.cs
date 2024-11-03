@@ -10,11 +10,14 @@ public class Enemy : MonoBehaviour
     protected Rigidbody2D rb;
     protected Collider2D[] colliders;
 
+    [SerializeField] protected Transform player;
+    [SerializeField] protected GameObject damageTrigger;
+
     [Header("General info")]
     [SerializeField] protected float moveSpeed = 2f;
     [SerializeField] protected float idleDuration = 1.5f;
     protected float idleTimer;
-    // protected bool canMove = true;
+    protected bool canMove = true;
 
     [Header("Death details")]
     [SerializeField] protected float deathImpactSpeed = 5;
@@ -27,7 +30,7 @@ public class Enemy : MonoBehaviour
     [SerializeField] protected float wallCheckDistance = .7f;
     [SerializeField] protected LayerMask whatIsGround;
     // [SerializeField] protected float playerDetectionDistance = 15;
-    // [SerializeField] protected LayerMask whatIsPlayer;
+    [SerializeField] protected LayerMask whatIsPlayer;
     [SerializeField] protected Transform groundCheck;
     // protected bool isPlayerDetected;
     protected bool isGrounded;
@@ -44,22 +47,22 @@ public class Enemy : MonoBehaviour
         colliders = GetComponentsInChildren<Collider2D>();
     }
 
-    // protected virtual void Start()
-    // {
-    //     InvokeRepeating(nameof(UpdatePlayersRef), 0, 1);
+    protected virtual void Start()
+    {
+        InvokeRepeating(nameof(UpdatePlayersRef), 0, 1);
 
-    //     if (sr.flipX == true && !facingRight)
-    //     {
-    //         sr.flipX = false;
-    //         Flip();
-    //     }
-    // }
+        // if (sr.flipX == true && !facingRight)
+        // {
+        //     sr.flipX = false;
+        //     Flip();
+        // }
+    }
 
-    // private void UpdatePlayersRef()
-    // {
-    //     if (player == null)
-    //         player = GameManager.instance.player.transform;
-    // }
+    private void UpdatePlayersRef()
+    {
+        if (player == null)
+            player = GameManager.instance.player.transform;
+    }
 
     protected virtual void Update()
     {
@@ -79,7 +82,7 @@ public class Enemy : MonoBehaviour
         {
             collider.enabled = false;
         }
-
+        damageTrigger.SetActive(false);
         anim.SetTrigger("hit");
         rb.velocity = new Vector2(rb.velocity.x, deathImpactSpeed);
         isDead = true;
