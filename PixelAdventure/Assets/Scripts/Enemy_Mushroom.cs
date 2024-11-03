@@ -10,8 +10,8 @@ public class Enemy_Mushroom : Enemy
 
         anim.SetFloat("xVelocity", rb.velocity.x);
 
-        // if (isDead)
-        //     return;
+        if (isDead)
+            return;
 
         HandleCollision();
         HandleMovement();

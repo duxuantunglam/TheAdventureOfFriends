@@ -101,16 +101,10 @@ public class Player : MonoBehaviour
 
         foreach (var enemy in colliders)
         {
-            // Enemy newEnemy = enemy.GetComponent<Enemy>();
-            // if (newEnemy != null)
-            // {
-            //     newEnemy.Die();
-            //     Jump();
-            // }
-
-            if (enemy != null)
+            Enemy newEnemy = enemy.GetComponent<Enemy>();
+            if (newEnemy != null)
             {
-                Destroy(enemy.gameObject);
+                newEnemy.Die();
                 Jump();
             }
         }
