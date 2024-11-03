@@ -40,6 +40,10 @@ public class Player : MonoBehaviour
     [SerializeField] private float groundCheckDistance;
     [SerializeField] private float wallCheckDistance;
     [SerializeField] private LayerMask whatIsGround;
+    [Space]
+    [SerializeField] private Transform enemyCheck;
+    [SerializeField] private float enemyCheckRadius;
+    [SerializeField] private LayerMask whatIsEnemy;
     private bool isGrounded;
     private bool isAirBorne;
     private bool isWallDetected;
@@ -78,6 +82,7 @@ public class Player : MonoBehaviour
         if (isKnocked)
             return;
 
+        HandleEnemyDetection();
         HandleInput();
         HandleWallSlide();
         HandleMovement();
@@ -85,6 +90,30 @@ public class Player : MonoBehaviour
         HandleCollision();
         HandleAnimations();
 
+    }
+
+    private void HandleEnemyDetection()
+    {
+        if (rb.velocity.y >= 0)
+            return;
+
+        Collider2D[] colliders = Physics2D.OverlapCircleAll(enemyCheck.position, enemyCheckRadius, whatIsEnemy);
+
+        foreach (var enemy in colliders)
+        {
+            // Enemy newEnemy = enemy.GetComponent<Enemy>();
+            // if (newEnemy != null)
+            // {
+            //     newEnemy.Die();
+            //     Jump();
+            // }
+
+            if (enemy != null)
+            {
+                Destroy(enemy.gameObject);
+                Jump();
+            }
+        }
     }
 
     public void RespawnFinished(bool finished)
@@ -115,7 +144,7 @@ public class Player : MonoBehaviour
             return;
 
         StartCoroutine(KnockBackRoutine());
-        
+
         rb.velocity = new Vector2(knockBackPower.x * knockbackDir, knockBackPower.y);
     }
 
@@ -166,7 +195,7 @@ public class Player : MonoBehaviour
         }
     }
 
-#region Buffer & Coyote jump
+    #region Buffer & Coyote jump
     private void RequestBufferJump()
     {
         if (isAirBorne)
@@ -185,7 +214,7 @@ public class Player : MonoBehaviour
     private void ActiveCoyoteJump() => coyoteJumpActivated = Time.time;
 
     private void CancelCoyoteJump() => coyoteJumpActivated = Time.time - 1;
-#endregion
+    #endregion
 
     private void JumpButton()
     {
@@ -303,7 +332,8 @@ public class Player : MonoBehaviour
 
     private void OnDrawGizmos()
     {
+        Gizmos.DrawWireSphere(enemyCheck.position, enemyCheckRadius);
         Gizmos.DrawLine(transform.position, new Vector2(transform.position.x, transform.position.y - groundCheckDistance));
-        Gizmos.DrawLine(transform.position, new Vector2(transform.position.x + (wallCheckDistance * facingDir) , transform.position.y));
+        Gizmos.DrawLine(transform.position, new Vector2(transform.position.x + (wallCheckDistance * facingDir), transform.position.y));
     }
 }

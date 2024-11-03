@@ -4,14 +4,16 @@ using UnityEngine;
 
 public class Enemy_Mushroom : Enemy
 {
-
     protected override void Update()
     {
         base.Update();
 
-        if (isDead)
-            return;
+        anim.SetFloat("xVelocity", rb.velocity.x);
 
+        // if (isDead)
+        //     return;
+
+        HandleCollision();
         HandleMovement();
 
         if (isGrounded)
@@ -20,7 +22,7 @@ public class Enemy_Mushroom : Enemy
 
     private void HandleTurnAround()
     {
-        if (!isGroundInfrontDetected || isWallDetected)
+        if (!isGroundInFrontDetected || isWallDetected)
         {
             Flip();
             idleTimer = idleDuration;
