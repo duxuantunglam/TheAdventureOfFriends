@@ -104,7 +104,7 @@ public class Player : MonoBehaviour
             Enemy newEnemy = enemy.GetComponent<Enemy>();
             if (newEnemy != null)
             {
-                newEnemy.Die();
+                //newEnemy.Die();
                 Jump();
             }
         }
