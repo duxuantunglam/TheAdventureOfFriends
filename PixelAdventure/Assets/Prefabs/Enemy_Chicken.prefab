@@ -170,7 +170,7 @@ BoxCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: -0.027726889, y: -0.21646595}
+  m_Offset: {x: -0.043865442, y: -0.21616292}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -181,7 +181,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 1.5283589, y: 1.6920681}
+  m_Size: {x: 1.7086129, y: 1.5793881}
   m_EdgeRadius: 0
 --- !u!114 &5173459070776367736
 MonoBehaviour:
@@ -195,8 +195,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 003d34bd17cb070498669828e35c5b92, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player: {fileID: 0}
-  damageTrigger: {fileID: 7859327484152367617}
   moveSpeed: 5
   idleDuration: 1.5
   deathImpactSpeed: 5
@@ -206,6 +204,7 @@ MonoBehaviour:
   whatIsGround:
     serializedVersion: 2
     m_Bits: 8
+  playerDetectionDistance: 15
   whatIsPlayer:
     serializedVersion: 2
     m_Bits: 128
@@ -320,7 +319,7 @@ BoxCollider2D:
   m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: -0.022236109, y: -0.14508867}
+  m_Offset: {x: -0.03498864, y: -0.47072935}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -331,5 +330,5 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 1.6491513, y: 1.8128605}
+  m_Size: {x: 1.4485955, y: 1.1080027}
   m_EdgeRadius: 0
