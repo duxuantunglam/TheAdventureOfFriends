@@ -33,7 +33,6 @@ public class Enemy : MonoBehaviour
     protected bool isGrounded;
     protected bool isWallDetected;
     protected bool isGroundInFrontDetected;
-
     protected int facingDir = -1;
     protected bool facingRight = false;
 
@@ -128,7 +127,6 @@ public class Enemy : MonoBehaviour
 
     protected virtual void OnDrawGizmos()
     {
-
         Gizmos.DrawLine(transform.position, new Vector2(transform.position.x, transform.position.y - groundCheckDistance));
         Gizmos.DrawLine(groundCheck.position, new Vector2(groundCheck.position.x, groundCheck.position.y - groundCheckDistance));
         Gizmos.DrawLine(transform.position, new Vector2(transform.position.x + (wallCheckDistance * facingDir), transform.position.y));
