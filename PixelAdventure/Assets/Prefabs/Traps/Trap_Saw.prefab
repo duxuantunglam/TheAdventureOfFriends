@@ -204,12 +204,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moveSpeed: 3
   cooldown: 1
-  wayPoint:
-  - {fileID: 1473309699852945141}
-  - {fileID: 4826875319859912643}
-  - {fileID: 494626894738187285}
-  wayPointPosition: []
+  wayPoint: []
   wayPointIndex: 1
+  moveDirection: 1
 --- !u!1 &7567345519795308981
 GameObject:
   m_ObjectHideFlags: 0
