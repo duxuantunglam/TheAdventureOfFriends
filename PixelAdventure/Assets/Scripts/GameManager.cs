@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.SearchService;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -27,7 +29,7 @@ public class GameManager : MonoBehaviour
     {
         if (instance == null)
             instance = this;
-        else 
+        else
             Destroy(gameObject);
     }
 
@@ -62,7 +64,7 @@ public class GameManager : MonoBehaviour
     {
         StartCoroutine(CreateObjectCoroutine(prefab, target, delay));
     }
-    private IEnumerator CreateObjectCoroutine(GameObject prefab,Transform target,float delay)
+    private IEnumerator CreateObjectCoroutine(GameObject prefab, Transform target, float delay)
     {
         Vector3 newPosition = target.position;
 
@@ -70,4 +72,6 @@ public class GameManager : MonoBehaviour
 
         GameObject newObject = Instantiate(prefab, newPosition, Quaternion.identity);
     }
+
+    public void LoadTheEndScene() => SceneManager.LoadScene("TheEnd");
 }

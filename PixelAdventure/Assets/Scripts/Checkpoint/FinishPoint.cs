@@ -18,7 +18,7 @@ public class FinishPoint : MonoBehaviour
         if (player != null)
         {
             anim.SetTrigger("active");
-            Debug.Log("GAME DỄ VCL!");
+            GameManager.instance.LoadTheEndScene();
         }
     }
 }
