@@ -3,7 +3,7 @@ using UnityEngine.SceneManagement;
 
 public class UI_MainMenu : MonoBehaviour
 {
-    // private UI_FadeEffect fadeEffect;
+    private UI_FadeEffect fadeEffect;
     // public string FirstLevelName;
     public string sceneName;
 
@@ -12,36 +12,37 @@ public class UI_MainMenu : MonoBehaviour
 
     // [SerializeField] private GameObject continueButton;
 
-    // private void Awake()
-    // {
-    //     fadeEffect = GetComponentInChildren<UI_FadeEffect>();
-    // }
+    private void Awake()
+    {
+        fadeEffect = GetComponentInChildren<UI_FadeEffect>();
+    }
 
-    // private void Start()
-    // {
-    //     if (HasLevelProgression())
-    //         continueButton.SetActive(true);
+    private void Start()
+    {
+        //     if (HasLevelProgression())
+        //         continueButton.SetActive(true);
 
-    //     fadeEffect.ScreenFade(0, 1.5f);
-    // }
+        fadeEffect.ScreenFade(0, 1.5f);
+        // }
 
-    // public void SwitchUI(GameObject uiToEnable)
-    // {
-    //     foreach (GameObject ui in uiElements)
-    //     {
-    //         ui.SetActive(false);
-    //     }
+        // public void SwitchUI(GameObject uiToEnable)
+        // {
+        //     foreach (GameObject ui in uiElements)
+        //     {
+        //         ui.SetActive(false);
+        //     }
 
-    //     uiToEnable.SetActive(true);
-    // }
+        //     uiToEnable.SetActive(true);
+    }
 
     public void NewGame()
     {
-        // fadeEffect.ScreenFade(1, 1.5f,LoadLevelScene);
-        SceneManager.LoadScene(sceneName);
+        // fadeEffect.ScreenFade(1, 1.5f, LoadLevelScene);
+        fadeEffect.ScreenFade(1, 1.5f, LoadLevelScene);
     }
 
     // private void LoadLevelScene() => SceneManager.LoadScene(FirstLevelName);
+    private void LoadLevelScene() => SceneManager.LoadScene(sceneName);
 
     // private bool HasLevelProgression()
     // {

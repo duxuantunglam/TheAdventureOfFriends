@@ -74,4 +74,67 @@ public class GameManager : MonoBehaviour
     }
 
     public void LoadTheEndScene() => SceneManager.LoadScene("TheEnd");
+
+    public void LevelFinished()
+    {
+        // SaveLevelProgression();
+        // SaveBestTime();
+        // SaveFruitsInfo();
+
+        // LoadNextScene();
+        UI_InGame.instance.fadeEffect.ScreenFade(1, .75f, LoadTheEndScene);
+    }
+
+    // private void SaveFruitsInfo()
+    // {
+    //     int fruitsCollectedBefore = PlayerPrefs.GetInt("Level" + currentLevelIndex + "FruitsCollected");
+
+    //     if(fruitsCollectedBefore < fruitsCollected)
+    //         PlayerPrefs.SetInt("Level" + currentLevelIndex + "FruitsCollected",fruitsCollected);
+
+    //     int totalFruitsInBank = PlayerPrefs.GetInt("TotalFruitsAmount");
+    //     PlayerPrefs.SetInt("TotalFruitsAmount", totalFruitsInBank + fruitsCollected);
+    // }
+    // private void SaveBestTime()
+    // {
+    //     float lastTime = PlayerPrefs.GetFloat("Level" + currentLevelIndex + "BestTime", 99);
+
+    //     if(levelTimer < lastTime)
+    //         PlayerPrefs.SetFloat("Level" + currentLevelIndex + "BestTime", levelTimer);
+    // }
+    // private void SaveLevelProgression()
+    // {
+    //     PlayerPrefs.SetInt("Level" + nextLevelIndex + "Unlocked", 1);
+
+    //     if (NoMoreLevels() == false)
+    //         PlayerPrefs.SetInt("ContinueLevelNumber", nextLevelIndex);
+    // }
+
+    // public void RestartLevel()
+    // {
+    //     UI_InGame.instance.fadeEffect.ScreenFade(1, .75f, LoadCurrentScene);
+    // }
+
+    // private void LoadCurrentScene() => SceneManager.LoadScene("Level_" + currentLevelIndex);
+    // private void LoadTheEndScene() => SceneManager.LoadScene("TheEnd");
+    // private void LoadNextLevel()
+    // {
+    //     SceneManager.LoadScene("Level_" + nextLevelIndex);
+    // }
+    // private void LoadNextScene()
+    // {
+    //     UI_FadeEffect fadeEffect = UI_InGame.instance.fadeEffect;
+
+    //     if (NoMoreLevels())
+    //         fadeEffect.ScreenFade(1, 1.5f, LoadTheEndScene);
+    //     else
+    //         fadeEffect.ScreenFade(1, 1.5f, LoadNextLevel);
+    // }
+    // private bool NoMoreLevels()
+    // {
+    //     int lastLevelIndex = SceneManager.sceneCountInBuildSettings - 2; // We have main menu and The End scene, that's why we use number 2
+    //     bool noMoreLevels = currentLevelIndex == lastLevelIndex;
+
+    //     return noMoreLevels;
+    // }
 }
