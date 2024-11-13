@@ -8,7 +8,7 @@ public class UI_MainMenu : MonoBehaviour
     public string sceneName;
 
 
-    // [SerializeField] private GameObject[] uiElements;
+    [SerializeField] private GameObject[] uiElements;
 
     // [SerializeField] private GameObject continueButton;
 
@@ -23,21 +23,20 @@ public class UI_MainMenu : MonoBehaviour
         //         continueButton.SetActive(true);
 
         fadeEffect.ScreenFade(0, 1.5f);
-        // }
+    }
 
-        // public void SwitchUI(GameObject uiToEnable)
-        // {
-        //     foreach (GameObject ui in uiElements)
-        //     {
-        //         ui.SetActive(false);
-        //     }
+    public void SwitchUI(GameObject uiToEnable)
+    {
+        foreach (GameObject ui in uiElements)
+        {
+            ui.SetActive(false);
+        }
 
-        //     uiToEnable.SetActive(true);
+        uiToEnable.SetActive(true);
     }
 
     public void NewGame()
     {
-        // fadeEffect.ScreenFade(1, 1.5f, LoadLevelScene);
         fadeEffect.ScreenFade(1, 1.5f, LoadLevelScene);
     }
 
