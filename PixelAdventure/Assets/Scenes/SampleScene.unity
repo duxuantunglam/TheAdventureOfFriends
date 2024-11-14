@@ -9310,7 +9310,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9142648437172348008, guid: 0e4e8992af1f80240b71ddf159e4bdcb, type: 3}
       propertyPath: m_Color.a
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -16281,6 +16281,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aa880f81ec54b0740a40c6d568d9024e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  fadeEffect: {fileID: 0}
 --- !u!1 &2105985503
 GameObject:
   m_ObjectHideFlags: 0
@@ -16916,6 +16917,26 @@ PrefabInstance:
       propertyPath: whatIsEnemy.m_Bits
       value: 64
       objectReference: {fileID: 0}
+    - target: {fileID: 1524494560782021135, guid: c71bcb11b2f956f4ab099c7f71623a79, type: 3}
+      propertyPath: animators.Array.size
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 1524494560782021135, guid: c71bcb11b2f956f4ab099c7f71623a79, type: 3}
+      propertyPath: 'animators.Array.data[0]'
+      value: 
+      objectReference: {fileID: 22100000, guid: aad676d524b041b478499777a15639c6, type: 2}
+    - target: {fileID: 1524494560782021135, guid: c71bcb11b2f956f4ab099c7f71623a79, type: 3}
+      propertyPath: 'animators.Array.data[1]'
+      value: 
+      objectReference: {fileID: 22100000, guid: 7863b6a0afffa1e4587bca2d04137e42, type: 2}
+    - target: {fileID: 1524494560782021135, guid: c71bcb11b2f956f4ab099c7f71623a79, type: 3}
+      propertyPath: 'animators.Array.data[2]'
+      value: 
+      objectReference: {fileID: 22100000, guid: 52015e8a247f3cf4f952b6732a93f95e, type: 2}
+    - target: {fileID: 1524494560782021135, guid: c71bcb11b2f956f4ab099c7f71623a79, type: 3}
+      propertyPath: 'animators.Array.data[3]'
+      value: 
+      objectReference: {fileID: 22100000, guid: 81db67cae8fd2e04cae7f820763da9cb, type: 2}
     - target: {fileID: 4404046186474289309, guid: c71bcb11b2f956f4ab099c7f71623a79, type: 3}
       propertyPath: m_Name
       value: Player
