@@ -8,10 +8,10 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager instance;
 
-    // private UI_InGame inGameUI;
+    private UI_InGame inGameUI;
 
     [Header("Level Management")]
-    // [SerializeField] private float levelTimer;
+    [SerializeField] private float levelTimer;
     [SerializeField] private int currentLevelIndex;
     private int nextLevelIndex;
 
@@ -42,15 +42,26 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
+        inGameUI = UI_InGame.instance;
+
         currentLevelIndex = SceneManager.GetActiveScene().buildIndex;
         nextLevelIndex = currentLevelIndex + 1;
         CollectFruitInfo();
+    }
+
+    private void Update()
+    {
+        levelTimer += Time.deltaTime;
+
+        inGameUI.UpdateTimerUI(levelTimer);
     }
 
     private void CollectFruitInfo()
     {
         Fruit[] allFruit = FindObjectsByType<Fruit>(FindObjectsSortMode.None);
         totalFruit = allFruit.Length;
+
+        UI_InGame.instance.UpdateFruitUI(fruitCollected, totalFruit);
     }
 
     public void UpdateRespawnPosition(Transform newRespawnPoint) => respawnPoint = newRespawnPoint;
@@ -65,7 +76,11 @@ public class GameManager : MonoBehaviour
         player = newPlayer.GetComponent<Player>();
     }
 
-    public void AddFruit() => fruitCollected++;
+    public void AddFruit()
+    {
+        fruitCollected++;
+        inGameUI.UpdateFruitUI(fruitCollected, totalFruit);
+    }
 
     public bool FruitHaveRandomLook() => fruitAreRandom;
 
@@ -86,20 +101,20 @@ public class GameManager : MonoBehaviour
     {
         SaveLevelProgression();
         // SaveBestTime();
-        // SaveFruitsInfo();
+        // SaveFruitInfo();
 
         LoadNextScene();
     }
 
-    // private void SaveFruitsInfo()
+    // private void SaveFruitInfo()
     // {
-    //     int fruitsCollectedBefore = PlayerPrefs.GetInt("Level" + currentLevelIndex + "FruitsCollected");
+    //     int fruitCollectedBefore = PlayerPrefs.GetInt("Level" + currentLevelIndex + "FruitCollected");
 
-    //     if(fruitsCollectedBefore < fruitsCollected)
-    //         PlayerPrefs.SetInt("Level" + currentLevelIndex + "FruitsCollected",fruitsCollected);
+    //     if(fruitCollectedBefore < fruitCollected)
+    //         PlayerPrefs.SetInt("Level" + currentLevelIndex + "FruitCollected",fruitCollected);
 
-    //     int totalFruitsInBank = PlayerPrefs.GetInt("TotalFruitsAmount");
-    //     PlayerPrefs.SetInt("TotalFruitsAmount", totalFruitsInBank + fruitsCollected);
+    //     int totalFruitInBank = PlayerPrefs.GetInt("TotalFruitAmount");
+    //     PlayerPrefs.SetInt("TotalFruitAmount", totalFruitInBank + fruitCollected);
     // }
     // private void SaveBestTime()
     // {

@@ -5,11 +5,10 @@ using UnityEngine.SceneManagement;
 public class UI_InGame : MonoBehaviour
 {
     public static UI_InGame instance;
-    public UI_FadeEffect fadeEffect;
-    // public UI_FadeEffect fadeEffect { get; private set; } // read-only
+    public UI_FadeEffect fadeEffect { get; private set; } // read-only
 
-    // [SerializeField] private TextMeshProUGUI timerText;
-    // [SerializeField] private TextMeshProUGUI fruitText;
+    [SerializeField] private TextMeshProUGUI timerText;
+    [SerializeField] private TextMeshProUGUI fruitText;
 
     // [SerializeField] private GameObject pauseUI;
     // private bool isPaused;
@@ -53,13 +52,13 @@ public class UI_InGame : MonoBehaviour
     //     SceneManager.LoadScene(0);
     // }
 
-    // public void UpdateFruitUI(int collectedFruits, int totalFruits)
-    // {
-    //     fruitText.text = collectedFruits + "/" + totalFruits;
-    // }
+    public void UpdateFruitUI(int collectedFruit, int totalFruit)
+    {
+        fruitText.text = collectedFruit + "/" + totalFruit;
+    }
 
-    // public void UpdateTimerUI(float timer)
-    // {
-    //     timerText.text = timer.ToString("00") + " s";
-    // }
+    public void UpdateTimerUI(float timer)
+    {
+        timerText.text = timer.ToString("00") + " s";
+    }
 }
