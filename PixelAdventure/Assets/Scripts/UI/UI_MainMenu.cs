@@ -8,7 +8,7 @@ public class UI_MainMenu : MonoBehaviour
 
     [SerializeField] private GameObject[] uiElements;
 
-    // [SerializeField] private GameObject continueButton;
+    [SerializeField] private GameObject continueButton;
 
     private void Awake()
     {
@@ -17,8 +17,8 @@ public class UI_MainMenu : MonoBehaviour
 
     private void Start()
     {
-        //     if (HasLevelProgression())
-        //         continueButton.SetActive(true);
+        if (HasLevelProgression())
+            continueButton.SetActive(true);
 
         fadeEffect.ScreenFade(0, 1.5f);
     }
@@ -38,22 +38,21 @@ public class UI_MainMenu : MonoBehaviour
         fadeEffect.ScreenFade(1, 1.5f, LoadLevelScene);
     }
 
-    // private void LoadLevelScene() => SceneManager.LoadScene(FirstLevelName);
     private void LoadLevelScene() => SceneManager.LoadScene(FirstLevelName);
 
-    // private bool HasLevelProgression()
-    // {
-    //     bool hasLevelProgression = PlayerPrefs.GetInt("ContinueLevelNumber", 0) > 0;
+    private bool HasLevelProgression()
+    {
+        bool hasLevelProgression = PlayerPrefs.GetInt("ContinueLevelNumber", 0) > 0;
 
-    //     return hasLevelProgression;
-    // }
+        return hasLevelProgression;
+    }
 
-    // public void ContinueGame()
-    // {
-    //     int difficultyIndex =  PlayerPrefs.GetInt("GameDifficulty",1);
-    //     int levelToLoad = PlayerPrefs.GetInt("ContinueLevelNumber", 0);
+    public void ContinueGame()
+    {
+        // int difficultyIndex =  PlayerPrefs.GetInt("GameDifficulty",1);
+        int levelToLoad = PlayerPrefs.GetInt("ContinueLevelNumber", 0);
 
-    //     DifficultyManager.instance.LoadDifficulty(difficultyIndex);
-    //     SceneManager.LoadScene("Level_" + levelToLoad);
-    // }
+        // DifficultyManager.instance.LoadDifficulty(difficultyIndex);
+        SceneManager.LoadScene("Level_" + levelToLoad);
+    }
 }

@@ -13,7 +13,7 @@ public class GameManager : MonoBehaviour
     [Header("Level Management")]
     // [SerializeField] private float levelTimer;
     [SerializeField] private int currentLevelIndex;
-    // private int nextLevelIndex;
+    private int nextLevelIndex;
 
     [Header("Player")]
     [SerializeField] private GameObject playerPrefab;
@@ -43,6 +43,7 @@ public class GameManager : MonoBehaviour
     private void Start()
     {
         currentLevelIndex = SceneManager.GetActiveScene().buildIndex;
+        nextLevelIndex = currentLevelIndex + 1;
         CollectFruitInfo();
     }
 
@@ -81,11 +82,9 @@ public class GameManager : MonoBehaviour
         GameObject newObject = Instantiate(prefab, newPosition, Quaternion.identity);
     }
 
-    public void LoadTheEndScene() => SceneManager.LoadScene("TheEnd");
-
     public void LevelFinished()
     {
-        // SaveLevelProgression();
+        SaveLevelProgression();
         // SaveBestTime();
         // SaveFruitsInfo();
 
@@ -109,13 +108,13 @@ public class GameManager : MonoBehaviour
     //     if(levelTimer < lastTime)
     //         PlayerPrefs.SetFloat("Level" + currentLevelIndex + "BestTime", levelTimer);
     // }
-    // private void SaveLevelProgression()
-    // {
-    //     PlayerPrefs.SetInt("Level" + nextLevelIndex + "Unlocked", 1);
+    private void SaveLevelProgression()
+    {
+        PlayerPrefs.SetInt("Level" + nextLevelIndex + "Unlocked", 1);
 
-    //     if (NoMoreLevels() == false)
-    //         PlayerPrefs.SetInt("ContinueLevelNumber", nextLevelIndex);
-    // }
+        if (NoMoreLevels() == false)
+            PlayerPrefs.SetInt("ContinueLevelNumber", nextLevelIndex);
+    }
 
     // public void RestartLevel()
     // {
@@ -123,10 +122,9 @@ public class GameManager : MonoBehaviour
     // }
 
     // private void LoadCurrentScene() => SceneManager.LoadScene("Level_" + currentLevelIndex);
-    // private void LoadTheEndScene() => SceneManager.LoadScene("TheEnd");
+    private void LoadTheEndScene() => SceneManager.LoadScene("TheEnd");
     private void LoadNextLevel()
     {
-        int nextLevelIndex = currentLevelIndex + 1;
         SceneManager.LoadScene("Level_" + nextLevelIndex);
     }
     private void LoadNextScene()
