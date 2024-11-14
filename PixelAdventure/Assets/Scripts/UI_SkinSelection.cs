@@ -37,66 +37,65 @@ public class UI_SkinSelection : MonoBehaviour
     //     }
     // }
 
-    // public void SelectSkin()
-    // {
-    //     if (skinList[skinIndex].unlocked == false)
-    //         BuySkin(skinIndex);
-    //     else
-    //     {
-    //         SkinManager.instance.SetSkinId(skinIndex);
-    //         mainMenuUI.SwitchUI(levelSelectionUI.gameObject);
-    //     }
+    public void SelectSkin()
+    {
+        // if (skinList[skinIndex].unlocked == false)
+        //     BuySkin(skinIndex);
+        // else
+        // {
+        SkinManager.instance.SetSkinId(skinIndex);
+        //     mainMenuUI.SwitchUI(levelSelectionUI.gameObject);
+        // }
 
 
-    //     UpdateSkinDisplay();
-    // }
+        // UpdateSkinDisplay();
+    }
 
-    // public void NextSkin()
-    // {
-    //     skinIndex++;
+    public void NextSkin()
+    {
+        skinIndex++;
 
-    //     if (skinIndex > maxIndex)
-    //         skinIndex = 0;
+        if (skinIndex > maxIndex)
+            skinIndex = 0;
 
-    //     UpdateSkinDisplay();
-    // }
+        UpdateSkinDisplay();
+    }
 
-    // public void PreviousSkin()
-    // {
-    //     skinIndex--;
+    public void PreviousSkin()
+    {
+        skinIndex--;
 
-    //     if (skinIndex < 0)
-    //         skinIndex = maxIndex;
+        if (skinIndex < 0)
+            skinIndex = maxIndex;
 
-    //     UpdateSkinDisplay();
-    // }
+        UpdateSkinDisplay();
+    }
 
-    // private void UpdateSkinDisplay()
-    // {
-    //     bankText.text = "Bank: " + FruitsInBank();
+    private void UpdateSkinDisplay()
+    {
+        // bankText.text = "Bank: " + FruitsInBank();
 
-    //     for (int i = 0; i < skinDisplay.layerCount; i++)
-    //     {
-    //         skinDisplay.SetLayerWeight(i, 0);
-    //     }
+        for (int i = 0; i < skinDisplay.layerCount; i++)
+        {
+            skinDisplay.SetLayerWeight(i, 0);
+        }
 
-    //     skinDisplay.SetLayerWeight(skinIndex, 1);
+        skinDisplay.SetLayerWeight(skinIndex, 1);
 
 
-    //     if (skinList[skinIndex].unlocked)
-    //     {
-    //         priceText.transform.parent.gameObject.SetActive(false);
-    //         buySelectText.text = "Select";
-    //     }
-    //     else
-    //     {
-    //         priceText.transform.parent.gameObject.SetActive(true);
-    //         priceText.text = "Price: " + skinList[skinIndex].skinPrice;
-    //         buySelectText.text = "Buy";
+        // if (skinList[skinIndex].unlocked)
+        // {
+        //     priceText.transform.parent.gameObject.SetActive(false);
+        //     buySelectText.text = "Select";
+        // }
+        // else
+        // {
+        //     priceText.transform.parent.gameObject.SetActive(true);
+        //     priceText.text = "Price: " + skinList[skinIndex].skinPrice;
+        //     buySelectText.text = "Buy";
 
-    //     }
-
-    // }
+        // }
+    }
 
     // private void BuySkin(int index)
     // {
