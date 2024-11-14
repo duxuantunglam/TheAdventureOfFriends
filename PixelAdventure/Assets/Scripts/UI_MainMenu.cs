@@ -4,9 +4,7 @@ using UnityEngine.SceneManagement;
 public class UI_MainMenu : MonoBehaviour
 {
     private UI_FadeEffect fadeEffect;
-    // public string FirstLevelName;
-    public string sceneName;
-
+    public string FirstLevelName;
 
     [SerializeField] private GameObject[] uiElements;
 
@@ -41,7 +39,7 @@ public class UI_MainMenu : MonoBehaviour
     }
 
     // private void LoadLevelScene() => SceneManager.LoadScene(FirstLevelName);
-    private void LoadLevelScene() => SceneManager.LoadScene(sceneName);
+    private void LoadLevelScene() => SceneManager.LoadScene(FirstLevelName);
 
     // private bool HasLevelProgression()
     // {

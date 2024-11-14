@@ -8,6 +8,13 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager instance;
 
+    // private UI_InGame inGameUI;
+
+    [Header("Level Management")]
+    // [SerializeField] private float levelTimer;
+    [SerializeField] private int currentLevelIndex;
+    // private int nextLevelIndex;
+
     [Header("Player")]
     [SerializeField] private GameObject playerPrefab;
     [SerializeField] private Transform respawnPoint;
@@ -35,6 +42,7 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
+        currentLevelIndex = SceneManager.GetActiveScene().buildIndex;
         CollectFruitInfo();
     }
 
@@ -81,8 +89,7 @@ public class GameManager : MonoBehaviour
         // SaveBestTime();
         // SaveFruitsInfo();
 
-        // LoadNextScene();
-        UI_InGame.instance.fadeEffect.ScreenFade(1, .75f, LoadTheEndScene);
+        LoadNextScene();
     }
 
     // private void SaveFruitsInfo()
@@ -117,24 +124,25 @@ public class GameManager : MonoBehaviour
 
     // private void LoadCurrentScene() => SceneManager.LoadScene("Level_" + currentLevelIndex);
     // private void LoadTheEndScene() => SceneManager.LoadScene("TheEnd");
-    // private void LoadNextLevel()
-    // {
-    //     SceneManager.LoadScene("Level_" + nextLevelIndex);
-    // }
-    // private void LoadNextScene()
-    // {
-    //     UI_FadeEffect fadeEffect = UI_InGame.instance.fadeEffect;
+    private void LoadNextLevel()
+    {
+        int nextLevelIndex = currentLevelIndex + 1;
+        SceneManager.LoadScene("Level_" + nextLevelIndex);
+    }
+    private void LoadNextScene()
+    {
+        UI_FadeEffect fadeEffect = UI_InGame.instance.fadeEffect;
 
-    //     if (NoMoreLevels())
-    //         fadeEffect.ScreenFade(1, 1.5f, LoadTheEndScene);
-    //     else
-    //         fadeEffect.ScreenFade(1, 1.5f, LoadNextLevel);
-    // }
-    // private bool NoMoreLevels()
-    // {
-    //     int lastLevelIndex = SceneManager.sceneCountInBuildSettings - 2; // We have main menu and The End scene, that's why we use number 2
-    //     bool noMoreLevels = currentLevelIndex == lastLevelIndex;
+        if (NoMoreLevels())
+            fadeEffect.ScreenFade(1, 1.5f, LoadTheEndScene);
+        else
+            fadeEffect.ScreenFade(1, 1.5f, LoadNextLevel);
+    }
+    private bool NoMoreLevels()
+    {
+        int lastLevelIndex = SceneManager.sceneCountInBuildSettings - 2; // We have main menu and The End scene, that's why we use number 2
+        bool noMoreLevels = currentLevelIndex == lastLevelIndex;
 
-    //     return noMoreLevels;
-    // }
+        return noMoreLevels;
+    }
 }
