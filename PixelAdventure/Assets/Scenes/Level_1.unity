@@ -16295,9 +16295,29 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1133633365940412519, guid: 2942c3bb340caed4882ce33b3969725b, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4920630329960274640, guid: 2942c3bb340caed4882ce33b3969725b, type: 3}
       propertyPath: m_Name
       value: UI_InGame
+      objectReference: {fileID: 0}
+    - target: {fileID: 5807955680012366034, guid: 2942c3bb340caed4882ce33b3969725b, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 1824.9795
+      objectReference: {fileID: 0}
+    - target: {fileID: 5807955680012366034, guid: 2942c3bb340caed4882ce33b3969725b, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 985.3502
+      objectReference: {fileID: 0}
+    - target: {fileID: 5807955680012366034, guid: 2942c3bb340caed4882ce33b3969725b, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: -0.00009918213
+      objectReference: {fileID: 0}
+    - target: {fileID: 5807955680012366034, guid: 2942c3bb340caed4882ce33b3969725b, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -3.4694
       objectReference: {fileID: 0}
     - target: {fileID: 7853948680138742161, guid: 2942c3bb340caed4882ce33b3969725b, type: 3}
       propertyPath: m_Pivot.x

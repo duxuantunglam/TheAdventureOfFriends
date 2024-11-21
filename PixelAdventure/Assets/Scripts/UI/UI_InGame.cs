@@ -10,8 +10,8 @@ public class UI_InGame : MonoBehaviour
     [SerializeField] private TextMeshProUGUI timerText;
     [SerializeField] private TextMeshProUGUI fruitText;
 
-    // [SerializeField] private GameObject pauseUI;
-    // private bool isPaused;
+    [SerializeField] private GameObject pauseUI;
+    private bool isPaused;
 
     private void Awake()
     {
@@ -25,32 +25,32 @@ public class UI_InGame : MonoBehaviour
         fadeEffect.ScreenFade(0, 1);
     }
 
-    // private void Update()
-    // {
-    //     if (Input.GetKeyDown(KeyCode.P))
-    //         PauseButton();
-    // }
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.P))
+            PauseButton();
+    }
 
-    // public void PauseButton()
-    // {
-    //     if (isPaused)
-    //     {
-    //         isPaused = false;
-    //         Time.timeScale = 1;
-    //         pauseUI.SetActive(false);
-    //     }
-    //     else
-    //     {
-    //         isPaused = true;
-    //         Time.timeScale = 0;
-    //         pauseUI.SetActive(true);
-    //     }
-    // }
+    public void PauseButton()
+    {
+        if (isPaused)
+        {
+            isPaused = false;
+            Time.timeScale = 1;
+            pauseUI.SetActive(false);
+        }
+        else
+        {
+            isPaused = true;
+            Time.timeScale = 0;
+            pauseUI.SetActive(true);
+        }
+    }
 
-    // public void GoToMainMenuButton()
-    // {
-    //     SceneManager.LoadScene(0);
-    // }
+    public void GoToMainMenuButton()
+    {
+        SceneManager.LoadScene(0);
+    }
 
     public void UpdateFruitUI(int collectedFruit, int totalFruit)
     {
