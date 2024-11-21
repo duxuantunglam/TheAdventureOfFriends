@@ -59,6 +59,7 @@
   "dotnet.defaultSolution": "PixelAdventure.sln",
   "cSpell.words": [
     "Behaviour",
+    "Dont",
     "knockback",
     "Mathf",
     "paratemtrs",
