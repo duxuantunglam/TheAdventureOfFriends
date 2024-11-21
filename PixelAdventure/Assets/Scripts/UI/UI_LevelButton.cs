@@ -6,8 +6,8 @@ public class UI_LevelButton : MonoBehaviour
 {
     [SerializeField] private TextMeshProUGUI levelNumberText;
 
-    // [SerializeField] private TextMeshProUGUI bestTimeText;
-    // [SerializeField] private TextMeshProUGUI fruitsText;
+    [SerializeField] private TextMeshProUGUI bestTimeText;
+    [SerializeField] private TextMeshProUGUI fruitText;
 
     private int levelIndex;
     private string sceneName;
@@ -19,8 +19,8 @@ public class UI_LevelButton : MonoBehaviour
         levelNumberText.text = "Level " + levelIndex;
         sceneName = "Level_" + levelIndex;
 
-        // bestTimeText.text = TimerInfoText();
-        // fruitsText.text = FruitsInfoText();
+        bestTimeText.text = TimerInfoText();
+        fruitText.text = FruitInfoText();
     }
 
     public void LoadLevel()
@@ -30,22 +30,21 @@ public class UI_LevelButton : MonoBehaviour
         SceneManager.LoadScene(sceneName);
     }
 
-    // private string FruitsInfoText()
-    // {
-    //     int totalFruits = PlayerPrefs.GetInt("Level" + levelIndex + "TotalFruits",0);
-    //     string totalFruitsText = totalFruits == 0 ? "?" : totalFruits.ToString();
+    private string FruitInfoText()
+    {
+        int totalFruit = PlayerPrefs.GetInt("Level" + levelIndex + "TotalFruit", 0);
+        string totalFruitText = totalFruit == 0 ? "?" : totalFruit.ToString();
 
-    //     int fruitsCollected = PlayerPrefs.GetInt("Level" + levelIndex + "FruitsCollected");
+        int fruitCollected = PlayerPrefs.GetInt("Level" + levelIndex + "FruitCollected");
 
-    //     return "Fruits: " + fruitsCollected + " / " + totalFruitsText;
+        return "Fruit: " + fruitCollected + " / " + totalFruitText;
 
-    // }
+    }
 
-    // private string TimerInfoText()
-    // {
-    //     float timerValue = PlayerPrefs.GetFloat("Level" + levelIndex + "BestTime", 99);
+    private string TimerInfoText()
+    {
+        float timerValue = PlayerPrefs.GetFloat("Level" + levelIndex + "BestTime", 99);
 
-    //     return "Best Time: " + timerValue.ToString("00");
-
-    // }
+        return "Best Time: " + timerValue.ToString("00");
+    }
 }
