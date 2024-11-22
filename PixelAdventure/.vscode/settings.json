@@ -59,6 +59,7 @@
   "dotnet.defaultSolution": "PixelAdventure.sln",
   "cSpell.words": [
     "Behaviour",
+    "Cinemachine",
     "Dont",
     "knockback",
     "Mathf",
