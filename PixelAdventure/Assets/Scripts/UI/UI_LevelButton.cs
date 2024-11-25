@@ -25,6 +25,8 @@ public class UI_LevelButton : MonoBehaviour
 
     public void LoadLevel()
     {
+        AudioManager.instance.PlaySFX(4);
+
         int difficultyIndex = ((int)DifficultyManager.instance.difficulty);
         PlayerPrefs.SetInt("GameDifficulty", difficultyIndex);
         SceneManager.LoadScene(sceneName);
