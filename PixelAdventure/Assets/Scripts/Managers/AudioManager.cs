@@ -54,11 +54,11 @@ public class AudioManager : MonoBehaviour
         bgm[bgmToPlay].Play();
     }
 
-    public void PlaySFX(int sfxToPlay, bool randomPicth = true)
+    public void PlaySFX(int sfxToPlay, bool randomPitch = true)
     {
         if (sfxToPlay >= sfx.Length)
             return;
-        if (randomPicth)
+        if (randomPitch)
             sfx[sfxToPlay].pitch = Random.Range(.9f, 1.1f);
 
 

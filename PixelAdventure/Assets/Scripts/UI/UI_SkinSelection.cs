@@ -113,10 +113,12 @@ public class UI_SkinSelection : MonoBehaviour
     {
         if (HaveEnoughFruits(skinList[index].skinPrice) == false)
         {
+            AudioManager.instance.PlaySFX(6);
             Debug.Log("Not enough fruits");
             return;
         }
 
+        AudioManager.instance.PlaySFX(10);
         string skinName = skinList[skinIndex].skinName;
         skinList[skinIndex].unlocked = true;
 

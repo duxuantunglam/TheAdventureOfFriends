@@ -4,7 +4,7 @@ using Unity.Mathematics;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-public enum FruitType {Apple, Banana, Cherry, Kiwi, Melon, Orange, Pineapple, Strawberry}
+public enum FruitType { Apple, Banana, Cherry, Kiwi, Melon, Orange, Pineapple, Strawberry }
 
 public class Fruit : MonoBehaviour
 {
@@ -46,6 +46,7 @@ public class Fruit : MonoBehaviour
         if (player != null)
         {
             gameManager.AddFruit();
+            AudioManager.instance.PlaySFX(8);
             Destroy(gameObject);
 
             GameObject newFx = Instantiate(pickupVFX, transform.position, Quaternion.identity);
