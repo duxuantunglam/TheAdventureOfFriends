@@ -9,7 +9,7 @@ public class Trap_Arrow : Trap_Trampoline
     [SerializeField] private bool rotationRight;
     [SerializeField] private float rotationSpeed = 120;
     private int direction = -1;
-    
+
     [Space]
     [SerializeField] private float scaleUpSpeed = 10;
     [SerializeField] private Vector3 targetScale;
@@ -18,7 +18,6 @@ public class Trap_Arrow : Trap_Trampoline
     {
         transform.localScale = new Vector3(.3f, .3f, .3f);
     }
-
 
     private void Update()
     {
@@ -40,8 +39,8 @@ public class Trap_Arrow : Trap_Trampoline
 
     private void DestroyMe()
     {
-        GameObject arrowPrefab = GameManager.instance.arrowPrefab;
-        GameManager.instance.CreateObject(arrowPrefab, transform, cooldown);
+        GameObject arrowPrefab = ObjectCreator.instance.arrowPrefab;
+        ObjectCreator.instance.CreateObject(arrowPrefab, transform, false, cooldown);
 
         Destroy(gameObject);
     }

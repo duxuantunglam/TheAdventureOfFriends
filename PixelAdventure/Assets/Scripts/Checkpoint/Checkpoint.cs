@@ -23,9 +23,9 @@ public class Checkpoint : MonoBehaviour
     {
         if (active && canBeReactive == false)
             return;
-        
+
         Player player = collision.GetComponent<Player>();
-        
+
         if (player != null)
             ActivateCheckpoint();
     }
@@ -34,6 +34,6 @@ public class Checkpoint : MonoBehaviour
     {
         active = true;
         anim.SetTrigger("activate");
-        GameManager.instance.UpdateRespawnPosition(transform);
+        PlayerManager.instance.UpdateRespawnPosition(transform);
     }
 }
