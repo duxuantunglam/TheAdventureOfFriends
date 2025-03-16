@@ -236,6 +236,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f84e1f635d9130d4eb7e38c99e325ae4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  fruitDrop: {fileID: 4639058309544246458, guid: e5b9eb4ce3029b74bb47da3ec6a986a0, type: 3}
   gameDifficulty: 0
   moveSpeed: 8
   jumpForce: 14
@@ -303,6 +304,38 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 5948088250211134170}
     m_Modifications:
+    - target: {fileID: 4029894142044975567, guid: 0eb5e7084e8ad1d4f98d79648fd56edb, type: 3}
+      propertyPath: moveWithTransform
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4029894142044975567, guid: 0eb5e7084e8ad1d4f98d79648fd56edb, type: 3}
+      propertyPath: CollisionModule.type
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4029894142044975567, guid: 0eb5e7084e8ad1d4f98d79648fd56edb, type: 3}
+      propertyPath: CollisionModule.enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4029894142044975567, guid: 0eb5e7084e8ad1d4f98d79648fd56edb, type: 3}
+      propertyPath: VelocityModule.inWorldSpace
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4029894142044975567, guid: 0eb5e7084e8ad1d4f98d79648fd56edb, type: 3}
+      propertyPath: CollisionModule.collisionMode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4029894142044975567, guid: 0eb5e7084e8ad1d4f98d79648fd56edb, type: 3}
+      propertyPath: InitialModule.startSize.scalar
+      value: 0.75
+      objectReference: {fileID: 0}
+    - target: {fileID: 4029894142044975567, guid: 0eb5e7084e8ad1d4f98d79648fd56edb, type: 3}
+      propertyPath: CollisionModule.m_Bounce.scalar
+      value: 0.75
+      objectReference: {fileID: 0}
+    - target: {fileID: 4029894142044975567, guid: 0eb5e7084e8ad1d4f98d79648fd56edb, type: 3}
+      propertyPath: InitialModule.startLifetime.scalar
+      value: 0.7
+      objectReference: {fileID: 0}
     - target: {fileID: 5112409956621613150, guid: 0eb5e7084e8ad1d4f98d79648fd56edb, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0.09

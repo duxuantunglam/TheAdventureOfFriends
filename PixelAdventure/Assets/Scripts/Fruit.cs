@@ -12,14 +12,16 @@ public class Fruit : MonoBehaviour
     [SerializeField] private GameObject pickupVFX;
 
     private GameManager gameManager;
-    private Animator anim;
+    protected Animator anim;
+    protected SpriteRenderer sr;
 
     private void Awake()
     {
         anim = GetComponentInChildren<Animator>();
+        sr = GetComponentInChildren<SpriteRenderer>();
     }
 
-    private void Start()
+    protected virtual void Start()
     {
         gameManager = GameManager.instance;
 
@@ -39,7 +41,7 @@ public class Fruit : MonoBehaviour
 
     private void UpdateFruitVisuals() => anim.SetFloat("fruitIndex", (int)fruitType);
 
-    private void OnTriggerEnter2D(Collider2D collision)
+    protected virtual void OnTriggerEnter2D(Collider2D collision)
     {
         Player player = collision.GetComponent<Player>();
 
