@@ -46,5 +46,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playerPrefab: {fileID: 4404046186474289309, guid: c71bcb11b2f956f4ab099c7f71623a79, type: 3}
   respawnPoint: {fileID: 0}
-  respawnDelay: 0
+  respawnDelay: 1.5
   player: {fileID: 0}
