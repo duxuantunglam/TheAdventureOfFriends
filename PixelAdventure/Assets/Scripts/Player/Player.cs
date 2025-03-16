@@ -58,6 +58,7 @@ public class Player : MonoBehaviour
     [Header("Player Visuals")]
     [SerializeField] private AnimatorOverrideController[] animators;
     [SerializeField] private GameObject deathVFX;
+    [SerializeField] private ParticleSystem dustFx;
     [SerializeField] private int skinID;
 
     private void Awake()
@@ -225,6 +226,8 @@ public class Player : MonoBehaviour
 
     private void HandleLanding()
     {
+        dustFx.Play();
+
         isAirBorne = false;
         canDoubleJump = true;
 
@@ -280,12 +283,14 @@ public class Player : MonoBehaviour
 
     private void Jump()
     {
+        dustFx.Play();
         AudioManager.instance.PlaySFX(3);
         rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
     }
 
     private void DoubleJump()
     {
+        dustFx.Play();
         AudioManager.instance.PlaySFX(3);
         isWallJumping = false;
         canDoubleJump = false;
@@ -294,6 +299,7 @@ public class Player : MonoBehaviour
 
     private void WallJump()
     {
+        dustFx.Play();
         AudioManager.instance.PlaySFX(12);
 
         canDoubleJump = true;
