@@ -1,5 +1,7 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Cinemachine;
 using UnityEngine;
 
 public class Enemy_Rino : Enemy
@@ -9,9 +11,11 @@ public class Enemy_Rino : Enemy
     [SerializeField] private float speedUpRate = .6f;
     private float defaultSpeed;
     [SerializeField] private Vector2 impactPower;
-    [SerializeField] private float detectionRange;
-    private bool playerDetected;
 
+    [Header("Effects")]
+    [SerializeField] private ParticleSystem dustFx;
+    [SerializeField] private Vector2 cameraImpulseDir;
+    private CinemachineImpulseSource impulseSource;
 
     protected override void Start()
     {
@@ -19,6 +23,7 @@ public class Enemy_Rino : Enemy
 
         canMove = false;
         defaultSpeed = moveSpeed;
+        impulseSource = GetComponent<CinemachineImpulseSource>();
     }
 
     protected override void Update()
@@ -29,6 +34,13 @@ public class Enemy_Rino : Enemy
         HandleCollision();
 
         HandleCharge();
+    }
+
+    private void HitWallImpact()
+    {
+        dustFx.Play();
+        impulseSource.DefaultVelocity = new Vector2(cameraImpulseDir.x * facingDir, cameraImpulseDir.y);
+        impulseSource.GenerateImpulse();
     }
 
     private void HandleCharge()
@@ -66,7 +78,10 @@ public class Enemy_Rino : Enemy
     private void WallHit()
     {
         canMove = false;
+
+        HitWallImpact();
         SpeedReset();
+
         anim.SetBool("hitWall", true);
         rb.linearVelocity = new Vector2(impactPower.x * -facingDir, impactPower.y);
     }
@@ -86,16 +101,7 @@ public class Enemy_Rino : Enemy
     {
         base.HandleCollision();
 
-        playerDetected = Physics2D.Raycast(transform.position, Vector2.right * facingDir, detectionRange, whatIsPlayer);
-
-        if (playerDetected)
+        if (isPlayerDetected && isGrounded)
             canMove = true;
-    }
-
-    protected override void OnDrawGizmos()
-    {
-        base.OnDrawGizmos();
-
-        Gizmos.DrawLine(transform.position, new Vector2(transform.position.x + (detectionRange * facingDir), transform.position.y));
     }
 }
