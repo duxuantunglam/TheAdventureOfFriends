@@ -31,6 +31,10 @@ public class GameManager : MonoBehaviour
     [SerializeField] private DifficultyManager difficultyManager;
     [SerializeField] private ObjectCreator objectCreator;
 
+    [Header("PlayerStats")]
+    public float bestTimeStat;
+    public int bestFruitCollectedStat;
+
     private void Awake()
     {
         if (instance == null)
@@ -134,6 +138,8 @@ public class GameManager : MonoBehaviour
 
         int totalFruitInBank = PlayerPrefs.GetInt("TotalFruitAmount");
         PlayerPrefs.SetInt("TotalFruitAmount", totalFruitInBank + fruitCollected);
+
+        bestFruitCollectedStat = fruitCollectedBefore;
     }
 
     private void SaveBestTime()
@@ -142,6 +148,8 @@ public class GameManager : MonoBehaviour
 
         if (levelTimer < lastTime)
             PlayerPrefs.SetFloat("Level" + currentLevelIndex + "BestTime", levelTimer);
+
+        bestTimeStat = levelTimer;
     }
     private void SaveLevelProgression()
     {
