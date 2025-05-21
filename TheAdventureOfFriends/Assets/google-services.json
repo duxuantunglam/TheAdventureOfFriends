@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "43294133575",
+    "project_id": "theadventureoffriends",
+    "storage_bucket": "theadventureoffriends.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:43294133575:android:036d7ee66ae0ab14aa1062",
+        "android_client_info": {
+          "package_name": "com.dxtl.taof"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBoYUj5EzcGpkvfML5N9PqwabN6MwFJS58"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
