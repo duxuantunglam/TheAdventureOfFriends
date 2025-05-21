@@ -4,11 +4,11 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Firebase;
 using Firebase.Auth;
+using Firebase.Database;
 using Firebase.Extensions;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-
 public class Authentication : MonoBehaviour
 {
     public static Authentication instance { get; private set; }
@@ -21,10 +21,12 @@ public class Authentication : MonoBehaviour
 
     public Toggle rememberMe;
 
-    Firebase.Auth.FirebaseAuth auth;
-    Firebase.Auth.FirebaseUser user;
+    FirebaseAuth auth;
+    FirebaseUser user;
 
     bool isSignIn = false;
+
+    DatabaseReference dbReference;
 
     private void Start()
     {
@@ -48,99 +50,6 @@ public class Authentication : MonoBehaviour
         });
     }
 
-    [SerializeField] private GameObject multiplayerInterface;
-    [SerializeField] private GameObject grid;
-    [SerializeField] private GameObject menuCharacter;
-    [SerializeField] private GameObject gameModeUI;
-
-    public void MultiplayerButtonClicked()
-    {
-        if (grid != null)
-        {
-            grid.SetActive(false);
-        }
-        else
-        {
-            Debug.LogWarning("Grid object not found!");
-        }
-
-        if (menuCharacter != null)
-        {
-            menuCharacter.SetActive(false);
-        }
-        else
-        {
-            Debug.LogWarning("MenuCharacter object not found!");
-        }
-
-        if (gameModeUI != null)
-        {
-            gameModeUI.SetActive(false);
-        }
-        else
-        {
-            Debug.LogWarning("GameModeUI object not found!");
-        }
-
-        if (multiplayerInterface != null)
-        {
-            multiplayerInterface.SetActive(true);
-        }
-        else
-        {
-            Debug.LogWarning("MultiplayerInterface object not found!");
-        }
-
-        if (!isSignIn)
-        {
-            loginPanel.SetActive(true);
-        }
-        else
-        {
-            grid.SetActive(true);
-            menuCharacter.SetActive(true);
-        }
-    }
-
-    public void BackButtonClicked()
-    {
-        if (multiplayerInterface != null)
-        {
-            multiplayerInterface.SetActive(false);
-        }
-        else
-        {
-            Debug.LogWarning("MultiplayerInterface object not found!");
-        }
-
-        if (grid != null)
-        {
-            grid.SetActive(true);
-        }
-        else
-        {
-            Debug.LogWarning("Grid object not found!");
-        }
-
-        if (menuCharacter != null)
-        {
-            menuCharacter.SetActive(true);
-        }
-        else
-        {
-            Debug.LogWarning("MenuCharacter object not found!");
-        }
-
-        if (gameModeUI != null)
-        {
-            gameModeUI.SetActive(true);
-        }
-        else
-        {
-            Debug.LogWarning("GameModeUI object not found!");
-        }
-    }
-
     public void OpenPanel(string panelName)
     {
         loginPanel.SetActive(false);
@@ -160,23 +69,6 @@ public class Authentication : MonoBehaviour
 
             case "Profile":
                 profilePanel.SetActive(true);
-                if (grid != null)
-                {
-                    grid.SetActive(true);
-                }
-                else
-                {
-                    Debug.LogWarning("Grid object not found!");
-                }
-
-                if (menuCharacter != null)
-                {
-                    menuCharacter.SetActive(true);
-                }
-                else
-                {
-                    Debug.LogWarning("MenuCharacter object not found!");
-                }
                 break;
 
             case "ForgetPassword":
@@ -276,6 +168,9 @@ public class Authentication : MonoBehaviour
                 result.User.DisplayName, result.User.UserId);
 
             UpdateUserProfile(userName);
+
+            // Lưu thông tin người dùng vào Realtime Database
+            SaveUserDataToRealtimeDatabase(result.User);
         });
     }
 
@@ -311,6 +206,9 @@ public class Authentication : MonoBehaviour
 
             profileUserNameText.text = "" + result.User.DisplayName;
             OpenPanel("Profile");
+
+            // Lưu thông tin người dùng vào Realtime Database
+            SaveUserDataToRealtimeDatabase(result.User);
         });
     }
 
@@ -319,6 +217,8 @@ public class Authentication : MonoBehaviour
         auth = Firebase.Auth.FirebaseAuth.DefaultInstance;
 
         FirebaseApp.DefaultInstance.Options.DatabaseUrl = new Uri("https://pixeladventureonline-default-rtdb.asia-southeast1.firebasedatabase.app/");
+
+        dbReference = FirebaseDatabase.DefaultInstance.RootReference;
 
         auth.StateChanged += AuthStateChanged;
         AuthStateChanged(this, null);
@@ -449,5 +349,37 @@ public class Authentication : MonoBehaviour
 
             showNotificationMessage("Alert", "Successfully send email for reset password!");
         });
+    }
+
+    private void SaveUserDataToRealtimeDatabase(FirebaseUser firebaseUser)
+    {
+        if (firebaseUser == null)
+        {
+            Debug.LogWarning("FirebaseUser is null. Cannot save user data to Realtime Database.");
+            return;
+        }
+
+        // Tạo đối tượng dữ liệu người chơi
+        var userData = new
+        {
+            userName = firebaseUser.DisplayName,
+            id = firebaseUser.UserId
+        };
+
+        // Chuyển đổi đối tượng thành JSON và lưu vào Realtime Database dưới node users/USER_ID
+        string json = JsonUtility.ToJson(userData);
+
+        dbReference.Child("users").Child(firebaseUser.UserId).SetRawJsonValueAsync(json)
+            .ContinueWithOnMainThread(task =>
+            {
+                if (task.IsFaulted)
+                {
+                    Debug.LogError("Could not save user data to Realtime Database: " + task.Exception);
+                }
+                else if (task.IsCompleted)
+                {
+                    Debug.Log("User data saved successfully to Realtime Database.");
+                }
+            });
     }
 }
