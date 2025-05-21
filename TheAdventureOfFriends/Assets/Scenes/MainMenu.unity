@@ -573,8 +573,9 @@ MonoBehaviour:
   FirstLevelName: Level_1
   uiElements:
   - {fileID: 278040216}
-  - {fileID: 243704468}
   - {fileID: 1549618528}
+  - {fileID: 114847734}
+  - {fileID: 243704468}
   - {fileID: 1204032490}
   continueButton: {fileID: 1297208184}
   menuCharacter: {fileID: 1867772012}
