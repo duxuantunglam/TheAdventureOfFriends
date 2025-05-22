@@ -21,7 +21,24 @@ public class UI_HighScores : MonoBehaviour
         knockBacks.text = "KnockBacks: ";
     }
 
-    private int TotalFruitCollected() => PlayerPrefs.GetInt("TotalFruitAmount", 0);
+    private int TotalFruitCollected()
+    {
+        if (Authentication.CurrentUser == null)
+        {
+            Debug.LogWarning("Authentication.CurrentUser is null. Cannot get total fruits.");
+            return 0;
+        }
 
-    private float AverageTime() => PlayerPrefs.GetFloat("AverageTime", 0);
+        return Authentication.CurrentUser.totalFruitAmount;
+    }
+
+    private float AverageTime()
+    {
+        if (Authentication.CurrentUser == null)
+        {
+            Debug.LogWarning("Authentication.CurrentUser is null. Cannot get average time.");
+            return 0f;
+        }
+        return Authentication.CurrentUser.averageTime;
+    }
 }

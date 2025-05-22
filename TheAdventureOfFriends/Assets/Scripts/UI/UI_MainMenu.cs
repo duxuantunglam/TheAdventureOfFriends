@@ -59,20 +59,24 @@ public class UI_MainMenu : MonoBehaviour
 
     private bool HasLevelProgression()
     {
-        bool hasLevelProgression = PlayerPrefs.GetInt("ContinueLevelNumber", 0) > 0;
+        bool hasLevelProgression = Authentication.CurrentUser != null && Authentication.CurrentUser.continueLevelNumber > 0;
 
         return hasLevelProgression;
     }
 
     public void ContinueGame()
     {
-        int difficultyIndex = PlayerPrefs.GetInt("GameDifficulty", 1);
-        int levelToLoad = PlayerPrefs.GetInt("ContinueLevelNumber", 0);
-        int lastSavedSkin = PlayerPrefs.GetInt("LastUsedSkin");
+        if (Authentication.CurrentUser == null)
+        {
+            Debug.LogWarning("Cannot continue game: CurrentUser is null.");
+            return;
+        }
+
+        int levelToLoad = Authentication.CurrentUser.continueLevelNumber;
+        int lastSavedSkin = Authentication.CurrentUser.lastUsedSkin;
 
         SkinManager.instance.SetSkinId(lastSavedSkin);
 
-        DifficultyManager.instance.LoadDifficulty(difficultyIndex);
         SceneManager.LoadScene("Level_" + levelToLoad);
 
         AudioManager.instance.PlaySFX(4);

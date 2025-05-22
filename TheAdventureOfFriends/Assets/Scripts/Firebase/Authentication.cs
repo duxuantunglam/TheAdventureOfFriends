@@ -402,17 +402,4 @@ public class Authentication : MonoBehaviour
             }
         });
     }
-
-    private void OnApplicationPause(bool pauseStatus)
-    {
-        if (pauseStatus)
-        {
-            SaveUserDataToRealtimeDatabase();
-        }
-    }
-
-    private void OnApplicationQuit()
-    {
-        SaveUserDataToRealtimeDatabase();
-    }
 }

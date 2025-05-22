@@ -16,9 +16,10 @@ public class UI_LevelSelection : MonoBehaviour
 
     private void CreateLevelButtons()
     {
-        int levelsAmount = SceneManager.sceneCountInBuildSettings - 1;
+        int lastLevelIndex = SceneManager.sceneCountInBuildSettings - 3;
+        lastLevelIndex = Mathf.Max(1, lastLevelIndex);
 
-        for (int i = 1; i < levelsAmount; i++)
+        for (int i = 1; i <= lastLevelIndex; i++)
         {
             if (IsLevelUnlocked(i) == false)
                 return;
@@ -32,18 +33,34 @@ public class UI_LevelSelection : MonoBehaviour
 
     private void LoadLevelsInfo()
     {
-        int levelsAmount = SceneManager.sceneCountInBuildSettings - 1;
+        int lastLevelIndex = SceneManager.sceneCountInBuildSettings - 3;
 
-        levelsUnlocked = new bool[levelsAmount];
+        lastLevelIndex = Mathf.Max(1, lastLevelIndex);
 
-        for (int i = 1; i < levelsAmount; i++)
-        {
-            bool levelUnlocked = PlayerPrefs.GetInt("Level" + i + "Unlocked", 0) == 1;
-
-            if (levelUnlocked)
-                levelsUnlocked[i] = true;
-        }
+        levelsUnlocked = new bool[lastLevelIndex + 1];
 
         levelsUnlocked[1] = true;
+
+        if (Authentication.CurrentUser == null || Authentication.CurrentUser.levelProgress == null)
+        {
+            Debug.LogWarning("Authentication.CurrentUser or levelProgress is null. Loading only Level 1.");
+            return;
+        }
+
+        for (int i = 2; i <= lastLevelIndex; i++)
+        {
+            string levelKey = "Level" + i;
+
+            bool levelUnlockedFromFirebase = Authentication.CurrentUser.levelProgress.ContainsKey(levelKey) && Authentication.CurrentUser.levelProgress[levelKey].unlocked;
+
+            if (levelUnlockedFromFirebase)
+            {
+                levelsUnlocked[i] = true;
+            }
+            else
+            {
+                levelsUnlocked[i] = false;
+            }
+        }
     }
 }

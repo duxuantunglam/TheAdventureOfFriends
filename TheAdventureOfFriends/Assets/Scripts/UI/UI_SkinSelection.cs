@@ -4,7 +4,6 @@ using UnityEngine;
 [System.Serializable]
 public struct Skin
 {
-    public string skinName;
     public int skinPrice;
     public bool unlocked;
 }
@@ -35,13 +34,24 @@ public class UI_SkinSelection : MonoBehaviour
 
     private void LoadSkinUnlocks()
     {
+        if (Authentication.CurrentUser == null || Authentication.CurrentUser.skinUnlockedName == null)
+        {
+            Debug.LogWarning("Authentication.CurrentUser or skinUnlockedName is null. Cannot load skin unlocks.");
+            for (int i = 0; i < skinList.Length; i++)
+            {
+                skinList[i].unlocked = (i == 0);
+            }
+            return;
+        }
+
         for (int i = 0; i < skinList.Length; i++)
         {
-            string skinName = skinList[i].skinName;
-            bool skinUnlocked = PlayerPrefs.GetInt(skinName + "Unlocked", 0) == 1;
+            bool skinUnlockedFromFirebase = Authentication.CurrentUser.skinUnlockedName.ContainsKey(i.ToString()) && Authentication.CurrentUser.skinUnlockedName[i.ToString()];
 
-            if (skinUnlocked || i == 0)
+            if (skinUnlockedFromFirebase || i == 0)
                 skinList[i].unlocked = true;
+            else
+                skinList[i].unlocked = false;
         }
     }
 
@@ -119,19 +129,60 @@ public class UI_SkinSelection : MonoBehaviour
         }
 
         AudioManager.instance.PlaySFX(10);
-        string skinName = skinList[skinIndex].skinName;
-        skinList[skinIndex].unlocked = true;
+        skinList[index].unlocked = true;
 
-        PlayerPrefs.SetInt(skinName + "Unlocked", 1);
+        if (Authentication.CurrentUser != null)
+        {
+            string skinKey = index.ToString();
+
+            if (!Authentication.CurrentUser.skinUnlockedName.ContainsKey(skinKey))
+            {
+                Authentication.CurrentUser.skinUnlockedName.Add(skinKey, true);
+            }
+            else
+            {
+                Authentication.CurrentUser.skinUnlockedName[skinKey] = true;
+            }
+
+            if (Authentication.instance != null)
+            {
+                Authentication.instance.SaveUserDataToRealtimeDatabase();
+            }
+        }
     }
 
-    private int FruitInBank() => PlayerPrefs.GetInt("TotalFruitAmount");
+    private int FruitInBank()
+    {
+        if (Authentication.CurrentUser == null)
+        {
+            Debug.LogWarning("Authentication.CurrentUser is null. Cannot get fruit in bank.");
+            return 0;
+        }
+
+        return Authentication.CurrentUser.totalFruitAmount;
+    }
 
     private bool HaveEnoughFruit(int price)
     {
-        if (FruitInBank() > price)
+        if (Authentication.CurrentUser == null)
         {
-            PlayerPrefs.SetInt("TotalFruitAmount", FruitInBank() - price);
+            Debug.LogWarning("Authentication.CurrentUser is null. Cannot check/subtract fruit.");
+            return false;
+        }
+
+        if (Authentication.CurrentUser.totalFruitAmount >= price)
+        {
+            Authentication.CurrentUser.totalFruitAmount -= price;
+
+            if (Authentication.instance != null)
+            {
+                Authentication.instance.SaveUserDataToRealtimeDatabase();
+            }
+            else
+            {
+                Debug.LogError("Authentication instance is null. Cannot save fruit amount to Firebase.");
+            }
+
             return true;
         }
         return false;

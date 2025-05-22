@@ -27,26 +27,41 @@ public class UI_LevelButton : MonoBehaviour
     {
         AudioManager.instance.PlaySFX(4);
 
-        int difficultyIndex = ((int)DifficultyManager.instance.difficulty);
-        PlayerPrefs.SetInt("GameDifficulty", difficultyIndex);
+        if (Authentication.CurrentUser == null)
+        {
+            Debug.LogWarning("Cannot load level: CurrentUser is null.");
+            return;
+        }
+
         SceneManager.LoadScene(sceneName);
     }
 
     private string FruitInfoText()
     {
-        int totalFruit = PlayerPrefs.GetInt("Level" + levelIndex + "TotalFruit", 0);
-        string totalFruitText = totalFruit == 0 ? "?" : totalFruit.ToString();
+        if (Authentication.CurrentUser == null || !Authentication.CurrentUser.levelProgress.ContainsKey(sceneName))
+        {
+            return "Fruit: ? / ?";
+        }
 
-        int fruitCollected = PlayerPrefs.GetInt("Level" + levelIndex + "FruitCollected");
+        int fruitCollected = Authentication.CurrentUser.levelProgress[sceneName].bestFruitCollected;
 
-        return "Fruit: " + fruitCollected + " / " + totalFruitText;
-
+        return "Fruit: " + fruitCollected + " / ?";
     }
 
     private string TimerInfoText()
     {
-        float timerValue = PlayerPrefs.GetFloat("Level" + levelIndex + "BestTime", 99);
+        if (Authentication.CurrentUser == null || !Authentication.CurrentUser.levelProgress.ContainsKey(sceneName))
+        {
+            return "Best Time: ?";
+        }
 
-        return "Best Time: " + timerValue.ToString("00");
+        float timerValue = Authentication.CurrentUser.levelProgress[sceneName].bestTime;
+
+        if (timerValue >= 999f)
+        {
+            return "Best Time: ?";
+        }
+
+        return "Best Time: " + timerValue.ToString("00:00");
     }
 }

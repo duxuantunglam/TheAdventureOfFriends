@@ -25,13 +25,13 @@ public class UserData
 
     public Dictionary<string, LevelStats> levelProgress = new Dictionary<string, LevelStats>();
 
-    public Dictionary<int, bool> skinUnlockedId = new Dictionary<int, bool>();
+    public Dictionary<string, bool> skinUnlockedName = new Dictionary<string, bool>();
 
     public UserData()
     {
         levelProgress["Level1"] = new LevelStats { unlocked = true };
 
-        skinUnlockedId[0] = true;
+        skinUnlockedName["0"] = true;
 
         averageTime = 0f;
         completedLevelCount = 0;
