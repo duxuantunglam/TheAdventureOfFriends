@@ -24,12 +24,21 @@ public class UserData
 
     public Dictionary<string, LevelStats> levelProgress = new Dictionary<string, LevelStats>();
 
-    public Dictionary<string, bool> skinUnlockedStatus = new Dictionary<string, bool>();
+    public Dictionary<int, bool> skinUnlockedId = new Dictionary<int, bool>();
 
     public UserData()
     {
         levelProgress["Level1"] = new LevelStats { unlocked = true };
 
-        skinUnlockedStatus["DefaultSkinName"] = true;
+        skinUnlockedId[0] = true;
+    }
+
+    public LevelStats GetLevelStats(string levelName)
+    {
+        if (!levelProgress.ContainsKey(levelName))
+        {
+            levelProgress[levelName] = new LevelStats();
+        }
+        return levelProgress[levelName];
     }
 }
