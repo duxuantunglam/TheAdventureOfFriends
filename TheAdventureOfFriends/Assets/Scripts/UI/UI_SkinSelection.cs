@@ -86,7 +86,7 @@ public class UI_SkinSelection : MonoBehaviour
 
     private void UpdateSkinDisplay()
     {
-        bankText.text = "Bank: " + FruitsInBank();
+        bankText.text = "Bank: " + FruitInBank();
 
         for (int i = 0; i < skinDisplay.layerCount; i++)
         {
@@ -111,10 +111,10 @@ public class UI_SkinSelection : MonoBehaviour
 
     private void BuySkin(int index)
     {
-        if (HaveEnoughFruits(skinList[index].skinPrice) == false)
+        if (HaveEnoughFruit(skinList[index].skinPrice) == false)
         {
             AudioManager.instance.PlaySFX(6);
-            Debug.Log("Not enough fruits");
+            Debug.Log("Not enough fruit");
             return;
         }
 
@@ -125,13 +125,13 @@ public class UI_SkinSelection : MonoBehaviour
         PlayerPrefs.SetInt(skinName + "Unlocked", 1);
     }
 
-    private int FruitsInBank() => PlayerPrefs.GetInt("TotalFruitsAmount");
+    private int FruitInBank() => PlayerPrefs.GetInt("TotalFruitAmount");
 
-    private bool HaveEnoughFruits(int price)
+    private bool HaveEnoughFruit(int price)
     {
-        if (FruitsInBank() > price)
+        if (FruitInBank() > price)
         {
-            PlayerPrefs.SetInt("TotalFruitsAmount", FruitsInBank() - price);
+            PlayerPrefs.SetInt("TotalFruitAmount", FruitInBank() - price);
             return true;
         }
         return false;

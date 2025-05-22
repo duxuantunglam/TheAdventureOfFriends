@@ -32,7 +32,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private ObjectCreator objectCreator;
 
     [Header("PlayerStats")]
-    public float bestTimeStat;
+    public float averageTimeStat;
     public int bestFruitCollectedStat;
 
     private void Awake()
@@ -50,6 +50,8 @@ public class GameManager : MonoBehaviour
         currentLevelIndex = SceneManager.GetActiveScene().buildIndex;
 
         nextLevelIndex = currentLevelIndex + 1;
+
+        levelTimer = 0;
 
         CollectFruitInfo();
         CreateManagersIfNeeded();
@@ -126,6 +128,8 @@ public class GameManager : MonoBehaviour
         SaveBestTime();
         SaveFruitInfo();
 
+        SaveAverageTime();
+
         LoadNextScene();
     }
 
@@ -148,9 +152,32 @@ public class GameManager : MonoBehaviour
 
         if (levelTimer < lastTime)
             PlayerPrefs.SetFloat("Level" + currentLevelIndex + "BestTime", levelTimer);
-
-        bestTimeStat = levelTimer;
     }
+
+    private void SaveAverageTime()
+    {
+        float averageTime = PlayerPrefs.GetFloat("AverageTime", 0);
+        int levelCount = PlayerPrefs.GetInt("LevelCount", 0);
+
+        if (levelCount == 0)
+            averageTime = levelTimer;
+        else
+            averageTime = ((averageTime * levelCount) + levelTimer) / (levelCount + 1);
+
+        PlayerPrefs.SetFloat("AverageTime", averageTime);
+        PlayerPrefs.SetInt("LevelCount", levelCount + 1);
+    }
+
+    private void SaveEnemiesKilled()
+    {
+
+    }
+
+    private void SaveKnockBacks()
+    {
+
+    }
+
     private void SaveLevelProgression()
     {
         PlayerPrefs.SetInt("Level" + nextLevelIndex + "Unlocked", 1);
@@ -188,7 +215,7 @@ public class GameManager : MonoBehaviour
     }
     private bool NoMoreLevels()
     {
-        int lastLevelIndex = SceneManager.sceneCountInBuildSettings - 2; // We have main menu and The End scene, that's why we use number 2
+        int lastLevelIndex = SceneManager.sceneCountInBuildSettings - 2; // 2 is MainMenu and TheEnd scene
         bool noMoreLevels = currentLevelIndex == lastLevelIndex;
 
         return noMoreLevels;

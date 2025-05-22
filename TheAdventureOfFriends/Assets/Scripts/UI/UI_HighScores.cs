@@ -1,16 +1,27 @@
+using TMPro;
 using UnityEngine;
 
 public class UI_HighScores : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    [SerializeField] private TextMeshProUGUI fruitTexts;
+    [SerializeField] private TextMeshProUGUI averageTime;
+    [SerializeField] private TextMeshProUGUI enemiesKilled;
+    [SerializeField] private TextMeshProUGUI knockBacks;
+
+    private void Start()
     {
-        
+        SetupHighScores();
     }
 
-    // Update is called once per frame
-    void Update()
+    public void SetupHighScores()
     {
-        
+        fruitTexts.text = "Fruit: " + TotalFruitCollected().ToString("00");
+        averageTime.text = "Average Time: " + AverageTime().ToString("00");
+        enemiesKilled.text = "Enemies Killed: ";
+        knockBacks.text = "KnockBacks: ";
     }
+
+    private int TotalFruitCollected() => PlayerPrefs.GetInt("TotalFruitAmount", 0);
+
+    private float AverageTime() => PlayerPrefs.GetFloat("AverageTime", 0);
 }
