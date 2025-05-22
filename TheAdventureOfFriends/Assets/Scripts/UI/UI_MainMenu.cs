@@ -1,3 +1,4 @@
+using Firebase.Auth;
 using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.SceneManagement;

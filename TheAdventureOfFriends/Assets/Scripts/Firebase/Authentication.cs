@@ -25,12 +25,12 @@ public class Authentication : MonoBehaviour
     FirebaseAuth auth;
     FirebaseUser user;
 
-    bool isSignIn = false;
-
     private DatabaseReference dbReference;
 
     private void Start()
     {
+        DontDestroyOnLoad(gameObject);
+
         if (instance == null)
         {
             instance = this;
@@ -232,7 +232,6 @@ public class Authentication : MonoBehaviour
             if (signedIn)
             {
                 Debug.Log("Signed in " + user.UserId);
-                isSignIn = true;
                 profileUserNameText.text = "" + user.DisplayName;
                 OpenPanel("Profile");
 
@@ -384,6 +383,11 @@ public class Authentication : MonoBehaviour
                     Debug.Log("Authentication: User data loaded successfully.");
 
                     CurrentUser = userData;
+
+                    if (auth.CurrentUser != null)
+                    {
+                        CurrentUser.userName = auth.CurrentUser.DisplayName ?? "Unknown";
+                    }
                 }
                 else
                 {

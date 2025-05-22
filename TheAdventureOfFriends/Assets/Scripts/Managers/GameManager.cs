@@ -264,7 +264,7 @@ public class GameManager : MonoBehaviour
     }
     private bool NoMoreLevels()
     {
-        int lastLevelIndex = SceneManager.sceneCountInBuildSettings - 2; // 2 is MainMenu and TheEnd scene
+        int lastLevelIndex = SceneManager.sceneCountInBuildSettings - 3;
         bool noMoreLevels = currentLevelIndex == lastLevelIndex;
 
         return noMoreLevels;
