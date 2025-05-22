@@ -12,6 +12,7 @@ using UnityEngine.UI;
 public class Authentication : MonoBehaviour
 {
     public static Authentication instance { get; private set; }
+    public static UserData CurrentUser { get; private set; }
 
     public GameObject loginPanel, signUpPanel, profilePanel, forgetPasswordPanel, notificationPanel;
 
@@ -37,10 +38,10 @@ public class Authentication : MonoBehaviour
 
         loginPanel.SetActive(true);
 
-        Firebase.FirebaseApp.CheckAndFixDependenciesAsync().ContinueWithOnMainThread(task =>
+        FirebaseApp.CheckAndFixDependenciesAsync().ContinueWithOnMainThread(task =>
         {
             var dependencyStatus = task.Result;
-            if (dependencyStatus == Firebase.DependencyStatus.Available)
+            if (dependencyStatus == DependencyStatus.Available)
             {
                 InitializeFirebase();
             }
@@ -174,7 +175,7 @@ public class Authentication : MonoBehaviour
 
             UpdateUserProfile(userName);
 
-            SaveUserDataToRealtimeDatabase(result.User);
+            LoadUserDataFromRealtimeDatabase(user);
         });
     }
 
@@ -193,7 +194,7 @@ public class Authentication : MonoBehaviour
 
                 foreach (Exception exception in task.Exception.Flatten().InnerExceptions)
                 {
-                    Firebase.FirebaseException firebaseEx = exception as Firebase.FirebaseException;
+                    FirebaseException firebaseEx = exception as FirebaseException;
                     if (firebaseEx != null)
                     {
                         var errorCode = (AuthError)firebaseEx.ErrorCode;
@@ -204,19 +205,15 @@ public class Authentication : MonoBehaviour
                 return;
             }
 
-            Firebase.Auth.AuthResult result = task.Result;
-            Debug.LogFormat("User signed in successfully: {0} ({1})", result.User.DisplayName, result.User.UserId);
+            AuthResult result = task.Result;
 
-            profileUserNameText.text = "" + result.User.DisplayName;
-            OpenPanel("Profile");
-
-            SaveUserDataToRealtimeDatabase(result.User);
+            LoadUserDataFromRealtimeDatabase(user);
         });
     }
 
     void InitializeFirebase()
     {
-        auth = Firebase.Auth.FirebaseAuth.DefaultInstance;
+        auth = FirebaseAuth.DefaultInstance;
 
         FirebaseApp.DefaultInstance.Options.DatabaseUrl = new Uri("https://theadventureoffriends-default-rtdb.asia-southeast1.firebasedatabase.app/");
 
@@ -226,7 +223,7 @@ public class Authentication : MonoBehaviour
         AuthStateChanged(this, null);
     }
 
-    void AuthStateChanged(object sender, System.EventArgs eventArgs)
+    void AuthStateChanged(object sender, EventArgs eventArgs)
     {
         if (auth.CurrentUser != user)
         {
@@ -253,13 +250,13 @@ public class Authentication : MonoBehaviour
 
     public void UpdateUserProfile(string userName)
     {
-        Firebase.Auth.FirebaseUser user = auth.CurrentUser;
+        FirebaseUser user = auth.CurrentUser;
         if (user != null)
         {
-            Firebase.Auth.UserProfile profile = new Firebase.Auth.UserProfile
+            UserProfile profile = new UserProfile
             {
                 DisplayName = userName,
-                PhotoUrl = new System.Uri("https://placehold.co/600x400"),
+                PhotoUrl = new Uri("https://placehold.co/600x400"),
             };
             user.UpdateUserProfileAsync(profile).ContinueWith(task =>
             {
@@ -277,7 +274,7 @@ public class Authentication : MonoBehaviour
                 Debug.Log("User profile updated successfully.");
 
                 showNotificationMessage("Alert", "Account Successfully Created!");
-                SaveUserDataToRealtimeDatabase(user);
+                LoadUserDataFromRealtimeDatabase(user);
             });
         }
     }
@@ -341,7 +338,7 @@ public class Authentication : MonoBehaviour
             {
                 foreach (Exception exception in task.Exception.Flatten().InnerExceptions)
                 {
-                    Firebase.FirebaseException firebaseEx = exception as Firebase.FirebaseException;
+                    FirebaseException firebaseEx = exception as FirebaseException;
                     if (firebaseEx != null)
                     {
                         var errorCode = (AuthError)firebaseEx.ErrorCode;
@@ -362,14 +359,19 @@ public class Authentication : MonoBehaviour
             return;
         }
 
-        UserData userData = new UserData
+        if (CurrentUser == null)
         {
-            userName = firebaseUser.DisplayName ?? "Unknown",
-            id = firebaseUser.UserId
-        };
-        Debug.Log(JsonUtility.ToJson(userData));
+            CurrentUser = new UserData
+            {
+                userName = firebaseUser.DisplayName ?? "Unknown",
+                id = firebaseUser.UserId
+            };
+        }
 
-        string json = JsonUtility.ToJson(userData);
+        CurrentUser.userName = firebaseUser.DisplayName ?? "Unknown";
+        CurrentUser.id = firebaseUser.UserId;
+
+        string json = JsonUtility.ToJson(CurrentUser);
 
         dbReference.Child("PlayerStats").Child(firebaseUser.UserId).SetRawJsonValueAsync(json)
             .ContinueWithOnMainThread(task =>
@@ -383,5 +385,43 @@ public class Authentication : MonoBehaviour
                     Debug.Log("User data saved successfully to Realtime Database.");
                 }
             });
+    }
+
+    private void LoadUserDataFromRealtimeDatabase(FirebaseUser firebaseUser)
+    {
+        if (firebaseUser == null || CurrentUser == null)
+        {
+            Debug.LogWarning("FirebaseUser is null. Cannot load user data from Realtime Database.");
+            Debug.LogWarning("FirebaseUser or CurrentUser is null. Cannot save user data to Realtime Database.");
+            return;
+        }
+
+        dbReference.Child("PlayerStats").Child(firebaseUser.UserId).GetValueAsync().ContinueWithOnMainThread(task =>
+        {
+            if (task.IsFaulted)
+            {
+                Debug.LogError("Could not load user data from Realtime Database: " + task.Exception);
+                return;
+            }
+            if (task.IsCompleted)
+            {
+                DataSnapshot snapshot = task.Result;
+                if (snapshot.Exists)
+                {
+                    string json = snapshot.GetRawJsonValue();
+                    UserData userData = JsonUtility.FromJson<UserData>(json);
+                    Debug.Log("User data loaded successfully from Realtime Database.");
+
+                    CurrentUser = userData;
+                    profileUserNameText.text = "" + userData.userName;
+                    OpenPanel("Profile");
+                }
+                else
+                {
+                    Debug.Log("User data not found in Realtime Database.");
+                    SaveUserDataToRealtimeDatabase(firebaseUser);
+                }
+            }
+        });
     }
 }
