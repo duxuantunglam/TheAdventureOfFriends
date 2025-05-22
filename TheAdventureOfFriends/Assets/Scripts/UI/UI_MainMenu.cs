@@ -31,6 +31,11 @@ public class UI_MainMenu : MonoBehaviour
         fadeEffect.ScreenFade(0, 1.5f);
     }
 
+    public void BackToAuthentication()
+    {
+        SceneManager.LoadScene("Authentication");
+    }
+
     public void SwitchUI(GameObject uiToEnable)
     {
         foreach (GameObject ui in uiElements)

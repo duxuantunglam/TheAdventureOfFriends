@@ -86,8 +86,6 @@ public class GameManager : MonoBehaviour
 
         inGameUI.UpdateFruitUI(fruitCollected, totalFruit);
 
-        // PlayerPrefs.SetInt("Level" + currentLevelIndex + "TotalFruit", totalFruit);
-
         if (Authentication.CurrentUser != null)
         {
             string levelKey = "Level" + currentLevelIndex;
