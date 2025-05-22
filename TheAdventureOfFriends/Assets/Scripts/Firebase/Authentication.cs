@@ -232,7 +232,7 @@ public class Authentication : MonoBehaviour
             if (signedIn)
             {
                 Debug.Log("Signed in " + user.UserId);
-                profileUserNameText.text = "" + user.DisplayName;
+                profileUserNameText.text = "Welcome " + user.DisplayName + "!";
                 OpenPanel("Profile");
 
                 LoadUserDataFromRealtimeDatabase();
