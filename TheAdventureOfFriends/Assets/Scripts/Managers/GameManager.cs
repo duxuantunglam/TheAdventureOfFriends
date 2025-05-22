@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Firebase.Auth;
 using UnityEditor.SearchService;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -30,10 +31,6 @@ public class GameManager : MonoBehaviour
     [SerializeField] private SkinManager skinManager;
     [SerializeField] private DifficultyManager difficultyManager;
     [SerializeField] private ObjectCreator objectCreator;
-
-    [Header("PlayerStats")]
-    public float averageTimeStat;
-    public int bestFruitCollectedStat;
 
     private void Awake()
     {
@@ -89,7 +86,16 @@ public class GameManager : MonoBehaviour
 
         inGameUI.UpdateFruitUI(fruitCollected, totalFruit);
 
-        PlayerPrefs.SetInt("Level" + currentLevelIndex + "TotalFruit", totalFruit);
+        // PlayerPrefs.SetInt("Level" + currentLevelIndex + "TotalFruit", totalFruit);
+
+        if (Authentication.CurrentUser != null)
+        {
+            string levelKey = "Level" + currentLevelIndex;
+            if (!Authentication.CurrentUser.levelProgress.ContainsKey(levelKey))
+            {
+                Authentication.CurrentUser.levelProgress[levelKey] = new LevelStats();
+            }
+        }
     }
 
     [ContextMenu("Parent All Fruit")]
@@ -130,42 +136,68 @@ public class GameManager : MonoBehaviour
 
         SaveAverageTime();
 
+        SaveCurrentUserData();
+
         LoadNextScene();
     }
 
     private void SaveFruitInfo()
     {
-        int fruitCollectedBefore = PlayerPrefs.GetInt("Level" + currentLevelIndex + "FruitCollected");
+        if (Authentication.CurrentUser == null) return;
+
+        string levelKey = "Level" + currentLevelIndex;
+        if (!Authentication.CurrentUser.levelProgress.ContainsKey(levelKey))
+        {
+            Authentication.CurrentUser.levelProgress[levelKey] = new LevelStats();
+        }
+
+        int fruitCollectedBefore = Authentication.CurrentUser.levelProgress[levelKey].bestFruitCollected;
 
         if (fruitCollectedBefore < fruitCollected)
-            PlayerPrefs.SetInt("Level" + currentLevelIndex + "FruitCollected", fruitCollected);
+        {
+            Authentication.CurrentUser.levelProgress[levelKey].bestFruitCollected = fruitCollected;
+        }
 
-        int totalFruitInBank = PlayerPrefs.GetInt("TotalFruitAmount");
-        PlayerPrefs.SetInt("TotalFruitAmount", totalFruitInBank + fruitCollected);
-
-        bestFruitCollectedStat = fruitCollectedBefore;
+        Authentication.CurrentUser.totalFruitAmount += fruitCollected;
     }
 
     private void SaveBestTime()
     {
-        float lastTime = PlayerPrefs.GetFloat("Level" + currentLevelIndex + "BestTime", 99);
+        if (Authentication.CurrentUser == null) return;
+
+        string levelKey = "Level" + currentLevelIndex;
+        if (!Authentication.CurrentUser.levelProgress.ContainsKey(levelKey))
+        {
+            Authentication.CurrentUser.levelProgress[levelKey] = new LevelStats();
+        }
+
+        float lastTime = Authentication.CurrentUser.levelProgress[levelKey].bestTime;
 
         if (levelTimer < lastTime)
-            PlayerPrefs.SetFloat("Level" + currentLevelIndex + "BestTime", levelTimer);
+        {
+            Authentication.CurrentUser.levelProgress[levelKey].bestTime = levelTimer;
+        }
     }
 
     private void SaveAverageTime()
     {
-        float averageTime = PlayerPrefs.GetFloat("AverageTime", 0);
-        int levelCount = PlayerPrefs.GetInt("LevelCount", 0);
+        if (Authentication.CurrentUser == null) return;
 
-        if (levelCount == 0)
-            averageTime = levelTimer;
+        float currentAverageTime = Authentication.CurrentUser.averageTime;
+        int currentCompletedSessionsCount = Authentication.CurrentUser.completedLevelCount;
+
+        float newAverageTime;
+        if (currentCompletedSessionsCount == 0)
+        {
+            newAverageTime = levelTimer;
+        }
         else
-            averageTime = ((averageTime * levelCount) + levelTimer) / (levelCount + 1);
+        {
+            newAverageTime = ((currentAverageTime * currentCompletedSessionsCount) + levelTimer) / (currentCompletedSessionsCount + 1);
+        }
 
-        PlayerPrefs.SetFloat("AverageTime", averageTime);
-        PlayerPrefs.SetInt("LevelCount", levelCount + 1);
+        Authentication.CurrentUser.averageTime = newAverageTime;
+        Authentication.CurrentUser.completedLevelCount++;
     }
 
     private void SaveEnemiesKilled()
@@ -180,16 +212,33 @@ public class GameManager : MonoBehaviour
 
     private void SaveLevelProgression()
     {
-        PlayerPrefs.SetInt("Level" + nextLevelIndex + "Unlocked", 1);
+        if (Authentication.CurrentUser == null) return;
+
+        string nextLevelKey = "Level" + nextLevelIndex;
+        if (!Authentication.CurrentUser.levelProgress.ContainsKey(nextLevelKey))
+        {
+            Authentication.CurrentUser.levelProgress[nextLevelKey] = new LevelStats();
+        }
+        Authentication.CurrentUser.levelProgress[nextLevelKey].unlocked = true;
 
         if (NoMoreLevels() == false)
         {
-            PlayerPrefs.SetInt("ContinueLevelNumber", nextLevelIndex);
+            Authentication.CurrentUser.continueLevelNumber = nextLevelIndex;
 
             SkinManager skinManager = SkinManager.instance;
 
             if (skinManager != null)
-                PlayerPrefs.SetInt("LastUsedSkin", skinManager.GetSkinId());
+            {
+                Authentication.CurrentUser.lastUsedSkin = skinManager.GetSkinId();
+            }
+        }
+    }
+
+    private void SaveCurrentUserData()
+    {
+        if (Authentication.instance != null && Authentication.CurrentUser != null)
+        {
+            Authentication.instance.SaveUserDataToRealtimeDatabase();
         }
     }
 

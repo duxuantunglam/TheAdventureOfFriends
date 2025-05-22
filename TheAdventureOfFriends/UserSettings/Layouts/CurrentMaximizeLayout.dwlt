@@ -24,7 +24,7 @@ MonoBehaviour:
   m_MinSize: {x: 300, y: 100}
   m_MaxSize: {x: 24288, y: 16192}
   vertical: 0
-  controlID: 17493
+  controlID: 19946
   draggingID: 0
 --- !u!114 &2
 MonoBehaviour:
@@ -150,7 +150,7 @@ MonoBehaviour:
   m_MinSize: {x: 200, y: 100}
   m_MaxSize: {x: 16192, y: 16192}
   vertical: 1
-  controlID: 17494
+  controlID: 19947
   draggingID: 0
 --- !u!114 &4
 MonoBehaviour:
@@ -176,7 +176,7 @@ MonoBehaviour:
   m_MinSize: {x: 200, y: 50}
   m_MaxSize: {x: 16192, y: 8096}
   vertical: 0
-  controlID: 17435
+  controlID: 19915
   draggingID: 0
 --- !u!114 &5
 MonoBehaviour:
@@ -1635,9 +1635,9 @@ MonoBehaviour:
   m_SceneHierarchy:
     m_TreeViewState:
       scrollPos: {x: 0, y: 0}
-      m_SelectedIDs: 
+      m_SelectedIDs: 26e80000
       m_LastClickedID: 0
-      m_ExpandedIDs: ce76ffff74f6ffffdefaffffc4920000d89200002c9300003e940000c8940000
+      m_ExpandedIDs: 884dffff5059ffffea5dffff6260ffffce76ffff74f6ffffdefaffffc4920000d89200002c9300003e940000c8940000
       m_RenameOverlay:
         m_UserAcceptedRename: 0
         m_Name: 
@@ -1750,7 +1750,7 @@ MonoBehaviour:
   m_MinSize: {x: 200, y: 50}
   m_MaxSize: {x: 16192, y: 8096}
   vertical: 0
-  controlID: 17495
+  controlID: 19948
   draggingID: 0
 --- !u!114 &13
 MonoBehaviour:
@@ -1892,7 +1892,7 @@ MonoBehaviour:
     m_SkipHidden: 0
     m_SearchArea: 1
     m_Folders:
-    - Assets/Prefabs/UI
+    - Assets/Scenes
     m_Globs: []
     m_ProductIds: 
     m_AnyWithAssetOrigin: 0
@@ -1902,15 +1902,15 @@ MonoBehaviour:
   m_ViewMode: 1
   m_StartGridSize: 16
   m_LastFolders:
-  - Assets/Prefabs/UI
+  - Assets/Scenes
   m_LastFoldersGridSize: 16
   m_LastProjectPath: E:\DXTL\A\20242\DATNKS\TheAdventureOfFriends\TheAdventureOfFriends\TheAdventureOfFriends
   m_LockTracker:
     m_IsLocked: 0
   m_FolderTreeState:
-    scrollPos: {x: 0, y: 175}
-    m_SelectedIDs: 149f0000
-    m_LastClickedID: 40724
+    scrollPos: {x: 0, y: 94.80002}
+    m_SelectedIDs: 1a9f0000
+    m_LastClickedID: 40730
     m_ExpandedIDs: 00000000c29d0000c49d0000c29e0000ffffff7f
     m_RenameOverlay:
       m_UserAcceptedRename: 0
@@ -1966,9 +1966,9 @@ MonoBehaviour:
       m_Icon: {fileID: 0}
       m_ResourceFile: 
   m_ListAreaState:
-    m_SelectedInstanceIDs: 
-    m_LastClickedInstanceID: 0
-    m_HadKeyboardFocusLastEvent: 0
+    m_SelectedInstanceIDs: 26e80000
+    m_LastClickedInstanceID: 59430
+    m_HadKeyboardFocusLastEvent: 1
     m_ExpandedInstanceIDs: c6230000da610000c0620000ba620000b06500001c63000018630000486600003a660000dc700000167500001a750000286800001e6b0000226b0000566800005a680000ca6d0000c06d0000d4680000d868000092640000d6690000d26900008c6900007e690000ec690000126a0000066a0000d4870000f0870000c8870000206b0000e2a00000dca00000066d00002c6d0000fa6c0000d86c0000f66c0000806c00009c8c00006ae30000f6960000a80701008e8c00001ab6ffff3ea1000044af00005caf00005aaf000058af000056af0000
     m_RenameOverlay:
       m_UserAcceptedRename: 0

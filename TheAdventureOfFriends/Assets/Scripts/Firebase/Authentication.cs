@@ -174,8 +174,6 @@ public class Authentication : MonoBehaviour
             Debug.LogFormat("Firebase user created successfully: {0} ({1})", result.User.DisplayName, result.User.UserId);
 
             UpdateUserProfile(userName);
-
-            LoadUserDataFromRealtimeDatabase(user);
         });
     }
 
@@ -201,13 +199,9 @@ public class Authentication : MonoBehaviour
                         showNotificationMessage("Error", GetErrorMessage(errorCode));
                     }
                 }
-
                 return;
             }
-
             AuthResult result = task.Result;
-
-            LoadUserDataFromRealtimeDatabase(user);
         });
     }
 
@@ -220,7 +214,6 @@ public class Authentication : MonoBehaviour
         dbReference = FirebaseDatabase.DefaultInstance.RootReference;
 
         auth.StateChanged += AuthStateChanged;
-        AuthStateChanged(this, null);
     }
 
     void AuthStateChanged(object sender, EventArgs eventArgs)
@@ -232,12 +225,18 @@ public class Authentication : MonoBehaviour
             if (!signedIn && user != null)
             {
                 Debug.Log("Signed out " + user.UserId);
+                CurrentUser = null;
+                OpenPanel("Login");
             }
             user = auth.CurrentUser;
             if (signedIn)
             {
                 Debug.Log("Signed in " + user.UserId);
                 isSignIn = true;
+                profileUserNameText.text = "" + user.DisplayName;
+                OpenPanel("Profile");
+
+                LoadUserDataFromRealtimeDatabase();
             }
         }
     }
@@ -274,22 +273,7 @@ public class Authentication : MonoBehaviour
                 Debug.Log("User profile updated successfully.");
 
                 showNotificationMessage("Alert", "Account Successfully Created!");
-                LoadUserDataFromRealtimeDatabase(user);
             });
-        }
-    }
-
-    bool isSigned = false;
-    void Update()
-    {
-        if (isSignIn)
-        {
-            if (!isSigned)
-            {
-                isSigned = true;
-                profileUserNameText.text = "" + user.DisplayName;
-                OpenPanel("Profile");
-            }
         }
     }
 
@@ -351,29 +335,17 @@ public class Authentication : MonoBehaviour
         });
     }
 
-    private void SaveUserDataToRealtimeDatabase(FirebaseUser firebaseUser)
+    public void SaveUserDataToRealtimeDatabase()
     {
-        if (firebaseUser == null)
+        if (auth.CurrentUser == null || CurrentUser == null)
         {
-            Debug.LogWarning("FirebaseUser is null. Cannot save user data to Realtime Database.");
+            Debug.LogWarning("Authentication: auth.CurrentUser or CurrentUser is null. Cannot save user data.");
             return;
         }
 
-        if (CurrentUser == null)
-        {
-            CurrentUser = new UserData
-            {
-                userName = firebaseUser.DisplayName ?? "Unknown",
-                id = firebaseUser.UserId
-            };
-        }
-
-        CurrentUser.userName = firebaseUser.DisplayName ?? "Unknown";
-        CurrentUser.id = firebaseUser.UserId;
-
         string json = JsonUtility.ToJson(CurrentUser);
 
-        dbReference.Child("PlayerStats").Child(firebaseUser.UserId).SetRawJsonValueAsync(json)
+        dbReference.Child("PlayerStats").Child(auth.CurrentUser.UserId).SetRawJsonValueAsync(json)
             .ContinueWithOnMainThread(task =>
             {
                 if (task.IsFaulted)
@@ -387,16 +359,15 @@ public class Authentication : MonoBehaviour
             });
     }
 
-    private void LoadUserDataFromRealtimeDatabase(FirebaseUser firebaseUser)
+    private void LoadUserDataFromRealtimeDatabase()
     {
-        if (firebaseUser == null || CurrentUser == null)
+        if (auth.CurrentUser == null)
         {
-            Debug.LogWarning("FirebaseUser is null. Cannot load user data from Realtime Database.");
-            Debug.LogWarning("FirebaseUser or CurrentUser is null. Cannot save user data to Realtime Database.");
+            Debug.LogWarning("Authentication: auth.CurrentUser is null. Cannot load user data.");
             return;
         }
 
-        dbReference.Child("PlayerStats").Child(firebaseUser.UserId).GetValueAsync().ContinueWithOnMainThread(task =>
+        dbReference.Child("PlayerStats").Child(auth.CurrentUser.UserId).GetValueAsync().ContinueWithOnMainThread(task =>
         {
             if (task.IsFaulted)
             {
@@ -410,18 +381,34 @@ public class Authentication : MonoBehaviour
                 {
                     string json = snapshot.GetRawJsonValue();
                     UserData userData = JsonUtility.FromJson<UserData>(json);
-                    Debug.Log("User data loaded successfully from Realtime Database.");
+                    Debug.Log("Authentication: User data loaded successfully.");
 
                     CurrentUser = userData;
-                    profileUserNameText.text = "" + userData.userName;
-                    OpenPanel("Profile");
                 }
                 else
                 {
-                    Debug.Log("User data not found in Realtime Database.");
-                    SaveUserDataToRealtimeDatabase(firebaseUser);
+                    Debug.Log("Authentication: User data not found. Creating new data.");
+                    CurrentUser = new UserData
+                    {
+                        userName = auth.CurrentUser.DisplayName ?? "Unknown",
+                        id = auth.CurrentUser.UserId
+                    };
+                    SaveUserDataToRealtimeDatabase();
                 }
             }
         });
+    }
+
+    private void OnApplicationPause(bool pauseStatus)
+    {
+        if (pauseStatus)
+        {
+            SaveUserDataToRealtimeDatabase();
+        }
+    }
+
+    private void OnApplicationQuit()
+    {
+        SaveUserDataToRealtimeDatabase();
     }
 }

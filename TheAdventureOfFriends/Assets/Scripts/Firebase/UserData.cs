@@ -19,7 +19,8 @@ public class UserData
     public int totalFruitAmount = 0;
     public int continueLevelNumber = 1;
     public int lastUsedSkin = 0;
-    public float averageBestTime = 0f;
+    public float averageTime = 0f;
+    public int completedLevelCount = 0;
     public int gameDifficulty = 1;
 
     public Dictionary<string, LevelStats> levelProgress = new Dictionary<string, LevelStats>();
@@ -31,6 +32,9 @@ public class UserData
         levelProgress["Level1"] = new LevelStats { unlocked = true };
 
         skinUnlockedId[0] = true;
+
+        averageTime = 0f;
+        completedLevelCount = 0;
     }
 
     public LevelStats GetLevelStats(string levelName)
