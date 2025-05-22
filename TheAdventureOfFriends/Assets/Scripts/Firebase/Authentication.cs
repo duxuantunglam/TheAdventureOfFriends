@@ -26,7 +26,7 @@ public class Authentication : MonoBehaviour
 
     bool isSignIn = false;
 
-    DatabaseReference dbReference;
+    private DatabaseReference dbReference;
 
     private void Start()
     {
@@ -34,6 +34,8 @@ public class Authentication : MonoBehaviour
         {
             instance = this;
         }
+
+        loginPanel.SetActive(true);
 
         Firebase.FirebaseApp.CheckAndFixDependenciesAsync().ContinueWithOnMainThread(task =>
         {
@@ -44,10 +46,14 @@ public class Authentication : MonoBehaviour
             }
             else
             {
-                Debug.LogError(System.String.Format(
-                  "Could not resolve all Firebase dependencies: {0}", dependencyStatus));
+                Debug.LogError(System.String.Format("Could not resolve all Firebase dependencies: {0}", dependencyStatus));
             }
         });
+    }
+
+    public void PlayGameButton()
+    {
+        UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenu");
     }
 
     public void OpenPanel(string panelName)
@@ -152,7 +158,7 @@ public class Authentication : MonoBehaviour
 
                 foreach (Exception exception in task.Exception.Flatten().InnerExceptions)
                 {
-                    Firebase.FirebaseException firebaseEx = exception as Firebase.FirebaseException;
+                    FirebaseException firebaseEx = exception as FirebaseException;
                     if (firebaseEx != null)
                     {
                         var errorCode = (AuthError)firebaseEx.ErrorCode;
@@ -163,13 +169,11 @@ public class Authentication : MonoBehaviour
                 return;
             }
 
-            Firebase.Auth.AuthResult result = task.Result;
-            Debug.LogFormat("Firebase user created successfully: {0} ({1})",
-                result.User.DisplayName, result.User.UserId);
+            AuthResult result = task.Result;
+            Debug.LogFormat("Firebase user created successfully: {0} ({1})", result.User.DisplayName, result.User.UserId);
 
             UpdateUserProfile(userName);
 
-            // Lưu thông tin người dùng vào Realtime Database
             SaveUserDataToRealtimeDatabase(result.User);
         });
     }
@@ -201,13 +205,11 @@ public class Authentication : MonoBehaviour
             }
 
             Firebase.Auth.AuthResult result = task.Result;
-            Debug.LogFormat("User signed in successfully: {0} ({1})",
-                result.User.DisplayName, result.User.UserId);
+            Debug.LogFormat("User signed in successfully: {0} ({1})", result.User.DisplayName, result.User.UserId);
 
             profileUserNameText.text = "" + result.User.DisplayName;
             OpenPanel("Profile");
 
-            // Lưu thông tin người dùng vào Realtime Database
             SaveUserDataToRealtimeDatabase(result.User);
         });
     }
@@ -216,7 +218,7 @@ public class Authentication : MonoBehaviour
     {
         auth = Firebase.Auth.FirebaseAuth.DefaultInstance;
 
-        FirebaseApp.DefaultInstance.Options.DatabaseUrl = new Uri("https://pixeladventureonline-default-rtdb.asia-southeast1.firebasedatabase.app/");
+        FirebaseApp.DefaultInstance.Options.DatabaseUrl = new Uri("https://theadventureoffriends-default-rtdb.asia-southeast1.firebasedatabase.app/");
 
         dbReference = FirebaseDatabase.DefaultInstance.RootReference;
 
@@ -275,6 +277,7 @@ public class Authentication : MonoBehaviour
                 Debug.Log("User profile updated successfully.");
 
                 showNotificationMessage("Alert", "Account Successfully Created!");
+                SaveUserDataToRealtimeDatabase(user);
             });
         }
     }
@@ -359,17 +362,16 @@ public class Authentication : MonoBehaviour
             return;
         }
 
-        // Tạo đối tượng dữ liệu người chơi
-        var userData = new
+        UserData userData = new UserData
         {
-            userName = firebaseUser.DisplayName,
+            userName = firebaseUser.DisplayName ?? "Unknown",
             id = firebaseUser.UserId
         };
+        Debug.Log(JsonUtility.ToJson(userData));
 
-        // Chuyển đổi đối tượng thành JSON và lưu vào Realtime Database dưới node users/USER_ID
         string json = JsonUtility.ToJson(userData);
 
-        dbReference.Child("users").Child(firebaseUser.UserId).SetRawJsonValueAsync(json)
+        dbReference.Child("PlayerStats").Child(firebaseUser.UserId).SetRawJsonValueAsync(json)
             .ContinueWithOnMainThread(task =>
             {
                 if (task.IsFaulted)
