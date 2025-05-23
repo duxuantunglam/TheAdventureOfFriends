@@ -17,11 +17,13 @@ public class UserData
     public string id;
 
     public int totalFruitAmount = 0;
-    public int continueLevelNumber = 1;
-    public int lastUsedSkin = 0;
     public float averageTime = 0f;
+    public int enemiesKilled = 0;
+    public int knockBacks = 0;
+    public int continueLevelNumber = 1;
     public int completedLevelCount = 0;
     public int gameDifficulty = 1;
+    public int lastUsedSkin = 0;
 
     public Dictionary<string, LevelStats> levelProgress = new Dictionary<string, LevelStats>();
 
