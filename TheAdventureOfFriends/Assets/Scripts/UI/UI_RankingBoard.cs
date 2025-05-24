@@ -23,6 +23,8 @@ public class UI_RankingBoard : MonoBehaviour
     public enum RankingCriteria { Fruit, AverageTime, EnemiesKilled, KnockBack }
     private RankingCriteria currentCriteria = RankingCriteria.Fruit;
 
+    private List<UserData> allPlayersData = new List<UserData>();
+
     private void Awake()
     {
         dbReference = FirebaseDatabase.DefaultInstance.RootReference;
@@ -44,7 +46,6 @@ public class UI_RankingBoard : MonoBehaviour
     public void ShowRanking()
     {
         rankingPanel.SetActive(true);
-
         SetCriteriaAndLoadRanking(currentCriteria);
     }
 
@@ -57,40 +58,57 @@ public class UI_RankingBoard : MonoBehaviour
     public void SetCriteriaAndLoadRanking(RankingCriteria criteria)
     {
         currentCriteria = criteria;
-        LoadRankingData(criteria);
+        ClearRankingList();
+
+        if (allPlayersData != null && allPlayersData.Count > 0)
+        {
+            Debug.Log($"Sorting and displaying ranking data for criteria: {criteria} (data already loaded)");
+            SortPlayers(allPlayersData, criteria);
+            DisplayRanking(allPlayersData, criteria);
+        }
+        else
+        {
+            LoadRankingData(criteria);
+        }
     }
 
     private void LoadRankingData(RankingCriteria criteria)
     {
-        Debug.Log($"Loading ranking data for criteria: {criteria}");
-
-        ClearRankingList();
-
-        dbReference.Child("PlayerStats").GetValueAsync().ContinueWithOnMainThread(task =>
+        if (allPlayersData == null || allPlayersData.Count == 0)
         {
-            if (task.IsFaulted)
-            {
-                Debug.LogError("Failed to load ranking data: " + task.Exception);
-                return;
-            }
+            Debug.Log($"Loading ranking data from Firebase for criteria: {criteria}");
 
-            if (task.IsCompleted)
+            dbReference.Child("PlayerStats").GetValueAsync().ContinueWithOnMainThread(task =>
             {
-                DataSnapshot snapshot = task.Result;
-                List<UserData> players = new List<UserData>();
-
-                foreach (var userSnapshot in snapshot.Children)
+                if (task.IsFaulted)
                 {
-                    string json = userSnapshot.GetRawJsonValue();
-                    UserData userData = JsonUtility.FromJson<UserData>(json);
-                    players.Add(userData);
+                    Debug.LogError("Failed to load ranking data: " + task.Exception);
+                    return;
                 }
 
-                SortPlayers(players, criteria);
+                if (task.IsCompleted)
+                {
+                    DataSnapshot snapshot = task.Result;
+                    allPlayersData = new List<UserData>();
 
-                DisplayRanking(players, criteria);
-            }
-        });
+                    foreach (var userSnapshot in snapshot.Children)
+                    {
+                        string json = userSnapshot.GetRawJsonValue();
+                        UserData userData = JsonUtility.FromJson<UserData>(json);
+                        allPlayersData.Add(userData);
+                    }
+
+                    SortPlayers(allPlayersData, criteria);
+                    DisplayRanking(allPlayersData, criteria);
+                }
+            });
+        }
+        else
+        {
+            Debug.Log("LoadRankingData called but data already exists.");
+            SortPlayers(allPlayersData, criteria);
+            DisplayRanking(allPlayersData, criteria);
+        }
     }
 
     private void SortPlayers(List<UserData> players, RankingCriteria criteria)
