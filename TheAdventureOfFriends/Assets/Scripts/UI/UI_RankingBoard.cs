@@ -23,7 +23,7 @@ public class UI_RankingBoard : MonoBehaviour
     public enum RankingCriteria { Fruit, AverageTime, EnemiesKilled, KnockBack }
     private RankingCriteria currentCriteria = RankingCriteria.Fruit;
 
-    void Awake()
+    private void Awake()
     {
         dbReference = FirebaseDatabase.DefaultInstance.RootReference;
 
@@ -33,10 +33,12 @@ public class UI_RankingBoard : MonoBehaviour
         knockBackButton.onClick.AddListener(() => SetCriteriaAndLoadRanking(RankingCriteria.KnockBack));
     }
 
-    void OnDestroy()
+    private void OnDestroy()
     {
         if (fruitButton != null) fruitButton.onClick.RemoveAllListeners();
         if (averageTimeButton != null) averageTimeButton.onClick.RemoveAllListeners();
+        if (enemiesKilledButton != null) enemiesKilledButton.onClick.RemoveAllListeners();
+        if (knockBackButton != null) knockBackButton.onClick.RemoveAllListeners();
     }
 
     public void ShowRanking()
@@ -141,7 +143,7 @@ public class UI_RankingBoard : MonoBehaviour
                         score = player.totalFruitAmount.ToString();
                         break;
                     case RankingCriteria.AverageTime:
-                        score = player.completedLevelCount > 0 ? player.averageTime.ToString("F2") : "N/A";
+                        score = player.completedLevelCount > 0 ? player.averageTime.ToString("f2") : "N/A";
                         break;
                     case RankingCriteria.EnemiesKilled:
                         score = player.enemiesKilled.ToString();
@@ -156,6 +158,7 @@ public class UI_RankingBoard : MonoBehaviour
 
                 rankingItemScript.SetRankingData(rank, playerName, score);
             }
+
             else
             {
                 Debug.LogWarning("Ranking item prefab is missing UI_PlayersRanking script!");
