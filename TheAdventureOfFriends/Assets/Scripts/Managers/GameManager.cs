@@ -310,13 +310,13 @@ public class GameManager : MonoBehaviour
 
         if (NoMoreLevels() == false)
         {
-            Authentication.CurrentUser.continueLevelNumber = nextLevelIndex;
+            Authentication.CurrentUser.gameProgress.continueLevelNumber = nextLevelIndex;
 
             SkinManager skinManager = SkinManager.instance;
 
             if (skinManager != null)
             {
-                Authentication.CurrentUser.lastUsedSkin = skinManager.GetSkinId();
+                Authentication.CurrentUser.gameProgress.lastUsedSkin = skinManager.GetSkinId();
             }
         }
     }

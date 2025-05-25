@@ -3,6 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [Serializable]
+public class GameData
+{
+    public int continueLevelNumber = 1;
+    public int gameDifficulty = 1;
+    public int lastUsedSkin = 0;
+}
+
+[Serializable]
 public class LevelStats
 {
     public float bestTime = 999f;
@@ -16,6 +24,7 @@ public class UserData
     public string userName;
     public string id;
 
+    public int completedLevelCount = 0;
     public int totalFruitAmount = 0;
     public float averageFruit = 0f;
     public float averageTime = 0f;
@@ -23,14 +32,12 @@ public class UserData
     public float averageEnemiesKilled = 0f;
     public int knockBacks = 0;
     public float averageKnockBacks = 0f;
-    public int continueLevelNumber = 1;
-    public int completedLevelCount = 0;
-    public int gameDifficulty = 1;
-    public int lastUsedSkin = 0;
 
     public Dictionary<string, LevelStats> levelProgress = new Dictionary<string, LevelStats>();
 
     public Dictionary<string, bool> skinUnlockedName = new Dictionary<string, bool>();
+
+    public GameData gameProgress = new GameData();
 
     public UserData()
     {
@@ -40,6 +47,7 @@ public class UserData
 
         averageTime = 0f;
         completedLevelCount = 0;
+        gameProgress = new GameData();
     }
 
     public LevelStats GetLevelStats(string levelName)

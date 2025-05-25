@@ -59,7 +59,7 @@ public class UI_MainMenu : MonoBehaviour
 
     private bool HasLevelProgression()
     {
-        bool hasLevelProgression = Authentication.CurrentUser != null && Authentication.CurrentUser.continueLevelNumber > 0;
+        bool hasLevelProgression = Authentication.CurrentUser != null && Authentication.CurrentUser.gameProgress.continueLevelNumber > 0;
 
         return hasLevelProgression;
     }
@@ -72,8 +72,8 @@ public class UI_MainMenu : MonoBehaviour
             return;
         }
 
-        int levelToLoad = Authentication.CurrentUser.continueLevelNumber;
-        int lastSavedSkin = Authentication.CurrentUser.lastUsedSkin;
+        int levelToLoad = Authentication.CurrentUser.gameProgress.continueLevelNumber;
+        int lastSavedSkin = Authentication.CurrentUser.gameProgress.lastUsedSkin;
 
         SkinManager.instance.SetSkinId(lastSavedSkin);
 
