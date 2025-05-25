@@ -17,9 +17,12 @@ public class UserData
     public string id;
 
     public int totalFruitAmount = 0;
+    public float averageFruit = 0f;
     public float averageTime = 0f;
     public int enemiesKilled = 0;
+    public float averageEnemiesKilled = 0f;
     public int knockBacks = 0;
+    public float averageKnockBacks = 0f;
     public int continueLevelNumber = 1;
     public int completedLevelCount = 0;
     public int gameDifficulty = 1;

@@ -17,8 +17,8 @@ public class UI_HighScores : MonoBehaviour
     {
         fruitTexts.text = "Fruit: " + TotalFruitCollected().ToString("00");
         averageTime.text = "Average Time: " + AverageTime().ToString("00");
-        enemiesKilled.text = "Enemies Killed: ";
-        knockBacks.text = "KnockBacks: ";
+        enemiesKilled.text = "Enemies Killed: " + TotalEnemiesKilled().ToString("00");
+        knockBacks.text = "KnockBacks: " + TotalKnockBacks().ToString("00");
     }
 
     private int TotalFruitCollected()
@@ -40,5 +40,25 @@ public class UI_HighScores : MonoBehaviour
             return 0f;
         }
         return Authentication.CurrentUser.averageTime;
+    }
+
+    private int TotalEnemiesKilled()
+    {
+        if (Authentication.CurrentUser == null)
+        {
+            Debug.LogWarning("Authentication.CurrentUser is null. Cannot get total enemies killed.");
+            return 0;
+        }
+        return Authentication.CurrentUser.enemiesKilled;
+    }
+
+    private int TotalKnockBacks()
+    {
+        if (Authentication.CurrentUser == null)
+        {
+            Debug.LogWarning("Authentication.CurrentUser is null. Cannot get total knockBacks.");
+            return 0;
+        }
+        return Authentication.CurrentUser.knockBacks;
     }
 }

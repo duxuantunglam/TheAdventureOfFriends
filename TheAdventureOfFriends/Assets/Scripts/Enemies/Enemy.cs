@@ -85,6 +85,11 @@ public class Enemy : MonoBehaviour
         if (Random.Range(0, 100) < 50)
             deathRotationDirection = deathRotationDirection * -1;
 
+        if (GameManager.instance != null)
+        {
+            GameManager.instance.EnemyKilled();
+        }
+
         PlayerManager.OnPlayerRespawn -= UpdatePlayerReference;
         Destroy(gameObject, 10);
     }

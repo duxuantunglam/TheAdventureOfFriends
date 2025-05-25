@@ -22,6 +22,11 @@ public class GameManager : MonoBehaviour
     public int totalFruit;
     public Transform fruitParent;
 
+    [Header("Enemy Management")]
+    public int enemiesKilled;
+    [Header("Knockback Management")]
+    public int knockBacks;
+
     [Header("Checkpoint")]
     public bool canReactive;
 
@@ -126,13 +131,34 @@ public class GameManager : MonoBehaviour
 
     public bool FruitHaveRandomLook() => fruitAreRandom;
 
+    public void EnemyKilled()
+    {
+        enemiesKilled++;
+    }
+
+    public void PlayerKnockedBack()
+    {
+        knockBacks++;
+    }
+
     public void LevelFinished()
     {
         SaveLevelProgression();
+
         SaveBestTime();
         SaveFruitInfo();
+        SaveEnemiesKilled();
+        SaveKnockBacks();
 
+        SaveAverageFruit();
         SaveAverageTime();
+        SaveAverageEnemiesKilled();
+        SaveAverageKnockBack();
+
+        if (Authentication.CurrentUser != null)
+        {
+            Authentication.CurrentUser.completedLevelCount++;
+        }
 
         SaveCurrentUserData();
 
@@ -161,7 +187,22 @@ public class GameManager : MonoBehaviour
 
     private void SaveAverageFruit()
     {
+        if (Authentication.CurrentUser == null) return;
 
+        float currentAverageFruit = Authentication.CurrentUser.averageFruit;
+        int currentCompletedSessionsCount = Authentication.CurrentUser.completedLevelCount;
+
+        float newAverageFruit;
+        if (currentCompletedSessionsCount == 0)
+        {
+            newAverageFruit = fruitCollected;
+        }
+        else
+        {
+            newAverageFruit = ((currentAverageFruit * currentCompletedSessionsCount) + fruitCollected) / (currentCompletedSessionsCount + 1);
+        }
+
+        Authentication.CurrentUser.averageFruit = newAverageFruit;
     }
 
     private void SaveBestTime()
@@ -200,27 +241,60 @@ public class GameManager : MonoBehaviour
         }
 
         Authentication.CurrentUser.averageTime = newAverageTime;
-        Authentication.CurrentUser.completedLevelCount++;
     }
 
     private void SaveEnemiesKilled()
     {
+        if (Authentication.CurrentUser == null) return;
 
+        Authentication.CurrentUser.enemiesKilled += enemiesKilled;
     }
 
     private void SaveAverageEnemiesKilled()
     {
+        if (Authentication.CurrentUser == null) return;
 
+        float currentAverageEnemiesKilled = Authentication.CurrentUser.averageEnemiesKilled;
+        int currentCompletedSessionsCount = Authentication.CurrentUser.completedLevelCount;
+
+        float newAverageEnemiesKilled;
+        if (currentCompletedSessionsCount == 0)
+        {
+            newAverageEnemiesKilled = enemiesKilled;
+        }
+        else
+        {
+            newAverageEnemiesKilled = ((currentAverageEnemiesKilled * currentCompletedSessionsCount) + enemiesKilled) / (currentCompletedSessionsCount + 1);
+        }
+
+        Authentication.CurrentUser.averageEnemiesKilled = newAverageEnemiesKilled;
     }
 
     private void SaveKnockBacks()
     {
+        if (Authentication.CurrentUser == null) return;
 
+        Authentication.CurrentUser.knockBacks += knockBacks;
     }
 
     private void SaveAverageKnockBack()
     {
+        if (Authentication.CurrentUser == null) return;
 
+        float currentAverageKnockBacks = Authentication.CurrentUser.averageKnockBacks;
+        int currentCompletedSessionsCount = Authentication.CurrentUser.completedLevelCount;
+
+        float newAverageKnockBacks;
+        if (currentCompletedSessionsCount == 0)
+        {
+            newAverageKnockBacks = knockBacks;
+        }
+        else
+        {
+            newAverageKnockBacks = ((currentAverageKnockBacks * currentCompletedSessionsCount) + knockBacks) / (currentCompletedSessionsCount + 1);
+        }
+
+        Authentication.CurrentUser.averageKnockBacks = newAverageKnockBacks;
     }
 
     private void SaveLevelProgression()

@@ -195,6 +195,11 @@ public class Player : MonoBehaviour
         if (isKnocked)
             return;
 
+        if (GameManager.instance != null)
+        {
+            GameManager.instance.PlayerKnockedBack();
+        }
+
         AudioManager.instance.PlaySFX(9);
         CameraManager.instance.ScreenShake(knockbackDir);
         StartCoroutine(KnockBackRoutine());
