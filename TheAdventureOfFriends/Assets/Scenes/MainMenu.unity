@@ -4780,6 +4780,7 @@ MonoBehaviour:
   averageTimeButton: {fileID: 1744789077}
   enemiesKilledButton: {fileID: 908054387}
   knockBackButton: {fileID: 471122901}
+  compatibleFilteringButton: {fileID: 913210036}
   contentTransform: {fileID: 1074660188}
   rankingItemPrefab: {fileID: 2055749466352291673, guid: 2a8c065ee070f9148bf460edae3542c6, type: 3}
 --- !u!1 &804690036

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Firebase.Auth;
 using Firebase.Database;
 using Firebase.Extensions;
 using UnityEngine;
@@ -13,6 +14,7 @@ public class UI_RankingBoard : MonoBehaviour
     public Button averageTimeButton;
     public Button enemiesKilledButton;
     public Button knockBackButton;
+    public Button compatibleFilteringButton;
 
     [Header("Ranking List")]
     public Transform contentTransform;
@@ -20,8 +22,10 @@ public class UI_RankingBoard : MonoBehaviour
 
     private DatabaseReference dbReference;
 
-    public enum RankingCriteria { Fruit, AverageTime, EnemiesKilled, KnockBack }
+    public enum RankingCriteria { Fruit, AverageTime, EnemiesKilled, KnockBack, CompatibleFiltering }
     private RankingCriteria currentCriteria = RankingCriteria.Fruit;
+
+    private RankingCriteria compatibilitySubCriteria = RankingCriteria.Fruit;
 
     private List<UserData> allPlayersData = new List<UserData>();
 
@@ -33,6 +37,7 @@ public class UI_RankingBoard : MonoBehaviour
         averageTimeButton.onClick.AddListener(() => SetCriteriaAndLoadRanking(RankingCriteria.AverageTime));
         enemiesKilledButton.onClick.AddListener(() => SetCriteriaAndLoadRanking(RankingCriteria.EnemiesKilled));
         knockBackButton.onClick.AddListener(() => SetCriteriaAndLoadRanking(RankingCriteria.KnockBack));
+        compatibleFilteringButton.onClick.AddListener(() => SetCriteriaAndLoadRanking(RankingCriteria.CompatibleFiltering));
     }
 
     private void OnDestroy()
@@ -41,6 +46,8 @@ public class UI_RankingBoard : MonoBehaviour
         if (averageTimeButton != null) averageTimeButton.onClick.RemoveAllListeners();
         if (enemiesKilledButton != null) enemiesKilledButton.onClick.RemoveAllListeners();
         if (knockBackButton != null) knockBackButton.onClick.RemoveAllListeners();
+
+        if (compatibleFilteringButton != null) compatibleFilteringButton.onClick.RemoveAllListeners();
     }
 
     public void ShowRanking()
@@ -60,19 +67,25 @@ public class UI_RankingBoard : MonoBehaviour
         currentCriteria = criteria;
         ClearRankingList();
 
+        if (criteria != RankingCriteria.CompatibleFiltering)
+        {
+            compatibilitySubCriteria = criteria;
+        }
+
         if (allPlayersData != null && allPlayersData.Count > 0)
         {
             Debug.Log($"Sorting and displaying ranking data for criteria: {criteria} (data already loaded)");
-            SortPlayers(allPlayersData, criteria);
-            DisplayRanking(allPlayersData, criteria);
+            List<UserData> playersToDisplay = new List<UserData>(allPlayersData);
+            SortPlayers(playersToDisplay, criteria);
+            DisplayPlayersList(playersToDisplay, criteria);
         }
         else
         {
-            LoadRankingData(criteria);
+            LoadRankingDataAndDisplay(criteria);
         }
     }
 
-    private void LoadRankingData(RankingCriteria criteria)
+    private void LoadRankingDataAndDisplay(RankingCriteria criteria)
     {
         if (allPlayersData == null || allPlayersData.Count == 0)
         {
@@ -98,16 +111,18 @@ public class UI_RankingBoard : MonoBehaviour
                         allPlayersData.Add(userData);
                     }
 
-                    SortPlayers(allPlayersData, criteria);
-                    DisplayRanking(allPlayersData, criteria);
+                    List<UserData> playersToDisplay = new List<UserData>(allPlayersData);
+                    SortPlayers(playersToDisplay, criteria);
+                    DisplayPlayersList(playersToDisplay, criteria);
                 }
             });
         }
         else
         {
-            Debug.Log("LoadRankingData called but data already exists.");
-            SortPlayers(allPlayersData, criteria);
-            DisplayRanking(allPlayersData, criteria);
+            Debug.Log("Data already loaded.");
+            List<UserData> playersToDisplay = new List<UserData>(allPlayersData);
+            SortPlayers(playersToDisplay, criteria);
+            DisplayPlayersList(playersToDisplay, criteria);
         }
     }
 
@@ -132,10 +147,36 @@ public class UI_RankingBoard : MonoBehaviour
             case RankingCriteria.KnockBack:
                 players.Sort((p1, p2) => p2.knockBacks.CompareTo(p1.knockBacks));
                 break;
+            case RankingCriteria.CompatibleFiltering:
+                // TODO: 1. Get the data of the currently logged-in user.
+                UserData currentUserData = GetCurrentUserData();
+
+                if (currentUserData != null)
+                {
+                    List<UserData> playersToCompare = players.Where(player => player.userName != currentUserData.userName).ToList();
+
+                    playersToCompare.Sort((p1, p2) =>
+                    {
+                        // TODO: Calculate compatibility score between p1 and currentUserData
+                        float compatibilityScore1 = CalculateCompatibility(p1, currentUserData, compatibilitySubCriteria);
+                        float compatibilityScore2 = CalculateCompatibility(p2, currentUserData, compatibilitySubCriteria);
+
+                        return compatibilityScore2.CompareTo(compatibilityScore1);
+                    });
+
+                    players.Clear();
+                    players.AddRange(playersToCompare);
+                }
+                else
+                {
+                    Debug.LogWarning("Current user data not available or found for compatibility ranking.");
+                    players.Clear();
+                }
+                break;
         }
     }
 
-    private void DisplayRanking(List<UserData> players, RankingCriteria criteria)
+    private void DisplayPlayersList(List<UserData> players, RankingCriteria criteria)
     {
         if (rankingItemPrefab == null || contentTransform == null)
         {
@@ -143,8 +184,17 @@ public class UI_RankingBoard : MonoBehaviour
             return;
         }
 
-        for (int i = 0; i < players.Count; i++)
+        int maxItemsToDisplay = players.Count;
+
+        if (criteria == RankingCriteria.CompatibleFiltering)
         {
+            maxItemsToDisplay = Mathf.Min(players.Count, 5);
+        }
+
+        for (int i = 0; i < maxItemsToDisplay; i++)
+        {
+            if (i >= players.Count) break;
+
             GameObject rankingItemGO = Instantiate(rankingItemPrefab, contentTransform);
             UI_PlayersRanking rankingItemScript = rankingItemGO.GetComponent<UI_PlayersRanking>();
 
@@ -168,6 +218,34 @@ public class UI_RankingBoard : MonoBehaviour
                         break;
                     case RankingCriteria.KnockBack:
                         score = player.knockBacks.ToString();
+                        break;
+                    case RankingCriteria.CompatibleFiltering:
+                        UserData currentUserDisplayCheck = GetCurrentUserData();
+                        if (currentUserDisplayCheck != null && player.userName != currentUserDisplayCheck.userName)
+                        {
+                            switch (compatibilitySubCriteria)
+                            {
+                                case RankingCriteria.Fruit:
+                                    score = player.totalFruitAmount.ToString();
+                                    break;
+                                case RankingCriteria.AverageTime:
+                                    score = player.completedLevelCount > 0 ? player.averageTime.ToString("f2") : "N/A";
+                                    break;
+                                case RankingCriteria.EnemiesKilled:
+                                    score = player.enemiesKilled.ToString();
+                                    break;
+                                case RankingCriteria.KnockBack:
+                                    score = player.knockBacks.ToString();
+                                    break;
+                                default:
+                                    score = "N/A";
+                                    break;
+                            }
+                        }
+                        else
+                        {
+                            score = "N/A - Current User";
+                        }
                         break;
                     default:
                         score = "N/A";
@@ -211,5 +289,45 @@ public class UI_RankingBoard : MonoBehaviour
     public void OnKnockBackButtonClick()
     {
         SetCriteriaAndLoadRanking(RankingCriteria.KnockBack);
+    }
+
+    private UserData GetCurrentUserData()
+    {
+        if (Authentication.CurrentUser != null)
+        {
+            return Authentication.CurrentUser;
+        }
+        else
+        {
+            Debug.LogWarning("GetCurrentUserData: Authentication.CurrentUser is null. No user logged in or data not loaded.");
+            return null;
+        }
+    }
+
+    private float CalculateCompatibility(UserData player1, UserData player2, RankingCriteria subCriteria)
+    {
+        // TODO: Implement your actual compatibility calculation logic here.
+        float compatibilityScore = 0;
+
+        switch (subCriteria)
+        {
+            case RankingCriteria.Fruit:
+                compatibilityScore = 1.0f / (1.0f + Mathf.Abs(player1.totalFruitAmount - player2.totalFruitAmount));
+                break;
+            case RankingCriteria.AverageTime:
+                compatibilityScore = 1.0f / (1.0f + Mathf.Abs(player1.averageTime - player2.averageTime));
+                break;
+            case RankingCriteria.EnemiesKilled:
+                compatibilityScore = 1.0f / (1.0f + Mathf.Abs(player1.enemiesKilled - player2.enemiesKilled));
+                break;
+            case RankingCriteria.KnockBack:
+                compatibilityScore = 1.0f / (1.0f + Mathf.Abs(player1.knockBacks - player2.knockBacks));
+                break;
+            default:
+                compatibilityScore = 0;
+                break;
+        }
+
+        return compatibilityScore;
     }
 }

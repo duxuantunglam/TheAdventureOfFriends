@@ -159,6 +159,11 @@ public class GameManager : MonoBehaviour
         Authentication.CurrentUser.totalFruitAmount += fruitCollected;
     }
 
+    private void SaveAverageFruit()
+    {
+
+    }
+
     private void SaveBestTime()
     {
         if (Authentication.CurrentUser == null) return;
@@ -203,7 +208,17 @@ public class GameManager : MonoBehaviour
 
     }
 
+    private void SaveAverageEnemiesKilled()
+    {
+
+    }
+
     private void SaveKnockBacks()
+    {
+
+    }
+
+    private void SaveAverageKnockBack()
     {
 
     }
