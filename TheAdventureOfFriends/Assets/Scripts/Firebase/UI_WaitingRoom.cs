@@ -1,73 +1,62 @@
 using System;
 using System.Collections.Generic;
-using System.Linq; // Cần thiết cho LINQ
+using System.Linq;
 using System.Threading.Tasks;
 using Firebase.Database;
-using Firebase.Extensions; // Cần thiết cho ContinueWithOnMainThread
+using Firebase.Extensions;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using Action = System.Action;
 
-// Class để lưu trữ thông tin đơn giản về người chơi trong phòng
 [System.Serializable]
 public class PlayerInRoomInfo
 {
     public string userId;
     public string userName;
     public bool isReady;
-    // Thêm các thông tin khác nếu cần (ví dụ: là chủ phòng)
 }
 
 public class UI_WaitingRoom : MonoBehaviour
 {
-    [SerializeField] private GameObject waitingRoomUIPanel; // GameObject gốc của giao diện phòng chờ
-    [SerializeField] private UI_PlayersInRoom playerItemPrefab; // Prefab hiển thị thông tin 1 người chơi trong phòng
-    [SerializeField] private Transform contentParent; // GameObject Content chứa danh sách người chơi
-    [SerializeField] private Button startGameButton; // Nút Start Game
-    [SerializeField] private Button leaveRoomButton; // Nút Leave Room
+    [SerializeField] private GameObject waitingRoomUIPanel;
+    [SerializeField] private UI_PlayersInRoom playerItemPrefab;
+    [SerializeField] private Transform contentParent;
+    [SerializeField] private Button startGameButton;
+    [SerializeField] private Button leaveRoomButton;
 
-    private DatabaseReference dbReference; // Tham chiếu đến Firebase Database
-    private string currentRoomId; // ID của phòng hiện tại
-    private string currentUserId; // ID của người chơi hiện tại
+    private DatabaseReference dbReference;
+    private string currentRoomId;
+    private string currentUserId;
 
-    // Dictionary để lưu trữ các instance UI_PlayersInRoom đang hiển thị
     private Dictionary<string, UI_PlayersInRoom> playerUIItems = new Dictionary<string, UI_PlayersInRoom>();
 
-    // Event để thông báo khi người chơi rời phòng (logic hủy phòng sẽ xử lý bên trong)
     public event Action OnLeaveRoomCompleted;
-    // Event để thông báo khi game bắt đầu (để script khác chuyển scene)
-    public event Action<string> OnGameStarted; // Truyền room ID hoặc thông tin cần thiết
+    public event Action<string> OnGameStarted;
 
     private void Awake()
     {
         // Lấy tham chiếu Firebase Database (có thể lấy từ Authentication.instance.dbReference nếu đó là public)
         dbReference = FirebaseDatabase.DefaultInstance.RootReference;
 
-        // Gán listener cho nút Leave Room
         if (leaveRoomButton != null)
         {
             leaveRoomButton.onClick.AddListener(LeaveRoom);
         }
 
-        // Nút Start Game mặc định vô hiệu hóa
         if (startGameButton != null)
         {
             startGameButton.interactable = false;
-            // Gán listener cho nút Start Game
+            startGameButton.gameObject.SetActive(false);
             startGameButton.onClick.AddListener(StartGame);
         }
 
-        // Đảm bảo panel ẩn khi bắt đầu
         if (waitingRoomUIPanel != null)
         {
             waitingRoomUIPanel.SetActive(false);
         }
     }
 
-    // Phương thức hiển thị giao diện phòng chờ và tạo/tham gia phòng
-    // Nếu roomId là null hoặc rỗng, sẽ tạo phòng mới. Ngược lại sẽ cố gắng tham gia phòng đó.
-    // Khi tạo phòng mới (roomId = null), có thể truyền invitedUserId để gửi lời mời.
     public async Task ShowRoom(string userId, string roomId = null, string invitedUserId = null)
     {
         currentUserId = userId;
@@ -84,102 +73,79 @@ public class UI_WaitingRoom : MonoBehaviour
 
         if (string.IsNullOrEmpty(roomId))
         {
-            // Tạo phòng mới và gửi lời mời (nếu có invitedUserId)
-            await CreateRoom(currentUserId, invitedUserId); // Truyền invitedUserId vào CreateRoom
+            await CreateRoom(currentUserId, invitedUserId);
         }
         else
         {
-            // Tham gia phòng đã có (ví dụ: từ lời mời)
             currentRoomId = roomId;
             // Cần thêm logic tham gia phòng trên Firebase ở đây
             await JoinRoom(currentUserId, currentRoomId); // Bây giờ JoinRoom cần ghi dữ liệu người chơi vào phòng
             // Sau khi join thành công, bắt đầu lắng nghe
-            ListenToRoomChanges(currentRoomId);
+            // Lắng nghe sẽ được gọi tự động trong JoinRoom nếu thành công
+            // ListenToRoomChanges(currentRoomId); // Không cần gọi ở đây nữa
         }
 
-        // Cần hiển thị trạng thái loading trong khi xử lý Firebase
+        // TODO: 'Loading...' UI
     }
 
-    // Phương thức ẩn giao diện phòng chờ
     public void HideRoom()
     {
         if (waitingRoomUIPanel != null)
         {
             waitingRoomUIPanel.SetActive(false);
         }
-        // Dọn dẹp listeners Firebase khi ẩn phòng
+
         StopListeningToRoomChanges();
         ClearPlayerListUI();
         currentRoomId = null;
         currentUserId = null;
+        if (startGameButton != null)
+        {
+            startGameButton.gameObject.SetActive(false);
+        }
     }
 
-    // --- Logic Firebase ---
-
-    // Tạo phòng mới trên Firebase
-    // Thêm tham số invitedUserId để gửi lời mời sau khi tạo phòng
-    private async Task CreateRoom(string hostUserId, string invitedUserId = null)
+    private async Task CreateRoom(string creatingUserId, string invitedUserId = null)
     {
         if (dbReference == null) return;
 
-        // Tạo một key duy nhất cho phòng mới
         DatabaseReference newRoomRef = dbReference.Child("Rooms").Push();
         currentRoomId = newRoomRef.Key;
 
-        // Lấy tên người chơi hiện tại (chủ phòng)
-        string hostUserName = "Unknown"; // Cần lấy tên thật từ Authentication.CurrentUser hoặc data khác
-        if (Authentication.CurrentUser != null) hostUserName = Authentication.CurrentUser.userName;
+        string creatingUserName = "Unknown";
+        if (Authentication.CurrentUser != null) creatingUserName = Authentication.CurrentUser.userName;
 
+        Debug.Log($"Attempting to create room {currentRoomId} by {creatingUserId}");
 
-        // Tạo dữ liệu phòng ban đầu
-        // Dữ liệu phòng cần chứa danh sách người chơi và trạng thái của họ
+        //TODO: JSON
         var roomData = new
         {
-            hostId = hostUserId,
             players = new Dictionary<string, object>()
+            {
+                { creatingUserId, new { userName = creatingUserName, isReady = false } }
+            },
+
+            status = "waiting"
         };
 
-        // Thêm chủ phòng vào danh sách người chơi trong phòng
-        roomData.players[hostUserId] = new
-        {
-            userName = hostUserName,
-            isReady = false // Chủ phòng mặc định Unready khi tạo phòng
-            // Thêm các thông tin khác về người chơi trong phòng nếu cần
-        };
+        await newRoomRef.SetRawJsonValueAsync(JsonUtility.ToJson(roomData));
 
-        Debug.Log($"Attempting to create room {currentRoomId} for {hostUserId}");
+        Debug.Log($"Room {currentRoomId} created successfully by {creatingUserId}");
 
-        // Ghi dữ liệu phòng lên Firebase và chờ hoàn thành
-        await newRoomRef.SetRawJsonValueAsync(JsonUtility.ToJson(roomData)); // <-- await trực tiếp ở đây, không dùng ContinueWith cho logic chính
-
-        // Sau khi tạo phòng thành công, xử lý các bước tiếp theo
-        Debug.Log($"Room {currentRoomId} created successfully by {hostUserId}");
-
-        // Bắt đầu lắng nghe sự thay đổi của phòng
         ListenToRoomChanges(currentRoomId);
 
         // Nếu có người chơi được mời và không phải là chính mình, gửi lời mời
-        if (!string.IsNullOrEmpty(invitedUserId) && invitedUserId != hostUserId)
+        if (!string.IsNullOrEmpty(invitedUserId) && invitedUserId != creatingUserId)
         {
             Debug.Log($"Calling SendInvitationAsync for room {currentRoomId}");
-            await SendInvitationAsync(currentRoomId, hostUserId, invitedUserId, hostUserName); // <-- await gọi SendInvitationAsync
+            await SendInvitationAsync(currentRoomId, creatingUserId, invitedUserId, creatingUserName);
         }
-        else if (invitedUserId == hostUserId)
+        else if (invitedUserId == creatingUserId)
         {
             Debug.LogWarning("Attempted to invite self, skipping SendInvitationAsync.");
         }
-
-
-        // Cập nhật UI với thông tin chủ phòng ban đầu (có thể gọi lại UpdatePlayerListUI sau khi JoinRoom)
-        // Logic hiển thị player UI sẽ được HandleRoomValueChanged xử lý khi có snapshot đầu tiên
-
-        // Check nếu JoinRoom không được gọi tự động khi tạo phòng, thì thêm chủ phòng vào danh sách players UI ban đầu
-        // UpdatePlayerListUI(new List<PlayerInRoomInfo>() { new PlayerInRoomInfo { userId = hostUserId, userName = hostUserName, isReady = false } });
-
-        // Nếu không có người được mời, có thể hiển thị trạng thái chờ người khác tham gia
     }
 
-    // Thêm phương thức gửi lời mời lên Firebase
     private async Task SendInvitationAsync(string roomId, string inviterId, string invitedId, string inviterName)
     {
         if (dbReference == null || string.IsNullOrEmpty(roomId) || string.IsNullOrEmpty(inviterId) || string.IsNullOrEmpty(invitedId)) return;
@@ -190,6 +156,7 @@ public class UI_WaitingRoom : MonoBehaviour
         DatabaseReference invitationsRef = dbReference.Child("Invitations").Child(invitedId).Push(); // Lưu lời mời dưới node của người được mời
         string invitationId = invitationsRef.Key;
 
+        //TODO: JSON
         var invitationData = new
         {
             roomId = roomId,
@@ -215,41 +182,56 @@ public class UI_WaitingRoom : MonoBehaviour
              });
     }
 
-    // Phương thức JoinRoom cần ghi thông tin người chơi tham gia vào phòng
     private async Task JoinRoom(string userId, string roomId)
     {
         if (dbReference == null || string.IsNullOrEmpty(roomId) || string.IsNullOrEmpty(userId)) return;
 
-        // Lấy tên người chơi tham gia
         string userName = "Unknown";
         if (Authentication.CurrentUser != null) userName = Authentication.CurrentUser.userName;
 
-        // Đường dẫn đến danh sách người chơi trong phòng
         DatabaseReference roomPlayersRef = dbReference.Child("Rooms").Child(roomId).Child("players");
 
-        // Kiểm tra xem người chơi đã có trong phòng chưa để tránh ghi đè hoặc lỗi
+        DataSnapshot roomSnapshot = await dbReference.Child("Rooms").Child(roomId).GetValueAsync();
+
+        if (!roomSnapshot.Exists)
+        {
+            Debug.LogError($"Attempted to join room {roomId} but it does not exist.");
+            HideRoom();
+            OnLeaveRoomCompleted?.Invoke(); // Thông báo lỗi hoặc phòng không tồn tại
+            return;
+        }
+
         DataSnapshot playerSnapshot = await roomPlayersRef.Child(userId).GetValueAsync();
         if (playerSnapshot.Exists)
         {
-            Debug.LogWarning($"User {userId} is already in room {roomId}. Skipping join operation.");
+            Debug.LogWarning($"User {userId} is already in room {roomId}. Assuming reconnection or duplicate join attempt. Proceeding to listen.");
+            currentRoomId = roomId;
+            ListenToRoomChanges(roomId);
+            return;
+        }
+
+        long currentPlayerCount = roomSnapshot.Child("players").ChildrenCount;
+        if (currentPlayerCount >= 2)
+        {
+            Debug.LogWarning($"Room {roomId} is already full ({currentPlayerCount} players). User {userId} cannot join.");
+            HideRoom();
             return;
         }
 
 
-        // Thêm người chơi tham gia vào danh sách
         await roomPlayersRef.Child(userId).SetRawJsonValueAsync(JsonUtility.ToJson(new { userName = userName, isReady = false }))
             .ContinueWithOnMainThread(task =>
             {
                 if (task.IsFaulted)
                 {
                     Debug.LogError($"Failed to join room {roomId} for user {userId}: {task.Exception}");
-                    // Xử lý lỗi: thông báo cho người dùng, không vào được phòng
-                    HideRoom(); // Tạm thời ẩn UI nếu join lỗi
+                    // thông báo cho người dùng không vào được phòng
+                    HideRoom();
                 }
                 else if (task.IsCompleted)
                 {
                     Debug.Log($"User {userId} joined room {roomId}");
-                    // Bắt đầu lắng nghe sự thay đổi của phòng
+                    currentRoomId = roomId;
                     ListenToRoomChanges(roomId);
                 }
             });
@@ -265,112 +247,126 @@ public class UI_WaitingRoom : MonoBehaviour
         // Dừng lắng nghe ngay lập tức để tránh xử lý sự kiện sau khi rời phòng
         StopListeningToRoomChanges();
 
-        // Kiểm tra xem người chơi hiện tại có phải là chủ phòng không
-        DataSnapshot roomSnapshot = await dbReference.Child("Rooms").Child(currentRoomId).GetValueAsync();
-        if (roomSnapshot.Exists)
-        {
-            string hostId = roomSnapshot.Child("hostId").GetValue(true)?.ToString();
+        // Đường dẫn đến người chơi hiện tại trong danh sách người chơi của phòng
+        DatabaseReference currentPlayerRef = dbReference.Child("Rooms").Child(currentRoomId).Child("players").Child(currentUserId);
 
-            if (hostId == currentUserId)
-            {
-                // Nếu là chủ phòng, xóa toàn bộ node phòng
-                await dbReference.Child("Rooms").Child(currentRoomId).RemoveValueAsync()
-                    .ContinueWithOnMainThread(task =>
-                    {
-                        if (task.IsFaulted)
-                        {
-                            Debug.LogError($"Failed to delete room {currentRoomId}: {task.Exception}");
-                            // Xử lý lỗi: thông báo
-                        }
-                        else if (task.IsCompleted)
-                        {
-                            Debug.Log($"Room {currentRoomId} deleted by host {currentUserId}");
-                            // Thông báo hoàn thành rời phòng (cho cả người chơi này)
-                            OnLeaveRoomCompleted?.Invoke();
-                            // HideRoom(); // HideRoom sẽ được gọi bởi OnLeaveRoomCompleted listener
-                        }
-                    });
-            }
-            else
-            {
-                // Nếu không phải chủ phòng, chỉ xóa người chơi khỏi danh sách người chơi trong phòng
-                await dbReference.Child("Rooms").Child(currentRoomId).Child("players").Child(currentUserId).RemoveValueAsync()
-                   .ContinueWithOnMainThread(task =>
+        // Xóa người chơi hiện tại khỏi danh sách
+        await currentPlayerRef.RemoveValueAsync()
+           .ContinueWithOnMainThread(async task => // Sử dụng async/await trong ContinueWith để chờ việc kiểm tra số lượng người chơi
+           {
+               if (task.IsFaulted)
+               {
+                   Debug.LogError($"Failed to remove user {currentUserId} from room {currentRoomId}: {task.Exception}");
+                   // Xử lý lỗi
+               }
+               else if (task.IsCompleted)
+               {
+                   Debug.Log($"User {currentUserId} left room {currentRoomId}");
+
+                   // Sau khi xóa người chơi, kiểm tra xem phòng còn người nào không
+                   DataSnapshot roomSnapshotAfterLeave = await dbReference.Child("Rooms").Child(currentRoomId).GetValueAsync();
+
+                   if (roomSnapshotAfterLeave.Exists && roomSnapshotAfterLeave.Child("players").ChildrenCount == 0)
                    {
-                       if (task.IsFaulted)
-                       {
-                           Debug.LogError($"Failed to remove user {currentUserId} from room {currentRoomId}: {task.Exception}");
-                           // Xử lý lỗi
-                       }
-                       else if (task.IsCompleted)
-                       {
-                           Debug.Log($"User {currentUserId} left room {currentRoomId}");
-                           // Thông báo hoàn thành rời phòng
-                           OnLeaveRoomCompleted?.Invoke();
-                           // HideRoom(); // HideRoom sẽ được gọi bởi OnLeaveRoomCompleted listener
-                       }
-                   });
-            }
-        }
-        else
-        {
-            // Trường hợp phòng đã bị xóa trước đó
-            Debug.LogWarning($"Attempted to leave room {currentRoomId} but it no longer exists.");
-            OnLeaveRoomCompleted?.Invoke(); // Vẫn thông báo hoàn thành
-                                            // HideRoom(); // HideRoom sẽ được gọi bởi OnLeaveRoomCompleted listener
-        }
+                       // Nếu không còn người chơi nào, xóa toàn bộ node phòng
+                       Debug.Log($"Room {currentRoomId} is empty, deleting room.");
+                       await dbReference.Child("Rooms").Child(currentRoomId).RemoveValueAsync()
+                           .ContinueWithOnMainThread(deleteRoomTask =>
+                           {
+                               if (deleteRoomTask.IsFaulted)
+                               {
+                                   Debug.LogError($"Failed to delete empty room {currentRoomId}: {deleteRoomTask.Exception}");
+                               }
+                               else if (deleteRoomTask.IsCompleted)
+                               {
+                                   Debug.Log($"Empty room {currentRoomId} deleted.");
+                               }
+                           });
+                   }
+                   else if (!roomSnapshotAfterLeave.Exists)
+                   {
+                       // Trường hợp phòng đã bị xóa bởi người chơi khác cùng lúc
+                       Debug.LogWarning($"Room {currentRoomId} was already deleted by another player.");
+                   }
+                   else
+                   {
+                       Debug.Log($"Room {currentRoomId} still has players ({roomSnapshotAfterLeave.Child("players").ChildrenCount}), not deleting.");
+                   }
+
+                   // Thông báo hoàn thành rời phòng
+                   OnLeaveRoomCompleted?.Invoke();
+                   // HideRoom(); // HideRoom sẽ được gọi bởi OnLeaveRoomCompleted listener
+               }
+           });
         // HideRoom(); // HideRoom sẽ được gọi bởi OnLeaveRoomCompleted listener
     }
 
-    // Bắt đầu Game (Chỉ chủ phòng mới có thể bấm nút Start)
+    // Bắt đầu Game (Bất kỳ người chơi nào cũng có thể bấm nút Start nếu điều kiện thỏa mãn)
     public async void StartGame() // Public để gọi từ nút
     {
         if (dbReference == null || string.IsNullOrEmpty(currentRoomId) || string.IsNullOrEmpty(currentUserId)) return;
 
-        // Kiểm tra xem người chơi hiện tại có phải là chủ phòng không
+        Debug.Log($"User {currentUserId} attempting to start game in room {currentRoomId}");
+
+        // Kiểm tra lại trạng thái phòng để đảm bảo điều kiện bắt đầu game vẫn đúng
         DataSnapshot roomSnapshot = await dbReference.Child("Rooms").Child(currentRoomId).GetValueAsync();
         if (roomSnapshot.Exists)
         {
-            string hostId = roomSnapshot.Child("hostId").GetValue(true)?.ToString();
+            List<PlayerInRoomInfo> playersInRoom = new List<PlayerInRoomInfo>();
+            DataSnapshot playersSnapshot = roomSnapshot.Child("players");
 
-            if (hostId == currentUserId)
+            if (playersSnapshot.Exists && playersSnapshot.ChildrenCount == 2)
             {
-                // Kiểm tra xem cả 2 người chơi đã Ready chưa (cần đọc lại trạng thái từ Firebase)
-                // Tạm thời bỏ qua check Ready để test
-                //bool allReady = CheckAllPlayersReady(roomSnapshot); // Cần implement hàm này
+                bool allReady = true;
+                foreach (var playerChild in playersSnapshot.Children)
+                {
+                    bool isReady = playerChild.Child("isReady").GetValue(true) as bool? ?? false;
+                    if (!isReady)
+                    {
+                        allReady = false;
+                        break;
+                    }
+                }
 
-                // Nếu cả 2 Ready (hoặc bỏ qua check để test)
-                Debug.Log($"Host {currentUserId} is starting game in room {currentRoomId}");
-                // Cập nhật trạng thái phòng trên Firebase để thông báo game bắt đầu
-                await dbReference.Child("Rooms").Child(currentRoomId).Child("status").SetValueAsync("in_game")
-                     .ContinueWithOnMainThread(task =>
-                     {
-                         if (task.IsFaulted)
+                if (allReady)
+                {
+                    Debug.Log($"Starting game in room {currentRoomId}. Both players are Ready.");
+                    // Cập nhật trạng thái phòng trên Firebase để thông báo game bắt đầu
+                    await dbReference.Child("Rooms").Child(currentRoomId).Child("status").SetValueAsync("in_game")
+                         .ContinueWithOnMainThread(task =>
                          {
-                             Debug.LogError($"Failed to set room status to in_game for room {currentRoomId}: {task.Exception}");
-                         }
-                         else if (task.IsCompleted)
-                         {
-                             Debug.Log($"Room {currentRoomId} status set to in_game. Game should start now.");
-                             // Kích hoạt event báo game bắt đầu (để script khác chuyển scene)
-                             OnGameStarted?.Invoke(currentRoomId);
-                             // HideRoom(); // HideRoom sẽ được gọi bởi OnGameStarted listener
-                         }
-                     });
+                             if (task.IsFaulted)
+                             {
+                                 Debug.LogError($"Failed to set room status to in_game for room {currentRoomId}: {task.Exception}");
+                             }
+                             else if (task.IsCompleted)
+                             {
+                                 Debug.Log($"Room {currentRoomId} status set to in_game. Game should start now.");
+                                 // Kích hoạt event báo game bắt đầu (để script khác chuyển scene)
+                                 OnGameStarted?.Invoke(currentRoomId);
+                                 // HideRoom(); // HideRoom sẽ được gọi bởi OnGameStarted listener
+                             }
+                         });
+                }
+                else
+                {
+                    Debug.LogWarning("Cannot start game: Not all players are ready.");
+                    // Có thể thông báo cho người dùng "Đang chờ người chơi khác sẵn sàng"
+                }
             }
             else
             {
-                Debug.LogWarning("Only the host can start the game.");
+                Debug.LogWarning($"Cannot start game: Room {currentRoomId} does not have exactly 2 players.");
+                // Có thể thông báo cho người dùng "Chờ người chơi thứ 2 tham gia"
             }
         }
         else
         {
             Debug.LogWarning($"Attempted to start game in room {currentRoomId} but it no longer exists.");
+            HideRoom(); // Ẩn UI nếu phòng không tồn tại
+            OnLeaveRoomCompleted?.Invoke(); // Thông báo phòng không tồn tại
         }
     }
-
-
-    // --- Lắng nghe sự thay đổi của phòng trên Firebase ---
 
     private void ListenToRoomChanges(string roomId)
     {
@@ -378,21 +374,20 @@ public class UI_WaitingRoom : MonoBehaviour
 
         Debug.Log($"Start listening to changes for room {roomId}");
 
-        // Lắng nghe sự thay đổi toàn bộ node phòng
+        StopListeningToRoomChanges();
         dbReference.Child("Rooms").Child(roomId).ValueChanged += HandleRoomValueChanged;
+        currentRoomId = roomId;
     }
 
     private void StopListeningToRoomChanges()
     {
-        if (dbReference == null || string.IsNullOrEmpty(currentRoomId)) return;
-
-        Debug.Log($"Stop listening to changes for room {currentRoomId}");
-
-        // Gỡ bỏ listener
-        dbReference.Child("Rooms").Child(currentRoomId).ValueChanged -= HandleRoomValueChanged;
+        if (dbReference != null && !string.IsNullOrEmpty(currentRoomId))
+        {
+            Debug.Log($"Stop listening to changes for room {currentRoomId}");
+            dbReference.Child("Rooms").Child(currentRoomId).ValueChanged -= HandleRoomValueChanged;
+        }
     }
 
-    // Xử lý khi dữ liệu phòng thay đổi trên Firebase
     private void HandleRoomValueChanged(object sender, ValueChangedEventArgs args)
     {
         if (args.DatabaseError != null)
@@ -403,25 +398,19 @@ public class UI_WaitingRoom : MonoBehaviour
 
         DataSnapshot snapshot = args.Snapshot;
 
-        // Thêm log chi tiết snapshot
         Debug.Log($"HandleRoomValueChanged triggered for room {currentRoomId}. Snapshot Exists: {snapshot.Exists}. Snapshot Value: {snapshot.GetRawJsonValue()}");
 
-        if (!snapshot.Exists) // Phòng đã bị xóa (ví dụ: chủ phòng rời đi)
+        if (!snapshot.Exists)
         {
             Debug.Log($"Room {currentRoomId} no longer exists.");
             StopListeningToRoomChanges();
             ClearPlayerListUI();
-            // Thông báo rằng phòng đã kết thúc/bị hủy
-            OnLeaveRoomCompleted?.Invoke(); // Sử dụng lại event OnLeaveRoomCompleted
-            // HideRoom(); // HideRoom sẽ được gọi bởi OnLeaveRoomCompleted listener
+
+            OnLeaveRoomCompleted?.Invoke();
+            HideRoom();
             return;
         }
 
-        // Xử lý dữ liệu phòng từ snapshot
-        string hostId = snapshot.Child("hostId").GetValue(true)?.ToString();
-        // string roomStatus = snapshot.Child("status").GetValue(true)?.ToString(); // Nếu có status
-
-        // Lấy danh sách người chơi và trạng thái Ready của họ
         List<PlayerInRoomInfo> playersInRoom = new List<PlayerInRoomInfo>();
         DataSnapshot playersSnapshot = snapshot.Child("players");
 
@@ -437,28 +426,23 @@ public class UI_WaitingRoom : MonoBehaviour
             }
         }
 
-        // Cập nhật UI danh sách người chơi
         UpdatePlayerListUI(playersInRoom);
 
-        // Kiểm tra trạng thái sẵn sàng để bật/tắt nút Start
-        CheckAndEnableStartButton(playersInRoom, hostId);
+        CheckAndEnableStartButton(playersInRoom);
 
-        // Kiểm tra trạng thái phòng (nếu có node status) để chuyển scene
-        // if (roomStatus == "in_game")
-        // {
-        //      OnGameStarted?.Invoke(currentRoomId);
-        //      HideRoom();
-        // }
+        string roomStatus = snapshot.Child("status").GetValue(true)?.ToString();
+        if (roomStatus == "in_game")
+        {
+            Debug.Log($"Room {currentRoomId} status is in_game. Triggering game start.");
+            OnGameStarted?.Invoke(currentRoomId);
+            HideRoom();
+        }
     }
-
-
-    // --- Logic cập nhật UI ---
 
     private void UpdatePlayerListUI(List<PlayerInRoomInfo> players)
     {
         if (contentParent == null) return;
 
-        // Xóa các UI cũ không còn trong danh sách players
         List<string> currentUIUserIds = playerUIItems.Keys.ToList();
         foreach (var userId in currentUIUserIds)
         {
@@ -472,42 +456,49 @@ public class UI_WaitingRoom : MonoBehaviour
             }
         }
 
-        // Cập nhật hoặc thêm mới UI cho từng người chơi trong danh sách
         foreach (var player in players)
         {
             if (playerUIItems.TryGetValue(player.userId, out UI_PlayersInRoom uiItem))
             {
-                // Cập nhật UI Item hiện có
                 uiItem.SetPlayerData(player.userName, player.userId, player.isReady);
-                // Bật/tắt tương tác nút Ready chỉ cho người chơi hiện tại
+
                 bool isCurrentUser = player.userId == currentUserId;
                 uiItem.SetButtonInteractable(isCurrentUser);
-                // Gỡ bỏ listener cũ trước khi thêm lại (đảm bảo chỉ có 1 listener)
                 uiItem.OnReadyStatusChanged -= HandlePlayerReadyStatusChanged;
                 uiItem.OnReadyStatusChanged += HandlePlayerReadyStatusChanged;
-
             }
             else
             {
-                // Tạo UI Item mới nếu chưa có
                 GameObject playerItemGO = Instantiate(playerItemPrefab.gameObject, contentParent);
                 UI_PlayersInRoom newUIItem = playerItemGO.GetComponent<UI_PlayersInRoom>();
                 if (newUIItem != null)
                 {
                     newUIItem.SetPlayerData(player.userName, player.userId, player.isReady);
-                    // Bật/tắt tương tác nút Ready chỉ cho người chơi hiện tại
+
                     bool isCurrentUser = player.userId == currentUserId;
                     newUIItem.SetButtonInteractable(isCurrentUser);
-                    // Đăng ký lắng nghe event ReadyStatusChanged của UI Item mới
                     newUIItem.OnReadyStatusChanged += HandlePlayerReadyStatusChanged;
 
-                    playerUIItems[player.userId] = newUIItem; // Thêm vào dictionary quản lý
+                    playerUIItems[player.userId] = newUIItem;
                 }
             }
         }
+
+        SortPlayerListUI();
     }
 
-    // Xóa tất cả các mục UI người chơi
+    private void SortPlayerListUI()
+    {
+        if (contentParent == null || playerUIItems.Count <= 1) return;
+
+        var sortedPlayers = playerUIItems.Values.OrderBy(item => item.GetPlayerName()).ToList();
+
+        for (int i = 0; i < sortedPlayers.Count; i++)
+        {
+            sortedPlayers[i].transform.SetSiblingIndex(i);
+        }
+    }
+
     private void ClearPlayerListUI()
     {
         if (contentParent == null) return;
@@ -516,26 +507,19 @@ public class UI_WaitingRoom : MonoBehaviour
         {
             Destroy(child.gameObject);
         }
-        playerUIItems.Clear(); // Xóa hết khỏi dictionary quản lý
+        playerUIItems.Clear();
     }
 
-
-    // --- Logic xử lý sự kiện ---
-
-    // Xử lý khi trạng thái Ready của người chơi thay đổi trên UI Item
     private void HandlePlayerReadyStatusChanged(string userId, bool isReady)
     {
         Debug.Log($"Player {userId} changed ready status to {isReady}");
-        // Ghi trạng thái Ready mới lên Firebase
         UpdatePlayerReadyStatusOnFirebase(userId, isReady);
     }
 
-    // Cập nhật trạng thái Ready của người chơi trên Firebase
     private void UpdatePlayerReadyStatusOnFirebase(string userId, bool isReady)
     {
         if (dbReference == null || string.IsNullOrEmpty(currentRoomId) || string.IsNullOrEmpty(userId)) return;
 
-        // Ghi trạng thái Ready vào Rooms/{roomId}/players/{userId}/isReady
         dbReference.Child("Rooms").Child(currentRoomId).Child("players").Child(userId).Child("isReady").SetValueAsync(isReady)
             .ContinueWithOnMainThread(task =>
             {
@@ -551,24 +535,19 @@ public class UI_WaitingRoom : MonoBehaviour
     }
 
     // Kiểm tra và bật/tắt nút Start
-    private void CheckAndEnableStartButton(List<PlayerInRoomInfo> players, string hostId)
+    // Logic mới: Bật nút Start nếu có đúng 2 người chơi và cả 2 đều Ready
+    private void CheckAndEnableStartButton(List<PlayerInRoomInfo> players)
     {
         if (startGameButton == null) return;
 
-        // Nút Start chỉ hiển thị và tương tác được cho chủ phòng
-        if (currentUserId == hostId)
-        {
-            startGameButton.gameObject.SetActive(true); // Đảm bảo nút Start hiển thị cho host
+        bool hasTwoPlayers = players != null && players.Count == 2;
+        bool allReady = hasTwoPlayers && players.All(p => p.isReady);
 
-            // Kiểm tra xem có đủ 2 người chơi và cả 2 đã Ready chưa
-            bool allPlayersReady = players != null && players.Count == 2 && players.All(p => p.isReady);
-            startGameButton.interactable = allPlayersReady; // Bật nút nếu cả 2 Ready
-        }
-        else
-        {
-            // Nút Start không hiển thị cho người chơi không phải chủ phòng
-            startGameButton.gameObject.SetActive(false);
-        }
+        // Nút Start chỉ hiển thị khi có đúng 2 người chơi
+        startGameButton.gameObject.SetActive(hasTwoPlayers);
+
+        // Bật/tắt tương tác của nút dựa trên trạng thái Ready của cả 2
+        startGameButton.interactable = allReady;
     }
 
     // Cần thêm logic xử lý khi game bắt đầu (chuyển scene)
