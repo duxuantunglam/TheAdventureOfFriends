@@ -9,6 +9,7 @@ using Firebase.Extensions;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+
 public class Authentication : MonoBehaviour
 {
     public static Authentication instance { get; private set; }
@@ -35,6 +36,12 @@ public class Authentication : MonoBehaviour
         {
             instance = this;
         }
+        else if (instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
 
         loginPanel.SetActive(true);
 
@@ -63,6 +70,7 @@ public class Authentication : MonoBehaviour
         signUpPanel.SetActive(false);
         profilePanel.SetActive(false);
         forgetPasswordPanel.SetActive(false);
+        notificationPanel.SetActive(false);
 
         switch (panelName)
         {
@@ -106,6 +114,11 @@ public class Authentication : MonoBehaviour
             showNotificationMessage("Error", "Fields Empty! Please Input Details In All Fields");
             return;
         }
+        if (signUpPassword.text != signUpConfirmPassword.text)
+        {
+            showNotificationMessage("Error", "Passwords do not match!");
+            return;
+        }
 
         CreateUser(signUpEmail.text, signUpPassword.text, signupUserName.text);
     }
@@ -139,7 +152,11 @@ public class Authentication : MonoBehaviour
 
     public void LogOut()
     {
-        auth.SignOut();
+        if (auth.CurrentUser != null)
+        {
+            SetUserOnlineStatus(auth.CurrentUser.UserId, false);
+            auth.SignOut();
+        }
         profileUserNameText.text = "";
         OpenPanel("Login");
     }
@@ -151,6 +168,7 @@ public class Authentication : MonoBehaviour
             if (task.IsCanceled)
             {
                 Debug.LogError("CreateUserWithEmailAndPasswordAsync was canceled.");
+                showNotificationMessage("Error", "Creation cancelled.");
                 return;
             }
             if (task.IsFaulted)
@@ -184,6 +202,7 @@ public class Authentication : MonoBehaviour
             if (task.IsCanceled)
             {
                 Debug.LogError("SignInWithEmailAndPasswordAsync was canceled.");
+                showNotificationMessage("Error", "Sign In cancelled.");
                 return;
             }
             if (task.IsFaulted)
@@ -202,6 +221,7 @@ public class Authentication : MonoBehaviour
                 return;
             }
             AuthResult result = task.Result;
+            Debug.LogFormat("User signed in successfully: {0} ({1})", result.User.DisplayName, result.User.UserId);
         });
     }
 
@@ -214,36 +234,53 @@ public class Authentication : MonoBehaviour
         dbReference = FirebaseDatabase.DefaultInstance.RootReference;
 
         auth.StateChanged += AuthStateChanged;
+        Debug.Log("Firebase Initialized");
     }
 
     void AuthStateChanged(object sender, EventArgs eventArgs)
     {
-        if (auth.CurrentUser != user)
+        FirebaseUser prevUser = user;
+        user = auth.CurrentUser;
+
+        if (user != prevUser)
         {
-            bool signedIn = user != auth.CurrentUser && auth.CurrentUser != null
-                && auth.CurrentUser.IsValid();
-            if (!signedIn && user != null)
+            bool signedIn = user != null && user.IsValid();
+
+            if (!signedIn && prevUser != null)
             {
-                Debug.Log("Signed out " + user.UserId);
+                Debug.Log("Signed out " + prevUser.UserId);
                 CurrentUser = null;
+                SetUserOnlineStatus(prevUser.UserId, false);
                 OpenPanel("Login");
             }
-            user = auth.CurrentUser;
-            if (signedIn)
+            else if (signedIn)
             {
                 Debug.Log("Signed in " + user.UserId);
                 profileUserNameText.text = "Welcome " + user.DisplayName + "!";
-                OpenPanel("Profile");
 
                 LoadUserDataFromRealtimeDatabase();
+
+                SetUserOnlineStatus(user.UserId, true);
+                SetOnDisconnectOnlineStatus(user.UserId, false);
+
+
+                OpenPanel("Profile");
             }
         }
     }
 
     void OnDestroy()
     {
-        auth.StateChanged -= AuthStateChanged;
-        auth = null;
+        if (auth != null && auth.CurrentUser != null)
+        {
+            SetUserOnlineStatus(auth.CurrentUser.UserId, false);
+            dbReference.Child("Users").Child(auth.CurrentUser.UserId).Child("isOnline").OnDisconnect().Cancel();
+        }
+        if (auth != null)
+        {
+            auth.StateChanged -= AuthStateChanged;
+            auth = null;
+        }
     }
 
     public void UpdateUserProfile(string userName)
@@ -256,22 +293,25 @@ public class Authentication : MonoBehaviour
                 DisplayName = userName,
                 PhotoUrl = new Uri("https://placehold.co/600x400"),
             };
-            user.UpdateUserProfileAsync(profile).ContinueWith(task =>
+            user.UpdateUserProfileAsync(profile).ContinueWithOnMainThread(task =>
             {
                 if (task.IsCanceled)
                 {
                     Debug.LogError("UpdateUserProfileAsync was canceled.");
+                    showNotificationMessage("Error", "Profile update cancelled.");
                     return;
                 }
                 if (task.IsFaulted)
                 {
                     Debug.LogError("UpdateUserProfileAsync encountered an error: " + task.Exception);
+                    showNotificationMessage("Error", "Profile update failed.");
                     return;
                 }
 
                 Debug.Log("User profile updated successfully.");
 
-                showNotificationMessage("Alert", "Account Successfully Created!");
+                showNotificationMessage("Alert", "Account Successfully Created! Please login.");
+                OpenPanel("Login");
             });
         }
     }
@@ -282,28 +322,32 @@ public class Authentication : MonoBehaviour
         switch (errorCode)
         {
             case AuthError.AccountExistsWithDifferentCredentials:
-                message = "Account not exist!";
+                message = "Account exists with different credentials!";
                 break;
             case AuthError.MissingPassword:
                 message = "Missing Password!";
                 break;
             case AuthError.WeakPassword:
-                message = "Password so weak!";
+                message = "Password is too weak!";
                 break;
             case AuthError.WrongPassword:
                 message = "Wrong Password!";
                 break;
             case AuthError.EmailAlreadyInUse:
-                message = "This email already in use!";
+                message = "This email is already in use!";
                 break;
             case AuthError.InvalidEmail:
-                message = "This email invalid!";
+                message = "This email is invalid!";
                 break;
             case AuthError.MissingEmail:
                 message = "Missing email!";
                 break;
+            case AuthError.UserNotFound:
+                message = "User not found!";
+                break;
             default:
-                message = "Invalid error!";
+                message = "Authentication error!";
+                Debug.LogError($"Unhandled AuthError: {errorCode}");
                 break;
         }
         return message;
@@ -316,9 +360,11 @@ public class Authentication : MonoBehaviour
             if (task.IsCanceled)
             {
                 Debug.LogError("SendPasswordResetEmail was canceled.");
+                showNotificationMessage("Error", "Password reset email cancelled.");
             }
             if (task.IsFaulted)
             {
+                Debug.LogError("SendPasswordResetEmail encountered an error: " + task.Exception);
                 foreach (Exception exception in task.Exception.Flatten().InnerExceptions)
                 {
                     FirebaseException firebaseEx = exception as FirebaseException;
@@ -329,8 +375,12 @@ public class Authentication : MonoBehaviour
                     }
                 }
             }
-
-            showNotificationMessage("Alert", "Successfully send email for reset password!");
+            else if (task.IsCompleted)
+            {
+                Debug.Log("Password reset email sent successfully.");
+                showNotificationMessage("Alert", "Successfully send email for reset password!");
+                OpenPanel("Login");
+            }
         });
     }
 
@@ -395,10 +445,43 @@ public class Authentication : MonoBehaviour
                     CurrentUser = new UserData
                     {
                         userName = auth.CurrentUser.DisplayName ?? "Unknown",
-                        id = auth.CurrentUser.UserId
+                        id = auth.CurrentUser.UserId,
                     };
                     SaveUserDataToRealtimeDatabase();
                 }
+            }
+        });
+    }
+    private void SetUserOnlineStatus(string userId, bool isOnline)
+    {
+        if (dbReference == null || string.IsNullOrEmpty(userId)) return;
+
+        dbReference.Child("Users").Child(userId).Child("isOnline").SetValueAsync(isOnline).ContinueWithOnMainThread(task =>
+        {
+            if (task.IsFaulted)
+            {
+                Debug.LogError($"Failed to set online status for user {userId}: {task.Exception}");
+            }
+            else if (task.IsCompleted)
+            {
+                Debug.Log($"User {userId} online status set to {isOnline}");
+            }
+        });
+    }
+
+    private void SetOnDisconnectOnlineStatus(string userId, bool statusOnDisconnect)
+    {
+        if (dbReference == null || string.IsNullOrEmpty(userId)) return;
+
+        dbReference.Child("Users").Child(userId).Child("isOnline").OnDisconnect().SetValue(statusOnDisconnect).ContinueWithOnMainThread(task =>
+        {
+            if (task.IsFaulted)
+            {
+                Debug.LogError($"Failed to set onDisconnect status for user {userId}: {task.Exception}");
+            }
+            else if (task.IsCompleted)
+            {
+                Debug.Log($"User {userId} onDisconnect status set to {statusOnDisconnect}");
             }
         });
     }
