@@ -62,6 +62,7 @@
         "Cinemachine",
         "cooldown",
         "Dont",
+        "interactable",
         "knockback",
         "Mathf",
         "paratemtrs",

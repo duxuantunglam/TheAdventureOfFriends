@@ -257,6 +257,13 @@ public class PlayersRecommendationManager // Không kế thừa từ MonoBehavio
         // 5. Sắp xếp danh sách theo điểm phù hợp giảm dần
         recommendedPlayers = recommendedPlayers.OrderByDescending(p => p.suitabilityScore).ToList();
 
+        // **Thêm bước lọc cuối cùng để đảm bảo loại bỏ người chơi hiện tại**
+        if (!string.IsNullOrEmpty(currentUserId))
+        {
+            recommendedPlayers = recommendedPlayers.Where(p => p.userId != currentUserId).ToList();
+            Debug.Log($"Filtered out current user {currentUserId} from recommended list. List count: {recommendedPlayers.Count}");
+        }
+
         // Trả về danh sách đã được sắp xếp dưới dạng List<RecommendedPlayerData>
         return recommendedPlayers.Cast<RecommendedPlayerData>().ToList();
     }

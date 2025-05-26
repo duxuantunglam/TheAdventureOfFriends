@@ -299,7 +299,7 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5667978874775074213}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -392,7 +392,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playerNameText: {fileID: 1723434452853554210}
   statusText: {fileID: 7871189727569368284}
-  invitePlayerButton: {fileID: 6051639451890827739}
+  inviteButton: {fileID: 6051639451890827739}
 --- !u!1 &6387111209641363028
 GameObject:
   m_ObjectHideFlags: 0
