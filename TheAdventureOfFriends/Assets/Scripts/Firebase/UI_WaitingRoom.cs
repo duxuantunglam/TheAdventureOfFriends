@@ -118,13 +118,12 @@ public class UI_WaitingRoom : MonoBehaviour
         Debug.Log($"Attempting to create room {currentRoomId} by {creatingUserId}");
 
         //TODO: JSON
-        var roomData = new
+        RoomData roomData = new RoomData
         {
-            players = new Dictionary<string, object>()
+            players = new Dictionary<string, RoomPlayerData>
             {
-                { creatingUserId, new { userName = creatingUserName, isReady = false } }
+                { creatingUserId, new RoomPlayerData { userName = creatingUserName, isReady = false } }
             },
-
             status = "waiting"
         };
 
@@ -157,13 +156,14 @@ public class UI_WaitingRoom : MonoBehaviour
         string invitationId = invitationsRef.Key;
 
         //TODO: JSON
-        var invitationData = new
+        InvitationData invitationData = new InvitationData
         {
             roomId = roomId,
             inviterId = inviterId,
+            invitedId = invitedId,
             inviterName = inviterName,
-            timestamp = ServerValue.Timestamp // Thời gian tạo lời mời
-            // Có thể thêm thời gian hết hạn lời mời nếu cần
+            timestamp = ServerValue.Timestamp
+            // thêm thời gian hết hạn lời mời
         };
 
         await invitationsRef.SetRawJsonValueAsync(JsonUtility.ToJson(invitationData))
@@ -219,7 +219,9 @@ public class UI_WaitingRoom : MonoBehaviour
         }
 
 
-        await roomPlayersRef.Child(userId).SetRawJsonValueAsync(JsonUtility.ToJson(new { userName = userName, isReady = false }))
+        RoomPlayerData newPlayerData = new RoomPlayerData { userName = userName, isReady = false };
+
+        await roomPlayersRef.Child(userId).SetRawJsonValueAsync(JsonUtility.ToJson(newPlayerData))
             .ContinueWithOnMainThread(task =>
             {
                 if (task.IsFaulted)
