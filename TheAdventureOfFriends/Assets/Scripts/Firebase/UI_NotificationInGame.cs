@@ -25,39 +25,32 @@ public class UI_NotificationInGame : MonoBehaviour
             if (declineButton != null) declineButton.onClick.RemoveAllListeners();
             if (closeButton != null) closeButton.onClick.RemoveAllListeners();
 
-            if (acceptButton != null && onAccept != null)
+            if (acceptButton != null)
             {
                 acceptButton.onClick.AddListener(() =>
                 {
-                    onAccept.Invoke();
+                    onAccept?.Invoke();
                     HideNotification();
                 });
             }
 
-            if (declineButton != null && onDecline != null)
+            if (declineButton != null)
             {
                 declineButton.onClick.AddListener(() =>
                 {
-                    onDecline.Invoke();
+                    onDecline?.Invoke();
                     HideNotification();
                 });
             }
 
-            if (closeButton != null && onClose != null)
+            if (closeButton != null)
             {
                 closeButton.onClick.AddListener(() =>
                 {
-                    onClose.Invoke();
+                    onClose?.Invoke();
                     HideNotification();
                 });
             }
-            else if (closeButton != null)
-            {
-                closeButton.onClick.AddListener(HideNotification);
-            }
-            if (acceptButton != null && onAccept == null) acceptButton.onClick.AddListener(HideNotification);
-            if (declineButton != null && onDecline == null) declineButton.onClick.AddListener(HideNotification);
-
         }
     }
 

@@ -1,4 +1,4 @@
-using System; // Cần thiết cho Action
+using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
