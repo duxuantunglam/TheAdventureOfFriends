@@ -9,7 +9,24 @@ public class UI_Difficulty : MonoBehaviour
         difficultyManager = DifficultyManager.instance;
     }
 
-    public void SetEasyMode() => difficultyManager.SetDifficulty(DifficultyType.Easy);
-    public void SetNormalMode() => difficultyManager.SetDifficulty(DifficultyType.Normal);
-    public void SetHardMode() => difficultyManager.SetDifficulty(DifficultyType.Hard);
+    public void SetEasyMode()
+    {
+        difficultyManager.SetDifficulty(DifficultyType.Easy);
+        if (Authentication.CurrentUser != null)
+            Authentication.CurrentUser.gameProgress.gameDifficulty = (int)DifficultyType.Easy;
+    }
+
+    public void SetNormalMode()
+    {
+        difficultyManager.SetDifficulty(DifficultyType.Normal);
+        if (Authentication.CurrentUser != null)
+            Authentication.CurrentUser.gameProgress.gameDifficulty = (int)DifficultyType.Normal;
+    }
+
+    public void SetHardMode()
+    {
+        difficultyManager.SetDifficulty(DifficultyType.Hard);
+        if (Authentication.CurrentUser != null)
+            Authentication.CurrentUser.gameProgress.gameDifficulty = (int)DifficultyType.Hard;
+    }
 }

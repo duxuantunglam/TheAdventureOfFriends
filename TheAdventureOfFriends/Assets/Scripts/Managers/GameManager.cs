@@ -151,10 +151,7 @@ public class GameManager : MonoBehaviour
         SaveAverageEnemiesKilled();
         SaveAverageKnockBack();
 
-        if (Authentication.CurrentUser != null)
-        {
-            Authentication.CurrentUser.completedLevelCount++;
-        }
+        SaveDifficultyLevelCompletedCount();
 
         SaveCurrentUserData();
 
@@ -291,6 +288,27 @@ public class GameManager : MonoBehaviour
         }
 
         Authentication.CurrentUser.averageKnockBacks = newAverageKnockBacks;
+    }
+
+    private void SaveDifficultyLevelCompletedCount()
+    {
+        if (Authentication.CurrentUser != null)
+        {
+            Authentication.CurrentUser.completedLevelCount++;
+            int currentDifficulty = Authentication.CurrentUser.gameProgress.gameDifficulty;
+            switch (currentDifficulty)
+            {
+                case 1:
+                    Authentication.CurrentUser.easyLevelCompleted++;
+                    break;
+                case 2:
+                    Authentication.CurrentUser.normalLevelCompleted++;
+                    break;
+                case 3:
+                    Authentication.CurrentUser.hardLevelCompleted++;
+                    break;
+            }
+        }
     }
 
     private void SaveLevelProgression()

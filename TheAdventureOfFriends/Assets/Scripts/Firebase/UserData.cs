@@ -25,6 +25,9 @@ public class UserData
     public string id;
 
     public int completedLevelCount = 0;
+    public int easyLevelCompleted = 0;
+    public int normalLevelCompleted = 0;
+    public int hardLevelCompleted = 0;
     public int totalFruitAmount = 0;
     public float averageFruit = 0f;
     public float averageTime = 0f;
