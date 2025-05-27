@@ -222,6 +222,11 @@ public class Authentication : MonoBehaviour
             }
             AuthResult result = task.Result;
             Debug.LogFormat("User signed in successfully: {0} ({1})", result.User.DisplayName, result.User.UserId);
+
+            if (task.IsCompleted && auth.CurrentUser != null)
+            {
+                UpdateLastOnlineTime(auth.CurrentUser.UserId);
+            }
         });
     }
 
@@ -263,6 +268,7 @@ public class Authentication : MonoBehaviour
                 SetUserOnlineStatus(user.UserId, true);
                 SetOnDisconnectOnlineStatus(user.UserId, false);
 
+                UpdateLastOnlineTime(user.UserId);
 
                 OpenPanel("Profile");
             }
@@ -482,6 +488,23 @@ public class Authentication : MonoBehaviour
             else if (task.IsCompleted)
             {
                 Debug.Log($"User {userId} onDisconnect status set to {statusOnDisconnect}");
+            }
+        });
+    }
+
+    private void UpdateLastOnlineTime(string userId)
+    {
+        if (dbReference == null || string.IsNullOrEmpty(userId)) return;
+        string currentTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+        dbReference.Child("Users").Child(userId).Child("lastOnlineTime").SetValueAsync(currentTime).ContinueWithOnMainThread(task =>
+        {
+            if (task.IsFaulted)
+            {
+                Debug.LogError($"Failed to update last online time for user {userId}: {task.Exception}");
+            }
+            else if (task.IsCompleted)
+            {
+                Debug.Log($"User {userId} last online time updated to {currentTime}");
             }
         });
     }
