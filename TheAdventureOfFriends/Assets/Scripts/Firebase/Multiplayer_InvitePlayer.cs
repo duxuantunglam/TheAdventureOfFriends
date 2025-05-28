@@ -4,13 +4,10 @@ using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 
-[Serializable]
-public class RecommendedPlayerData
+public enum FilterType
 {
-    public string userId;
-    public string userName;
-    public string status;
-    public bool isOnline;
+    ContentBased,
+    Collaborative
 }
 
 public class Multiplayer_InvitePlayer : MonoBehaviour
@@ -20,7 +17,12 @@ public class Multiplayer_InvitePlayer : MonoBehaviour
     [SerializeField] private Transform contentParent;
     [SerializeField] private UI_WaitingRoom waitingRoomUI;
 
-    private async void OnEnable()
+    private void OnEnable()
+    {
+        LoadAndDisplayRecommendedPlayers(FilterType.ContentBased);
+    }
+
+    private async void LoadAndDisplayRecommendedPlayers(FilterType filterType)
     {
         string currentUserId = PlayersRecommendationManager.Instance.GetCurrentUserId();
         if (string.IsNullOrEmpty(currentUserId))
@@ -29,9 +31,17 @@ public class Multiplayer_InvitePlayer : MonoBehaviour
             return;
         }
 
-        Debug.Log("Loading recommended players...");
+        Debug.Log($"Loading recommended players using {filterType} filtering...");
 
-        List<RecommendedPlayerData> recommendedPlayers = await PlayersRecommendationManager.Instance.GetRecommendedPlayersAsync(currentUserId);
+        List<RecommendedPlayerData> recommendedPlayers = null;
+        if (filterType == FilterType.ContentBased)
+        {
+            recommendedPlayers = await PlayersRecommendationManager.Instance.GetContentBasedRecommendedPlayersAsync(currentUserId);
+        }
+        else if (filterType == FilterType.Collaborative)
+        {
+            recommendedPlayers = await PlayersRecommendationManager.Instance.GetCollaborativeRecommendedPlayersAsync(currentUserId);
+        }
 
         Debug.Log($"Multiplayer_InvitePlayer: Received {recommendedPlayers?.Count ?? 0} recommended players from manager.");
         if (recommendedPlayers != null)
@@ -45,6 +55,24 @@ public class Multiplayer_InvitePlayer : MonoBehaviour
         Debug.Log("Recommended players loaded.");
 
         PopulatePlayerList(recommendedPlayers);
+    }
+
+    public void OnFilterByScoreButtonClicked()
+    {
+        if (invitePlayerUIPanel != null)
+        {
+            invitePlayerUIPanel.SetActive(true);
+            LoadAndDisplayRecommendedPlayers(FilterType.ContentBased);
+        }
+    }
+
+    public void OnFilterByGameStyleButtonClicked()
+    {
+        if (invitePlayerUIPanel != null)
+        {
+            invitePlayerUIPanel.SetActive(true);
+            LoadAndDisplayRecommendedPlayers(FilterType.Collaborative);
+        }
     }
 
     public void HidePanel()

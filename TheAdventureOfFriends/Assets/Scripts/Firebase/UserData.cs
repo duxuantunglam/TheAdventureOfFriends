@@ -41,6 +41,7 @@ public class UserData
     public Dictionary<string, bool> skinUnlockedName = new Dictionary<string, bool>();
 
     public GameData gameProgress = new GameData();
+    public int[] playTimeInDay = new int[8];
 
     public UserData()
     {

@@ -25,7 +25,6 @@ public class Authentication : MonoBehaviour
 
     FirebaseAuth auth;
     FirebaseUser user;
-
     private DatabaseReference dbReference;
 
     private void Start()
@@ -96,6 +95,18 @@ public class Authentication : MonoBehaviour
         }
     }
 
+    void InitializeFirebase()
+    {
+        auth = FirebaseAuth.DefaultInstance;
+
+        FirebaseApp.DefaultInstance.Options.DatabaseUrl = new Uri("https://theadventureoffriends-default-rtdb.asia-southeast1.firebasedatabase.app/");
+
+        dbReference = FirebaseDatabase.DefaultInstance.RootReference;
+
+        auth.StateChanged += AuthStateChanged;
+        Debug.Log("Firebase Initialized");
+    }
+
     public void LoginUser()
     {
         if (string.IsNullOrEmpty(loginEmail.text) || string.IsNullOrEmpty(loginPassword.text))
@@ -161,6 +172,7 @@ public class Authentication : MonoBehaviour
         OpenPanel("Login");
     }
 
+    // TODO: tránh trùng lặp userName
     public void CreateUser(string email, string password, string userName)
     {
         auth.CreateUserWithEmailAndPasswordAsync(email, password).ContinueWithOnMainThread(task =>
@@ -230,18 +242,6 @@ public class Authentication : MonoBehaviour
         });
     }
 
-    void InitializeFirebase()
-    {
-        auth = FirebaseAuth.DefaultInstance;
-
-        FirebaseApp.DefaultInstance.Options.DatabaseUrl = new Uri("https://theadventureoffriends-default-rtdb.asia-southeast1.firebasedatabase.app/");
-
-        dbReference = FirebaseDatabase.DefaultInstance.RootReference;
-
-        auth.StateChanged += AuthStateChanged;
-        Debug.Log("Firebase Initialized");
-    }
-
     void AuthStateChanged(object sender, EventArgs eventArgs)
     {
         FirebaseUser prevUser = user;
@@ -267,7 +267,6 @@ public class Authentication : MonoBehaviour
 
                 SetUserOnlineStatus(user.UserId, true);
                 SetOnDisconnectOnlineStatus(user.UserId, false);
-
                 UpdateLastOnlineTime(user.UserId);
 
                 OpenPanel("Profile");
@@ -359,7 +358,7 @@ public class Authentication : MonoBehaviour
         return message;
     }
 
-    void forgetPasswordSubmit(string forgetPasswordEmail)
+    private void forgetPasswordSubmit(string forgetPasswordEmail)
     {
         auth.SendPasswordResetEmailAsync(forgetPasswordEmail).ContinueWithOnMainThread(task =>
         {
@@ -495,8 +494,7 @@ public class Authentication : MonoBehaviour
     private void UpdateLastOnlineTime(string userId)
     {
         if (dbReference == null || string.IsNullOrEmpty(userId)) return;
-        string currentTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-        dbReference.Child("Users").Child(userId).Child("lastOnlineTime").SetValueAsync(currentTime).ContinueWithOnMainThread(task =>
+        dbReference.Child("Users").Child(userId).Child("lastOnlineTime").SetValueAsync(ServerValue.Timestamp).ContinueWithOnMainThread(task =>
         {
             if (task.IsFaulted)
             {
@@ -504,8 +502,29 @@ public class Authentication : MonoBehaviour
             }
             else if (task.IsCompleted)
             {
-                Debug.Log($"User {userId} last online time updated to {currentTime}");
+                Debug.Log($"User {userId} last online time updated");
+                UpdatePlayTimeInDay();
             }
         });
+    }
+
+    private void UpdatePlayTimeInDay()
+    {
+        if (CurrentUser != null)
+        {
+            dbReference.Child("Users").Child(auth.CurrentUser.UserId).Child("lastOnlineTime").GetValueAsync().ContinueWithOnMainThread(task =>
+            {
+                if (task.IsCompleted && task.Result.Exists)
+                {
+                    long timestamp = long.Parse(task.Result.Value.ToString());
+                    DateTime serverTime = DateTimeOffset.FromUnixTimeMilliseconds(timestamp).DateTime;
+                    int hour = serverTime.Hour;
+                    int slot = hour / 3;
+
+                    CurrentUser.playTimeInDay[slot]++;
+                    SaveUserDataToRealtimeDatabase();
+                }
+            });
+        }
     }
 }
