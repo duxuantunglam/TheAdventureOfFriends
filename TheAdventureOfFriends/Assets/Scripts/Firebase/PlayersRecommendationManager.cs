@@ -155,23 +155,96 @@ public class PlayersRecommendationManager
         return onlineStatus;
     }
 
-    private float[] NormalizeVector(float[] vector)
+    // private float[] NormalizeVector(float[] vector)
+    // {
+    //     float sumOfSquares = 0;
+    //     for (int i = 0; i < vector.Length; i++)
+    //     {
+    //         sumOfSquares += vector[i] * vector[i];
+    //     }
+    //     float magnitude = Mathf.Sqrt(sumOfSquares);
+
+    //     if (magnitude == 0) return new float[vector.Length];
+
+    //     float[] normalizedVector = new float[vector.Length];
+    //     for (int i = 0; i < vector.Length; i++)
+    //     {
+    //         normalizedVector[i] = vector[i] / magnitude;
+    //     }
+    //     return normalizedVector;
+    // }
+
+    private List<float[]> NormalizeMinMaxContentBased(List<PlayersRecommendationByFeatures> playerStatsList, List<string> playerIds)
     {
-        float sumOfSquares = 0;
-        for (int i = 0; i < vector.Length; i++)
-        {
-            sumOfSquares += vector[i] * vector[i];
-        }
-        float magnitude = Mathf.Sqrt(sumOfSquares);
+        if (playerStatsList == null || playerStatsList.Count == 0) return new List<float[]>();
 
-        if (magnitude == 0) return new float[vector.Length];
+        float minFruit = playerStatsList.Min(p => p.averageFruit);
+        float maxFruit = playerStatsList.Max(p => p.averageFruit);
+        float minTime = playerStatsList.Min(p => p.averageTime);
+        float maxTime = playerStatsList.Max(p => p.averageTime);
+        float minEnemies = playerStatsList.Min(p => p.averageEnemiesKilled);
+        float maxEnemies = playerStatsList.Max(p => p.averageEnemiesKilled);
+        float minKnockBacks = playerStatsList.Min(p => p.averageKnockBacks);
+        float maxKnockBacks = playerStatsList.Max(p => p.averageKnockBacks);
 
-        float[] normalizedVector = new float[vector.Length];
-        for (int i = 0; i < vector.Length; i++)
+        List<float[]> normalizedVectors = new List<float[]>();
+
+        foreach (var playerStats in playerStatsList)
         {
-            normalizedVector[i] = vector[i] / magnitude;
+            if (!playerIds.Contains(playerStats.id)) continue;
+
+            float[] vector = new float[4];
+            vector[0] = (maxFruit == minFruit) ? 0 : (playerStats.averageFruit - minFruit) / Mathf.Max(maxFruit - minFruit, 1);
+            vector[1] = (maxTime == minTime) ? 0 : (playerStats.averageTime - minTime) / Mathf.Max(maxTime - minTime, 1);
+            vector[2] = (maxEnemies == minEnemies) ? 0 : (playerStats.averageEnemiesKilled - minEnemies) / Mathf.Max(maxEnemies - minEnemies, 1);
+            vector[3] = (maxKnockBacks == minKnockBacks) ? 0 : (playerStats.averageKnockBacks - minKnockBacks) / Mathf.Max(maxKnockBacks - minKnockBacks, 1);
+
+            normalizedVectors.Add(vector);
         }
-        return normalizedVector;
+
+        return normalizedVectors;
+    }
+
+    private List<float[]> NormalizeMinMaxCollaborative(List<PlayersRecommendationByBehaviors> playerBehaviorsList, List<string> playerIds)
+    {
+        if (playerBehaviorsList == null || playerBehaviorsList.Count == 0) return new List<float[]>();
+
+        float minEasy = playerBehaviorsList.Min(p => p.easyLevelCompleted);
+        float maxEasy = playerBehaviorsList.Max(p => p.easyLevelCompleted);
+        float minNormal = playerBehaviorsList.Min(p => p.normalLevelCompleted);
+        float maxNormal = playerBehaviorsList.Max(p => p.normalLevelCompleted);
+        float minHard = playerBehaviorsList.Min(p => p.hardLevelCompleted);
+        float maxHard = playerBehaviorsList.Max(p => p.hardLevelCompleted);
+
+        float[] minPlayTime = new float[8];
+        float[] maxPlayTime = new float[8];
+        for (int i = 0; i < 8; i++)
+        {
+            int slot = i;
+            minPlayTime[i] = playerBehaviorsList.Min(p => p.playTimeInDay[slot]);
+            maxPlayTime[i] = playerBehaviorsList.Max(p => p.playTimeInDay[slot]);
+        }
+
+        List<float[]> normalizedVectors = new List<float[]>();
+
+        foreach (var playerBehavior in playerBehaviorsList)
+        {
+            if (!playerIds.Contains(playerBehavior.id)) continue;
+
+            float[] vector = new float[11];
+            vector[0] = (maxEasy == minEasy) ? 0 : (playerBehavior.easyLevelCompleted - minEasy) / Mathf.Max(maxEasy - minEasy, 1);
+            vector[1] = (maxNormal == minNormal) ? 0 : (playerBehavior.normalLevelCompleted - minNormal) / Mathf.Max(maxNormal - minNormal, 1);
+            vector[2] = (maxHard == minHard) ? 0 : (playerBehavior.hardLevelCompleted - minHard) / Mathf.Max(maxHard - minHard, 1);
+
+            for (int i = 0; i < 8; i++)
+            {
+                vector[i + 3] = (maxPlayTime[i] == minPlayTime[i]) ? 0 : (playerBehavior.playTimeInDay[i] - minPlayTime[i]) / Mathf.Max(maxPlayTime[i] - minPlayTime[i], 1);
+            }
+
+            normalizedVectors.Add(vector);
+        }
+
+        return normalizedVectors;
     }
 
     private float CalculateCosineSimilarity(float[] vector1, float[] vector2)
@@ -201,6 +274,78 @@ public class PlayersRecommendationManager
         return dotProduct / (magnitude1 * magnitude2);
     }
 
+    // public async Task<List<RecommendedPlayerData>> GetContentBasedRecommendedPlayersAsync(string currentUserId)
+    // {
+    //     List<PlayersRecommendationByFeatures> allPlayerStats = await LoadAllPlayerFeatureAsync();
+
+    //     if (allPlayerStats == null || allPlayerStats.Count == 0)
+    //     {
+    //         Debug.LogWarning("No player stats loaded.");
+    //         return new List<RecommendedPlayerData>();
+    //     }
+
+    //     PlayersRecommendationByFeatures currentUserStats = allPlayerStats.FirstOrDefault(p => p.id == currentUserId);
+
+    //     if (currentUserStats == null)
+    //     {
+    //         Debug.LogWarning($"Stats not found for current user ID: {currentUserId}. Cannot generate recommendations.");
+
+    //         return allPlayerStats.Where(p => p.id != currentUserId)
+    //                             .Select(p => new RecommendedPlayerData { userId = p.id, userName = p.userName, status = "Unknown", isOnline = false })
+    //                             .ToList();
+    //     }
+
+    //     List<string> otherPlayerIds = allPlayerStats.Where(p => p.id != currentUserId).Select(p => p.id).ToList();
+
+    //     Dictionary<string, bool> onlineStatus = await LoadPlayerOnlineStatusAsync(otherPlayerIds);
+
+    //     float[] currentUserVector = new float[] {
+    //         currentUserStats.averageFruit,
+    //         currentUserStats.averageTime,
+    //         currentUserStats.averageEnemiesKilled,
+    //         currentUserStats.averageKnockBacks
+    //     };
+
+    //     float[] normalizedCurrentUserVector = NormalizeVector(currentUserVector);
+
+    //     List<RecommendedPlayerInfo> recommendedPlayers = new List<RecommendedPlayerInfo>();
+
+    //     foreach (var otherPlayerStats in allPlayerStats.Where(p => p.id != currentUserId))
+    //     {
+    //         float[] otherPlayerVector = new float[] {
+    //             otherPlayerStats.averageFruit,
+    //             otherPlayerStats.averageTime,
+    //             otherPlayerStats.averageEnemiesKilled,
+    //             otherPlayerStats.averageKnockBacks
+    //         };
+
+    //         float[] normalizedOtherPlayerVector = NormalizeVector(otherPlayerVector);
+
+    //         float suitabilityScore = CalculateCosineSimilarity(normalizedCurrentUserVector, normalizedOtherPlayerVector);
+
+    //         RecommendedPlayerInfo recommendedPlayer = new RecommendedPlayerInfo
+    //         {
+    //             userId = otherPlayerStats.id,
+    //             userName = otherPlayerStats.userName,
+    //             isOnline = onlineStatus.ContainsKey(otherPlayerStats.id) ? onlineStatus[otherPlayerStats.id] : false,
+    //             status = (onlineStatus.ContainsKey(otherPlayerStats.id) && onlineStatus[otherPlayerStats.id]) ? "Online" : "Offline",
+    //             suitabilityScore = suitabilityScore
+    //         };
+
+    //         recommendedPlayers.Add(recommendedPlayer);
+    //     }
+
+    //     recommendedPlayers = recommendedPlayers.OrderByDescending(p => p.suitabilityScore).ToList();
+
+    //     if (!string.IsNullOrEmpty(currentUserId))
+    //     {
+    //         recommendedPlayers = recommendedPlayers.Where(p => p.userId != currentUserId).ToList();
+    //         Debug.Log($"Filtered out current user {currentUserId} from recommended list. List count: {recommendedPlayers.Count}");
+    //     }
+
+    //     return recommendedPlayers.Cast<RecommendedPlayerData>().ToList();
+    // }
+
     public async Task<List<RecommendedPlayerData>> GetContentBasedRecommendedPlayersAsync(string currentUserId)
     {
         List<PlayersRecommendationByFeatures> allPlayerStats = await LoadAllPlayerFeatureAsync();
@@ -223,32 +368,26 @@ public class PlayersRecommendationManager
         }
 
         List<string> otherPlayerIds = allPlayerStats.Where(p => p.id != currentUserId).Select(p => p.id).ToList();
+        otherPlayerIds.Add(currentUserId);
 
         Dictionary<string, bool> onlineStatus = await LoadPlayerOnlineStatusAsync(otherPlayerIds);
 
-        float[] currentUserVector = new float[] {
-            currentUserStats.averageFruit,
-            currentUserStats.averageTime,
-            currentUserStats.averageEnemiesKilled,
-            currentUserStats.averageKnockBacks
-        };
+        List<float[]> normalizedVectors = NormalizeMinMaxContentBased(allPlayerStats, otherPlayerIds);
 
-        float[] normalizedCurrentUserVector = NormalizeVector(currentUserVector);
+        int currentUserIndex = allPlayerStats.FindIndex(p => p.id == currentUserId);
+        if (currentUserIndex == -1) return new List<RecommendedPlayerData>();
+        float[] currentUserVector = normalizedVectors[currentUserIndex];
 
         List<RecommendedPlayerInfo> recommendedPlayers = new List<RecommendedPlayerInfo>();
 
-        foreach (var otherPlayerStats in allPlayerStats.Where(p => p.id != currentUserId))
+        for (int i = 0; i < allPlayerStats.Count; i++)
         {
-            float[] otherPlayerVector = new float[] {
-                otherPlayerStats.averageFruit,
-                otherPlayerStats.averageTime,
-                otherPlayerStats.averageEnemiesKilled,
-                otherPlayerStats.averageKnockBacks
-            };
+            var otherPlayerStats = allPlayerStats[i];
+            if (otherPlayerStats.id == currentUserId) continue;
 
-            float[] normalizedOtherPlayerVector = NormalizeVector(otherPlayerVector);
+            float[] otherPlayerVector = normalizedVectors[i];
 
-            float suitabilityScore = CalculateCosineSimilarity(normalizedCurrentUserVector, normalizedOtherPlayerVector);
+            float suitabilityScore = CalculateCosineSimilarity(currentUserVector, otherPlayerVector);
 
             RecommendedPlayerInfo recommendedPlayer = new RecommendedPlayerInfo
             {
@@ -264,14 +403,72 @@ public class PlayersRecommendationManager
 
         recommendedPlayers = recommendedPlayers.OrderByDescending(p => p.suitabilityScore).ToList();
 
-        if (!string.IsNullOrEmpty(currentUserId))
-        {
-            recommendedPlayers = recommendedPlayers.Where(p => p.userId != currentUserId).ToList();
-            Debug.Log($"Filtered out current user {currentUserId} from recommended list. List count: {recommendedPlayers.Count}");
-        }
-
         return recommendedPlayers.Cast<RecommendedPlayerData>().ToList();
     }
+
+    // public async Task<List<RecommendedPlayerData>> GetCollaborativeRecommendedPlayersAsync(string currentUserId)
+    // {
+    //     List<PlayersRecommendationByBehaviors> allPlayerBehaviors = await LoadAllPlayerBehaviorsAsync();
+
+    //     if (allPlayerBehaviors == null || allPlayerBehaviors.Count == 0)
+    //     {
+    //         Debug.LogWarning("No player behaviors loaded.");
+    //         return new List<RecommendedPlayerData>();
+    //     }
+
+    //     PlayersRecommendationByBehaviors currentUserBehavior = allPlayerBehaviors.FirstOrDefault(p => p.id == currentUserId);
+
+    //     if (currentUserBehavior == null)
+    //     {
+    //         Debug.LogWarning($"Behavior stats not found for current user ID: {currentUserId}. Cannot generate recommendations.");
+
+    //         return allPlayerBehaviors.Where(p => p.id != currentUserId)
+    //                                  .Select(p => new RecommendedPlayerData { userId = p.id, userName = p.userName, status = "Unknown", isOnline = false })
+    //                                  .ToList();
+    //     }
+
+    //     List<string> otherPlayerIds = allPlayerBehaviors.Where(p => p.id != currentUserId).Select(p => p.id).ToList();
+
+    //     Dictionary<string, bool> onlineStatus = await LoadPlayerOnlineStatusAsync(otherPlayerIds);
+
+    //     float[] currentUserVector = new float[11];
+    //     currentUserVector[0] = currentUserBehavior.easyLevelCompleted;
+    //     currentUserVector[1] = currentUserBehavior.normalLevelCompleted;
+    //     currentUserVector[2] = currentUserBehavior.hardLevelCompleted;
+    //     Array.Copy(currentUserBehavior.playTimeInDay, 0, currentUserVector, 3, 8);
+
+    //     float[] normalizedCurrentUserVector = NormalizeVector(currentUserVector);
+
+    //     List<RecommendedPlayerInfo> recommendedPlayers = new List<RecommendedPlayerInfo>();
+
+    //     foreach (var otherPlayerBehavior in allPlayerBehaviors.Where(p => p.id != currentUserId))
+    //     {
+    //         float[] otherPlayerVector = new float[11];
+    //         otherPlayerVector[0] = otherPlayerBehavior.easyLevelCompleted;
+    //         otherPlayerVector[1] = otherPlayerBehavior.normalLevelCompleted;
+    //         otherPlayerVector[2] = otherPlayerBehavior.hardLevelCompleted;
+    //         Array.Copy(otherPlayerBehavior.playTimeInDay, 0, otherPlayerVector, 3, 8);
+
+    //         float[] normalizedOtherPlayerVector = NormalizeVector(otherPlayerVector);
+
+    //         float suitabilityScore = CalculateCosineSimilarity(normalizedCurrentUserVector, normalizedOtherPlayerVector);
+
+    //         RecommendedPlayerInfo recommendedPlayer = new RecommendedPlayerInfo
+    //         {
+    //             userId = otherPlayerBehavior.id,
+    //             userName = otherPlayerBehavior.userName,
+    //             isOnline = onlineStatus.ContainsKey(otherPlayerBehavior.id) ? onlineStatus[otherPlayerBehavior.id] : false,
+    //             status = (onlineStatus.ContainsKey(otherPlayerBehavior.id) && onlineStatus[otherPlayerBehavior.id]) ? "Online" : "Offline",
+    //             suitabilityScore = suitabilityScore
+    //         };
+
+    //         recommendedPlayers.Add(recommendedPlayer);
+    //     }
+
+    //     recommendedPlayers = recommendedPlayers.OrderByDescending(p => p.suitabilityScore).ToList();
+
+    //     return recommendedPlayers.Cast<RecommendedPlayerData>().ToList();
+    // }
 
     public async Task<List<RecommendedPlayerData>> GetCollaborativeRecommendedPlayersAsync(string currentUserId)
     {
@@ -295,30 +492,26 @@ public class PlayersRecommendationManager
         }
 
         List<string> otherPlayerIds = allPlayerBehaviors.Where(p => p.id != currentUserId).Select(p => p.id).ToList();
+        otherPlayerIds.Add(currentUserId);
 
         Dictionary<string, bool> onlineStatus = await LoadPlayerOnlineStatusAsync(otherPlayerIds);
 
-        float[] currentUserVector = new float[11];
-        currentUserVector[0] = currentUserBehavior.easyLevelCompleted;
-        currentUserVector[1] = currentUserBehavior.normalLevelCompleted;
-        currentUserVector[2] = currentUserBehavior.hardLevelCompleted;
-        Array.Copy(currentUserBehavior.playTimeInDay, 0, currentUserVector, 3, 8);
+        List<float[]> normalizedVectors = NormalizeMinMaxCollaborative(allPlayerBehaviors, otherPlayerIds);
 
-        float[] normalizedCurrentUserVector = NormalizeVector(currentUserVector);
+        int currentUserIndex = allPlayerBehaviors.FindIndex(p => p.id == currentUserId);
+        if (currentUserIndex == -1) return new List<RecommendedPlayerData>();
+        float[] currentUserVector = normalizedVectors[currentUserIndex];
 
         List<RecommendedPlayerInfo> recommendedPlayers = new List<RecommendedPlayerInfo>();
 
-        foreach (var otherPlayerBehavior in allPlayerBehaviors.Where(p => p.id != currentUserId))
+        for (int i = 0; i < allPlayerBehaviors.Count; i++)
         {
-            float[] otherPlayerVector = new float[11];
-            otherPlayerVector[0] = otherPlayerBehavior.easyLevelCompleted;
-            otherPlayerVector[1] = otherPlayerBehavior.normalLevelCompleted;
-            otherPlayerVector[2] = otherPlayerBehavior.hardLevelCompleted;
-            Array.Copy(otherPlayerBehavior.playTimeInDay, 0, otherPlayerVector, 3, 8);
+            var otherPlayerBehavior = allPlayerBehaviors[i];
+            if (otherPlayerBehavior.id == currentUserId) continue;
 
-            float[] normalizedOtherPlayerVector = NormalizeVector(otherPlayerVector);
+            float[] otherPlayerVector = normalizedVectors[i];
 
-            float suitabilityScore = CalculateCosineSimilarity(normalizedCurrentUserVector, normalizedOtherPlayerVector);
+            float suitabilityScore = CalculateCosineSimilarity(currentUserVector, otherPlayerVector);
 
             RecommendedPlayerInfo recommendedPlayer = new RecommendedPlayerInfo
             {
