@@ -36,7 +36,6 @@ public class UI_WaitingRoom : MonoBehaviour
 
     private void Awake()
     {
-        // Lấy tham chiếu Firebase Database (có thể lấy từ Authentication.instance.dbReference nếu đó là public)
         dbReference = FirebaseDatabase.DefaultInstance.RootReference;
 
         if (leaveRoomButton != null)
@@ -57,37 +56,6 @@ public class UI_WaitingRoom : MonoBehaviour
         }
     }
 
-    public async Task ShowRoom(string userId, string roomId = null, string invitedUserId = null)
-    {
-        currentUserId = userId;
-        if (string.IsNullOrEmpty(currentUserId))
-        {
-            Debug.LogError("UI_WaitingRoom: Current user ID is not set.");
-            return;
-        }
-
-        if (waitingRoomUIPanel != null)
-        {
-            waitingRoomUIPanel.SetActive(true);
-        }
-
-        if (string.IsNullOrEmpty(roomId))
-        {
-            await CreateRoom(currentUserId, invitedUserId);
-        }
-        else
-        {
-            currentRoomId = roomId;
-            // Cần thêm logic tham gia phòng trên Firebase ở đây
-            await JoinRoom(currentUserId, currentRoomId); // Bây giờ JoinRoom cần ghi dữ liệu người chơi vào phòng
-            // Sau khi join thành công, bắt đầu lắng nghe
-            // Lắng nghe sẽ được gọi tự động trong JoinRoom nếu thành công
-            // ListenToRoomChanges(currentRoomId); // Không cần gọi ở đây nữa
-        }
-
-        // TODO: 'Loading...' UI
-    }
-
     public void HideRoom()
     {
         if (waitingRoomUIPanel != null)
@@ -103,6 +71,41 @@ public class UI_WaitingRoom : MonoBehaviour
         {
             startGameButton.gameObject.SetActive(false);
         }
+    }
+
+    public async Task ShowRoom(string userId, string roomId = null, string invitedUserId = null)
+    {
+        currentUserId = userId;
+        if (string.IsNullOrEmpty(currentUserId))
+        {
+            Debug.LogError("UI_WaitingRoom: Current user ID is not set.");
+            return;
+        }
+
+        JoinRoomHandling();
+
+        if (string.IsNullOrEmpty(roomId))
+        {
+            await CreateRoom(currentUserId, invitedUserId);
+
+            if (!string.IsNullOrEmpty(currentRoomId))
+            {
+                await JoinRoom(currentUserId, currentRoomId);
+            }
+            else
+            {
+                Debug.LogError("Failed to get RoomId after creating room.");
+                HideRoom();
+                OnLeaveRoomCompleted?.Invoke();
+            }
+        }
+        else
+        {
+            currentRoomId = roomId;
+            await JoinRoom(currentUserId, currentRoomId);
+        }
+
+        // TODO: 'Loading...' UI
     }
 
     private async Task CreateRoom(string creatingUserId, string invitedUserId = null)
@@ -130,9 +133,10 @@ public class UI_WaitingRoom : MonoBehaviour
 
         Debug.Log($"Room {currentRoomId} created successfully by {creatingUserId}");
 
+        JoinRoomHandling();
+
         ListenToRoomChanges(currentRoomId);
 
-        // Nếu có người chơi được mời và không phải là chính mình, gửi lời mời
         if (!string.IsNullOrEmpty(invitedUserId) && invitedUserId != creatingUserId)
         {
             Debug.Log($"Calling SendInvitationAsync for room {currentRoomId}");
@@ -150,8 +154,7 @@ public class UI_WaitingRoom : MonoBehaviour
 
         Debug.Log($"Sending invitation from {inviterId} to {invitedId} for room {roomId}");
 
-        // Tạo một key duy nhất cho lời mời
-        DatabaseReference invitationsRef = dbReference.Child("Invitations").Child(invitedId).Push(); // Lưu lời mời dưới node của người được mời
+        DatabaseReference invitationsRef = dbReference.Child("Invitations").Child(invitedId).Push();
         string invitationId = invitationsRef.Key;
 
         InvitationData invitationData = new InvitationData
@@ -169,12 +172,10 @@ public class UI_WaitingRoom : MonoBehaviour
                  if (task.IsFaulted)
                  {
                      Debug.LogError($"Failed to send invitation {invitationId} to user {invitedId}: {task.Exception}");
-                     // Xử lý lỗi gửi lời mời
                  }
                  else if (task.IsCompleted)
                  {
                      Debug.Log($"Invitation {invitationId} sent successfully to user {invitedId}.");
-                     // Thông báo cho người mời rằng lời mời đã được gửi
                  }
              });
     }
@@ -194,7 +195,7 @@ public class UI_WaitingRoom : MonoBehaviour
         {
             Debug.LogError($"Attempted to join room {roomId} but it does not exist.");
             HideRoom();
-            OnLeaveRoomCompleted?.Invoke(); // thông báo lỗi hoặc phòng không tồn tại
+            OnLeaveRoomCompleted?.Invoke();
             return;
         }
 
@@ -215,7 +216,6 @@ public class UI_WaitingRoom : MonoBehaviour
             return;
         }
 
-
         RoomPlayerData newPlayerData = new RoomPlayerData { userName = userName, isReady = false };
 
         await roomPlayersRef.Child(userId).SetRawJsonValueAsync(JsonUtility.ToJson(newPlayerData))
@@ -224,32 +224,31 @@ public class UI_WaitingRoom : MonoBehaviour
                 if (task.IsFaulted)
                 {
                     Debug.LogError($"Failed to join room {roomId} for user {userId}: {task.Exception}");
-                    // thông báo cho người dùng không vào được phòng
+
                     HideRoom();
                 }
                 else if (task.IsCompleted)
                 {
                     Debug.Log($"User {userId} joined room {roomId}");
                     currentRoomId = roomId;
+
+                    JoinRoomHandling();
+
                     ListenToRoomChanges(roomId);
                 }
             });
     }
 
-    // Rời phòng và xóa dữ liệu trên Firebase
-    public async void LeaveRoom() // Public để gọi từ nút
+    public async void LeaveRoom()
     {
         if (dbReference == null || string.IsNullOrEmpty(currentRoomId) || string.IsNullOrEmpty(currentUserId)) return;
 
         Debug.Log($"User {currentUserId} attempting to leave room {currentRoomId}");
 
-        // Dừng lắng nghe ngay lập tức để tránh xử lý sự kiện sau khi rời phòng
         StopListeningToRoomChanges();
 
-        // Đường dẫn đến người chơi hiện tại trong danh sách người chơi của phòng
         DatabaseReference currentPlayerRef = dbReference.Child("Rooms").Child(currentRoomId).Child("players").Child(currentUserId);
 
-        // Xóa người chơi hiện tại khỏi danh sách
         await currentPlayerRef.RemoveValueAsync()
            .ContinueWithOnMainThread(async task =>
            {
@@ -288,15 +287,29 @@ public class UI_WaitingRoom : MonoBehaviour
                        Debug.Log($"Room {currentRoomId} still has players ({roomSnapshotAfterLeave.Child("players").ChildrenCount}), not deleting.");
                    }
 
-                   // thông báo hoàn thành rời phòng
                    OnLeaveRoomCompleted?.Invoke();
-                   // HideRoom();
                }
            });
-        // HideRoom();
     }
 
-    // Bắt đầu Game (Bất kỳ người chơi nào cũng có thể bấm nút Start nếu điều kiện thỏa mãn)
+    private void JoinRoomHandling()
+    {
+        if (waitingRoomUIPanel != null && waitingRoomUIPanel.transform.parent != null)
+        {
+            Transform parentCanvas = waitingRoomUIPanel.transform.parent;
+            for (int i = 0; i < parentCanvas.childCount; i++)
+            {
+                GameObject child = parentCanvas.GetChild(i).gameObject;
+                if (child != waitingRoomUIPanel)
+                {
+                    child.SetActive(false);
+                }
+            }
+
+            waitingRoomUIPanel.SetActive(true);
+        }
+    }
+
     public async void StartGame()
     {
         if (dbReference == null || string.IsNullOrEmpty(currentRoomId) || string.IsNullOrEmpty(currentUserId)) return;
