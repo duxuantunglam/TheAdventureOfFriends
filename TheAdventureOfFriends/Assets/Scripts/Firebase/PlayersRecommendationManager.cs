@@ -174,30 +174,37 @@ public class PlayersRecommendationManager
     //     return normalizedVector;
     // }
 
-    private List<float[]> NormalizeMinMaxContentBased(List<PlayersRecommendationByFeatures> playerStatsList, List<string> playerIds)
+    private List<float[]> NormalizeMinMaxContentBased(List<PlayersRecommendationByFeatures> playerFeaturesList, List<string> playerIds)
     {
-        if (playerStatsList == null || playerStatsList.Count == 0) return new List<float[]>();
+        if (playerFeaturesList == null || playerFeaturesList.Count == 0) return new List<float[]>();
 
-        float minFruit = playerStatsList.Min(p => p.averageFruit);
-        float maxFruit = playerStatsList.Max(p => p.averageFruit);
-        float minTime = playerStatsList.Min(p => p.averageTime);
-        float maxTime = playerStatsList.Max(p => p.averageTime);
-        float minEnemies = playerStatsList.Min(p => p.averageEnemiesKilled);
-        float maxEnemies = playerStatsList.Max(p => p.averageEnemiesKilled);
-        float minKnockBacks = playerStatsList.Min(p => p.averageKnockBacks);
-        float maxKnockBacks = playerStatsList.Max(p => p.averageKnockBacks);
+        float minFruit = playerFeaturesList.Min(p => p.averageFruit);
+        float maxFruit = playerFeaturesList.Max(p => p.averageFruit);
+        float minTime = playerFeaturesList.Min(p => p.averageTime);
+        float maxTime = playerFeaturesList.Max(p => p.averageTime);
+        float minEnemies = playerFeaturesList.Min(p => p.averageEnemiesKilled);
+        float maxEnemies = playerFeaturesList.Max(p => p.averageEnemiesKilled);
+        float minKnockBacks = playerFeaturesList.Min(p => p.averageKnockBacks);
+        float maxKnockBacks = playerFeaturesList.Max(p => p.averageKnockBacks);
 
         List<float[]> normalizedVectors = new List<float[]>();
 
-        foreach (var playerStats in playerStatsList)
+        foreach (var playerStats in playerFeaturesList)
         {
             if (!playerIds.Contains(playerStats.id)) continue;
 
             float[] vector = new float[4];
-            vector[0] = (maxFruit == minFruit) ? 0 : (playerStats.averageFruit - minFruit) / Mathf.Max(maxFruit - minFruit, 1);
-            vector[1] = (maxTime == minTime) ? 0 : (playerStats.averageTime - minTime) / Mathf.Max(maxTime - minTime, 1);
-            vector[2] = (maxEnemies == minEnemies) ? 0 : (playerStats.averageEnemiesKilled - minEnemies) / Mathf.Max(maxEnemies - minEnemies, 1);
-            vector[3] = (maxKnockBacks == minKnockBacks) ? 0 : (playerStats.averageKnockBacks - minKnockBacks) / Mathf.Max(maxKnockBacks - minKnockBacks, 1);
+            float rangeFruit = maxFruit - minFruit;
+            vector[0] = (rangeFruit == 0) ? 0 : (playerStats.averageFruit - minFruit) / rangeFruit;
+
+            float rangeTime = maxTime - minTime;
+            vector[1] = (rangeTime == 0) ? 0 : (playerStats.averageTime - minTime) / rangeTime;
+
+            float rangeEnemies = maxEnemies - minEnemies;
+            vector[2] = (rangeEnemies == 0) ? 0 : (playerStats.averageEnemiesKilled - minEnemies) / rangeEnemies;
+
+            float rangeKnockBacks = maxKnockBacks - minKnockBacks;
+            vector[3] = (rangeKnockBacks == 0) ? 0 : (playerStats.averageKnockBacks - minKnockBacks) / rangeKnockBacks;
 
             normalizedVectors.Add(vector);
         }
@@ -232,13 +239,13 @@ public class PlayersRecommendationManager
             if (!playerIds.Contains(playerBehavior.id)) continue;
 
             float[] vector = new float[11];
-            vector[0] = (maxEasy == minEasy) ? 0 : (playerBehavior.easyLevelCompleted - minEasy) / Mathf.Max(maxEasy - minEasy, 1);
-            vector[1] = (maxNormal == minNormal) ? 0 : (playerBehavior.normalLevelCompleted - minNormal) / Mathf.Max(maxNormal - minNormal, 1);
-            vector[2] = (maxHard == minHard) ? 0 : (playerBehavior.hardLevelCompleted - minHard) / Mathf.Max(maxHard - minHard, 1);
+            vector[0] = (maxEasy == minEasy) ? 0 : (playerBehavior.easyLevelCompleted - minEasy) / Mathf.Max(maxEasy - minEasy, 0.01f);
+            vector[1] = (maxNormal == minNormal) ? 0 : (playerBehavior.normalLevelCompleted - minNormal) / Mathf.Max(maxNormal - minNormal, 0.01f);
+            vector[2] = (maxHard == minHard) ? 0 : (playerBehavior.hardLevelCompleted - minHard) / Mathf.Max(maxHard - minHard, 0.01f);
 
             for (int i = 0; i < 8; i++)
             {
-                vector[i + 3] = (maxPlayTime[i] == minPlayTime[i]) ? 0 : (playerBehavior.playTimeInDay[i] - minPlayTime[i]) / Mathf.Max(maxPlayTime[i] - minPlayTime[i], 1);
+                vector[i + 3] = (maxPlayTime[i] == minPlayTime[i]) ? 0 : (playerBehavior.playTimeInDay[i] - minPlayTime[i]) / Mathf.Max(maxPlayTime[i] - minPlayTime[i], 0.01f);
             }
 
             normalizedVectors.Add(vector);
