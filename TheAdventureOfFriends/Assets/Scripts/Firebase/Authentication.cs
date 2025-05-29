@@ -77,11 +77,13 @@ public class Authentication : MonoBehaviour
             ShowNotificationMessage("Error", "No internet connection!");
             return;
         }
+
         if (string.IsNullOrEmpty(loginEmail.text) || string.IsNullOrEmpty(loginPassword.text))
         {
             ShowNotificationMessage("Error", "Fields Empty! Please Input Details In All Fields");
             return;
         }
+
         FirebaseManager.instance.SignInUser(loginEmail.text, loginPassword.text,
             error => ShowNotificationMessage("Error", error),
             () => loginPassword.text = "");
@@ -89,12 +91,19 @@ public class Authentication : MonoBehaviour
 
     public void SignUpUser()
     {
+        if (Application.internetReachability == NetworkReachability.NotReachable)
+        {
+            ShowNotificationMessage("Error", "No internet connection!");
+            return;
+        }
+
         if (string.IsNullOrEmpty(signUpEmail.text) || string.IsNullOrEmpty(signUpPassword.text) ||
             string.IsNullOrEmpty(signUpConfirmPassword.text) || string.IsNullOrEmpty(signupUserName.text))
         {
             ShowNotificationMessage("Error", "Fields Empty! Please Input Details In All Fields");
             return;
         }
+
         if (signUpPassword.text != signUpConfirmPassword.text)
         {
             ShowNotificationMessage("Error", "Passwords do not match!");
@@ -114,6 +123,12 @@ public class Authentication : MonoBehaviour
 
     public void ForgetPassword()
     {
+        if (Application.internetReachability == NetworkReachability.NotReachable)
+        {
+            ShowNotificationMessage("Error", "No internet connection!");
+            return;
+        }
+
         if (string.IsNullOrEmpty(forgetPassEmail.text))
         {
             ShowNotificationMessage("Error", "Fields Empty! Please Input Details In All Fields");
