@@ -136,7 +136,7 @@ public class PlayersRecommendationManager
         {
             try
             {
-                DataSnapshot snapshot = await dbReference.Child("Users").Child(playerId).Child("isOnline").GetValueAsync();
+                DataSnapshot snapshot = await dbReference.Child("PlayerStats").Child(playerId).Child("isOnline").GetValueAsync();
 
                 if (snapshot.Exists)
                 {

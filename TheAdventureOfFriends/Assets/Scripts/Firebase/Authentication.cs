@@ -279,7 +279,7 @@ public class Authentication : MonoBehaviour
         if (auth != null && auth.CurrentUser != null)
         {
             SetUserOnlineStatus(auth.CurrentUser.UserId, false);
-            dbReference.Child("Users").Child(auth.CurrentUser.UserId).Child("isOnline").OnDisconnect().Cancel();
+            dbReference.Child("PlayerStats").Child(auth.CurrentUser.UserId).Child("isOnline").OnDisconnect().Cancel();
         }
         if (auth != null)
         {
@@ -461,7 +461,7 @@ public class Authentication : MonoBehaviour
     {
         if (dbReference == null || string.IsNullOrEmpty(userId)) return;
 
-        dbReference.Child("Users").Child(userId).Child("isOnline").SetValueAsync(isOnline).ContinueWithOnMainThread(task =>
+        dbReference.Child("PlayerStats").Child(userId).Child("isOnline").SetValueAsync(isOnline).ContinueWithOnMainThread(task =>
         {
             if (task.IsFaulted)
             {
@@ -478,7 +478,7 @@ public class Authentication : MonoBehaviour
     {
         if (dbReference == null || string.IsNullOrEmpty(userId)) return;
 
-        dbReference.Child("Users").Child(userId).Child("isOnline").OnDisconnect().SetValue(statusOnDisconnect).ContinueWithOnMainThread(task =>
+        dbReference.Child("PlayerStats").Child(userId).Child("isOnline").OnDisconnect().SetValue(statusOnDisconnect).ContinueWithOnMainThread(task =>
         {
             if (task.IsFaulted)
             {
@@ -494,7 +494,7 @@ public class Authentication : MonoBehaviour
     private void UpdateLastOnlineTime(string userId)
     {
         if (dbReference == null || string.IsNullOrEmpty(userId)) return;
-        dbReference.Child("Users").Child(userId).Child("lastOnlineTime").SetValueAsync(ServerValue.Timestamp).ContinueWithOnMainThread(task =>
+        dbReference.Child("PlayerStats").Child(userId).Child("lastOnlineTime").SetValueAsync(ServerValue.Timestamp).ContinueWithOnMainThread(task =>
         {
             if (task.IsFaulted)
             {
@@ -512,7 +512,7 @@ public class Authentication : MonoBehaviour
     {
         if (CurrentUser != null)
         {
-            dbReference.Child("Users").Child(auth.CurrentUser.UserId).Child("lastOnlineTime").GetValueAsync().ContinueWithOnMainThread(task =>
+            dbReference.Child("PlayerStats").Child(auth.CurrentUser.UserId).Child("lastOnlineTime").GetValueAsync().ContinueWithOnMainThread(task =>
             {
                 if (task.IsCompleted && task.Result.Exists)
                 {

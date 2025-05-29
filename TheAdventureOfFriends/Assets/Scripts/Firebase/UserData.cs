@@ -23,6 +23,8 @@ public class UserData
 {
     public string userName;
     public string id;
+    public bool isOnline = false;
+    public long lastOnlineTime = 0;
 
     public int completedLevelCount = 0;
     public int easyLevelCompleted = 0;
