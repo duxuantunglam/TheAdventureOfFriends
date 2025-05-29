@@ -61,6 +61,9 @@ public class PlayersRecommendationManager
 
     private PlayersRecommendationManager() { }
 
+    private readonly float[] contentBasedWeights = new float[] { 1.5f, 0.8f, 2.0f, 0.5f };
+    private readonly float[] collaborativeWeights = new float[] { 1.0f, 1.5f, 2.0f, 0.8f, 0.8f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f };
+
     private async Task<List<PlayersRecommendationByFeatures>> LoadAllPlayerFeatureAsync()
     {
         List<PlayersRecommendationByFeatures> allPlayerStats = new List<PlayersRecommendationByFeatures>();
@@ -254,11 +257,11 @@ public class PlayersRecommendationManager
         return normalizedVectors;
     }
 
-    private float CalculateCosineSimilarity(float[] vector1, float[] vector2)
+    private float CalculateCosineSimilarity(float[] vector1, float[] vector2, float[] weights)
     {
-        if (vector1.Length != vector2.Length)
+        if (vector1.Length != vector2.Length || vector1.Length != weights.Length)
         {
-            Debug.LogError("Vectors must have the same length for Cosine Similarity.");
+            Debug.LogError("Vectors and Weights must have the same length for Cosine Similarity.");
             return 0;
         }
 
@@ -268,9 +271,11 @@ public class PlayersRecommendationManager
 
         for (int i = 0; i < vector1.Length; i++)
         {
-            dotProduct += vector1[i] * vector2[i];
-            magnitude1 += vector1[i] * vector1[i];
-            magnitude2 += vector2[i] * vector2[i];
+            float _vector1 = vector1[i] * weights[i];
+            float _vector2 = vector2[i] * weights[i];
+            dotProduct += _vector1 * _vector2;
+            magnitude1 += _vector1 * _vector1;
+            magnitude2 += _vector2 * _vector2;
         }
 
         magnitude1 = Mathf.Sqrt(magnitude1);
@@ -394,7 +399,7 @@ public class PlayersRecommendationManager
 
             float[] otherPlayerVector = normalizedVectors[i];
 
-            float suitabilityScore = CalculateCosineSimilarity(currentUserVector, otherPlayerVector);
+            float suitabilityScore = CalculateCosineSimilarity(currentUserVector, otherPlayerVector, contentBasedWeights);
 
             RecommendedPlayerInfo recommendedPlayer = new RecommendedPlayerInfo
             {
@@ -518,7 +523,7 @@ public class PlayersRecommendationManager
 
             float[] otherPlayerVector = normalizedVectors[i];
 
-            float suitabilityScore = CalculateCosineSimilarity(currentUserVector, otherPlayerVector);
+            float suitabilityScore = CalculateCosineSimilarity(currentUserVector, otherPlayerVector, collaborativeWeights);
 
             RecommendedPlayerInfo recommendedPlayer = new RecommendedPlayerInfo
             {
