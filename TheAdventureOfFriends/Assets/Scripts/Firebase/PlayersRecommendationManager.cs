@@ -242,13 +242,19 @@ public class PlayersRecommendationManager
             if (!playerIds.Contains(playerBehavior.id)) continue;
 
             float[] vector = new float[11];
-            vector[0] = (maxEasy == minEasy) ? 0 : (playerBehavior.easyLevelCompleted - minEasy) / Mathf.Max(maxEasy - minEasy, 0.01f);
-            vector[1] = (maxNormal == minNormal) ? 0 : (playerBehavior.normalLevelCompleted - minNormal) / Mathf.Max(maxNormal - minNormal, 0.01f);
-            vector[2] = (maxHard == minHard) ? 0 : (playerBehavior.hardLevelCompleted - minHard) / Mathf.Max(maxHard - minHard, 0.01f);
+            float rangeEasy = maxEasy - minEasy;
+            vector[0] = (rangeEasy == 0) ? 0 : (playerBehavior.easyLevelCompleted - minEasy) / rangeEasy;
+
+            float rangeNormal = maxNormal - minNormal;
+            vector[1] = (rangeNormal == 0) ? 0 : (playerBehavior.normalLevelCompleted - minNormal) / rangeNormal;
+
+            float rangeHard = maxHard - minHard;
+            vector[2] = (rangeHard == 0) ? 0 : (playerBehavior.hardLevelCompleted - minHard) / rangeHard;
 
             for (int i = 0; i < 8; i++)
             {
-                vector[i + 3] = (maxPlayTime[i] == minPlayTime[i]) ? 0 : (playerBehavior.playTimeInDay[i] - minPlayTime[i]) / Mathf.Max(maxPlayTime[i] - minPlayTime[i], 0.01f);
+                float rangePlayTime = maxPlayTime[i] - minPlayTime[i];
+                vector[i + 3] = (rangePlayTime == 0) ? 0 : (playerBehavior.playTimeInDay[i] - minPlayTime[i]) / rangePlayTime;
             }
 
             normalizedVectors.Add(vector);
