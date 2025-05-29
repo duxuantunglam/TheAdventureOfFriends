@@ -34,9 +34,9 @@ public class UI_SkinSelection : MonoBehaviour
 
     private void LoadSkinUnlocks()
     {
-        if (Authentication.CurrentUser == null || Authentication.CurrentUser.skinUnlockedName == null)
+        if (FirebaseManager.CurrentUser == null || FirebaseManager.CurrentUser.skinUnlockedName == null)
         {
-            Debug.LogWarning("Authentication.CurrentUser or skinUnlockedName is null. Cannot load skin unlocks.");
+            Debug.LogWarning("FirebaseManager.CurrentUser or skinUnlockedName is null. Cannot load skin unlocks.");
             for (int i = 0; i < skinList.Length; i++)
             {
                 skinList[i].unlocked = (i == 0);
@@ -46,7 +46,7 @@ public class UI_SkinSelection : MonoBehaviour
 
         for (int i = 0; i < skinList.Length; i++)
         {
-            bool skinUnlockedFromFirebase = Authentication.CurrentUser.skinUnlockedName.ContainsKey(i.ToString()) && Authentication.CurrentUser.skinUnlockedName[i.ToString()];
+            bool skinUnlockedFromFirebase = FirebaseManager.CurrentUser.skinUnlockedName.ContainsKey(i.ToString()) && FirebaseManager.CurrentUser.skinUnlockedName[i.ToString()];
 
             if (skinUnlockedFromFirebase || i == 0)
                 skinList[i].unlocked = true;
@@ -131,52 +131,52 @@ public class UI_SkinSelection : MonoBehaviour
         AudioManager.instance.PlaySFX(10);
         skinList[index].unlocked = true;
 
-        if (Authentication.CurrentUser != null)
+        if (FirebaseManager.CurrentUser != null)
         {
             string skinKey = index.ToString();
 
-            if (!Authentication.CurrentUser.skinUnlockedName.ContainsKey(skinKey))
+            if (!FirebaseManager.CurrentUser.skinUnlockedName.ContainsKey(skinKey))
             {
-                Authentication.CurrentUser.skinUnlockedName.Add(skinKey, true);
+                FirebaseManager.CurrentUser.skinUnlockedName.Add(skinKey, true);
             }
             else
             {
-                Authentication.CurrentUser.skinUnlockedName[skinKey] = true;
+                FirebaseManager.CurrentUser.skinUnlockedName[skinKey] = true;
             }
 
-            if (Authentication.instance != null)
+            if (FirebaseManager.instance != null)
             {
-                Authentication.instance.SaveUserDataToRealtimeDatabase();
+                FirebaseManager.instance.SaveUserDataToRealtimeDatabase();
             }
         }
     }
 
     private int FruitInBank()
     {
-        if (Authentication.CurrentUser == null)
+        if (FirebaseManager.CurrentUser == null)
         {
-            Debug.LogWarning("Authentication.CurrentUser is null. Cannot get fruit in bank.");
+            Debug.LogWarning("FirebaseManager.CurrentUser is null. Cannot get fruit in bank.");
             return 0;
         }
 
-        return Authentication.CurrentUser.totalFruitAmount;
+        return FirebaseManager.CurrentUser.totalFruitAmount;
     }
 
     private bool HaveEnoughFruit(int price)
     {
-        if (Authentication.CurrentUser == null)
+        if (FirebaseManager.CurrentUser == null)
         {
-            Debug.LogWarning("Authentication.CurrentUser is null. Cannot check/subtract fruit.");
+            Debug.LogWarning("FirebaseManager.CurrentUser is null. Cannot check/subtract fruit.");
             return false;
         }
 
-        if (Authentication.CurrentUser.totalFruitAmount >= price)
+        if (FirebaseManager.CurrentUser.totalFruitAmount >= price)
         {
-            Authentication.CurrentUser.totalFruitAmount -= price;
+            FirebaseManager.CurrentUser.totalFruitAmount -= price;
 
-            if (Authentication.instance != null)
+            if (FirebaseManager.instance != null)
             {
-                Authentication.instance.SaveUserDataToRealtimeDatabase();
+                FirebaseManager.instance.SaveUserDataToRealtimeDatabase();
             }
             else
             {

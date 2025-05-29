@@ -550,11 +550,11 @@ public class PlayersRecommendationManager
 
     public string GetCurrentUserId()
     {
-        if (Authentication.CurrentUser != null)
+        if (FirebaseManager.CurrentUser != null)
         {
-            return Authentication.CurrentUser.id;
+            return FirebaseManager.CurrentUser.id;
         }
-        Debug.LogError("PlayersRecommendationManager: Cannot get current user ID. Authentication.CurrentUser is null.");
+        Debug.LogError("PlayersRecommendationManager: Cannot get current user ID. FirebaseManager.CurrentUser is null.");
         return null;
     }
 }

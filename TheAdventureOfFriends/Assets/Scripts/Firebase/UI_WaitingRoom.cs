@@ -116,7 +116,7 @@ public class UI_WaitingRoom : MonoBehaviour
         currentRoomId = newRoomRef.Key;
 
         string creatingUserName = "Unknown";
-        if (Authentication.CurrentUser != null) creatingUserName = Authentication.CurrentUser.userName;
+        if (FirebaseManager.CurrentUser != null) creatingUserName = FirebaseManager.CurrentUser.userName;
 
         Debug.Log($"Attempting to create room {currentRoomId} by {creatingUserId}");
 
@@ -185,7 +185,7 @@ public class UI_WaitingRoom : MonoBehaviour
         if (dbReference == null || string.IsNullOrEmpty(roomId) || string.IsNullOrEmpty(userId)) return;
 
         string userName = "Unknown";
-        if (Authentication.CurrentUser != null) userName = Authentication.CurrentUser.userName;
+        if (FirebaseManager.CurrentUser != null) userName = FirebaseManager.CurrentUser.userName;
 
         DatabaseReference roomPlayersRef = dbReference.Child("Rooms").Child(roomId).Child("players");
 

@@ -16,7 +16,7 @@ public class InvitationManager : MonoBehaviour
     private void Awake()
     {
         dbReference = FirebaseDatabase.DefaultInstance.RootReference;
-        currentUserId = Authentication.CurrentUser?.id;
+        currentUserId = FirebaseManager.CurrentUser?.id;
     }
 
     private void Start()

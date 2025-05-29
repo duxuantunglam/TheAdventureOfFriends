@@ -293,13 +293,13 @@ public class UI_RankingBoard : MonoBehaviour
 
     private UserData GetCurrentUserData()
     {
-        if (Authentication.CurrentUser != null)
+        if (FirebaseManager.CurrentUser != null)
         {
-            return Authentication.CurrentUser;
+            return FirebaseManager.CurrentUser;
         }
         else
         {
-            Debug.LogWarning("GetCurrentUserData: Authentication.CurrentUser is null. No user logged in or data not loaded.");
+            Debug.LogWarning("GetCurrentUserData: FirebaseManager.CurrentUser is null. No user logged in or data not loaded.");
             return null;
         }
     }

@@ -59,21 +59,21 @@ public class UI_MainMenu : MonoBehaviour
 
     private bool HasLevelProgression()
     {
-        bool hasLevelProgression = Authentication.CurrentUser != null && Authentication.CurrentUser.gameProgress.continueLevelNumber > 0;
+        bool hasLevelProgression = FirebaseManager.CurrentUser != null && FirebaseManager.CurrentUser.gameProgress.continueLevelNumber > 0;
 
         return hasLevelProgression;
     }
 
     public void ContinueGame()
     {
-        if (Authentication.CurrentUser == null)
+        if (FirebaseManager.CurrentUser == null)
         {
             Debug.LogWarning("Cannot continue game: CurrentUser is null.");
             return;
         }
 
-        int levelToLoad = Authentication.CurrentUser.gameProgress.continueLevelNumber;
-        int lastSavedSkin = Authentication.CurrentUser.gameProgress.lastUsedSkin;
+        int levelToLoad = FirebaseManager.CurrentUser.gameProgress.continueLevelNumber;
+        int lastSavedSkin = FirebaseManager.CurrentUser.gameProgress.lastUsedSkin;
 
         SkinManager.instance.SetSkinId(lastSavedSkin);
 

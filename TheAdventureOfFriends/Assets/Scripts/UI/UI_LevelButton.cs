@@ -27,7 +27,7 @@ public class UI_LevelButton : MonoBehaviour
     {
         AudioManager.instance.PlaySFX(4);
 
-        if (Authentication.CurrentUser == null)
+        if (FirebaseManager.CurrentUser == null)
         {
             Debug.LogWarning("Cannot load level: CurrentUser is null.");
             return;
@@ -38,24 +38,24 @@ public class UI_LevelButton : MonoBehaviour
 
     private string FruitInfoText()
     {
-        if (Authentication.CurrentUser == null || !Authentication.CurrentUser.levelProgress.ContainsKey(sceneName))
+        if (FirebaseManager.CurrentUser == null || !FirebaseManager.CurrentUser.levelProgress.ContainsKey(sceneName))
         {
             return "Fruit: ? / ?";
         }
 
-        int fruitCollected = Authentication.CurrentUser.levelProgress[sceneName].bestFruitCollected;
+        int fruitCollected = FirebaseManager.CurrentUser.levelProgress[sceneName].bestFruitCollected;
 
         return "Fruit: " + fruitCollected + " / ?";
     }
 
     private string TimerInfoText()
     {
-        if (Authentication.CurrentUser == null || !Authentication.CurrentUser.levelProgress.ContainsKey(sceneName))
+        if (FirebaseManager.CurrentUser == null || !FirebaseManager.CurrentUser.levelProgress.ContainsKey(sceneName))
         {
             return "Best Time: ?";
         }
 
-        float timerValue = Authentication.CurrentUser.levelProgress[sceneName].bestTime;
+        float timerValue = FirebaseManager.CurrentUser.levelProgress[sceneName].bestTime;
 
         if (timerValue >= 999f)
         {

@@ -87,12 +87,12 @@ public class GameManager : MonoBehaviour
 
         inGameUI.UpdateFruitUI(fruitCollected, totalFruit);
 
-        if (Authentication.CurrentUser != null)
+        if (FirebaseManager.CurrentUser != null)
         {
             string levelKey = "Level" + currentLevelIndex;
-            if (!Authentication.CurrentUser.levelProgress.ContainsKey(levelKey))
+            if (!FirebaseManager.CurrentUser.levelProgress.ContainsKey(levelKey))
             {
-                Authentication.CurrentUser.levelProgress[levelKey] = new LevelStats();
+                FirebaseManager.CurrentUser.levelProgress[levelKey] = new LevelStats();
             }
         }
     }
@@ -160,30 +160,30 @@ public class GameManager : MonoBehaviour
 
     private void SaveFruitInfo()
     {
-        if (Authentication.CurrentUser == null) return;
+        if (FirebaseManager.CurrentUser == null) return;
 
         string levelKey = "Level" + currentLevelIndex;
-        if (!Authentication.CurrentUser.levelProgress.ContainsKey(levelKey))
+        if (!FirebaseManager.CurrentUser.levelProgress.ContainsKey(levelKey))
         {
-            Authentication.CurrentUser.levelProgress[levelKey] = new LevelStats();
+            FirebaseManager.CurrentUser.levelProgress[levelKey] = new LevelStats();
         }
 
-        int fruitCollectedBefore = Authentication.CurrentUser.levelProgress[levelKey].bestFruitCollected;
+        int fruitCollectedBefore = FirebaseManager.CurrentUser.levelProgress[levelKey].bestFruitCollected;
 
         if (fruitCollectedBefore < fruitCollected)
         {
-            Authentication.CurrentUser.levelProgress[levelKey].bestFruitCollected = fruitCollected;
+            FirebaseManager.CurrentUser.levelProgress[levelKey].bestFruitCollected = fruitCollected;
         }
 
-        Authentication.CurrentUser.totalFruitAmount += fruitCollected;
+        FirebaseManager.CurrentUser.totalFruitAmount += fruitCollected;
     }
 
     private void SaveAverageFruit()
     {
-        if (Authentication.CurrentUser == null) return;
+        if (FirebaseManager.CurrentUser == null) return;
 
-        float currentAverageFruit = Authentication.CurrentUser.averageFruit;
-        int currentCompletedSessionsCount = Authentication.CurrentUser.completedLevelCount;
+        float currentAverageFruit = FirebaseManager.CurrentUser.averageFruit;
+        int currentCompletedSessionsCount = FirebaseManager.CurrentUser.completedLevelCount;
 
         float newAverageFruit;
         if (currentCompletedSessionsCount == 0)
@@ -195,33 +195,33 @@ public class GameManager : MonoBehaviour
             newAverageFruit = ((currentAverageFruit * currentCompletedSessionsCount) + fruitCollected) / (currentCompletedSessionsCount + 1);
         }
 
-        Authentication.CurrentUser.averageFruit = newAverageFruit;
+        FirebaseManager.CurrentUser.averageFruit = newAverageFruit;
     }
 
     private void SaveBestTime()
     {
-        if (Authentication.CurrentUser == null) return;
+        if (FirebaseManager.CurrentUser == null) return;
 
         string levelKey = "Level" + currentLevelIndex;
-        if (!Authentication.CurrentUser.levelProgress.ContainsKey(levelKey))
+        if (!FirebaseManager.CurrentUser.levelProgress.ContainsKey(levelKey))
         {
-            Authentication.CurrentUser.levelProgress[levelKey] = new LevelStats();
+            FirebaseManager.CurrentUser.levelProgress[levelKey] = new LevelStats();
         }
 
-        float lastTime = Authentication.CurrentUser.levelProgress[levelKey].bestTime;
+        float lastTime = FirebaseManager.CurrentUser.levelProgress[levelKey].bestTime;
 
         if (levelTimer < lastTime)
         {
-            Authentication.CurrentUser.levelProgress[levelKey].bestTime = levelTimer;
+            FirebaseManager.CurrentUser.levelProgress[levelKey].bestTime = levelTimer;
         }
     }
 
     private void SaveAverageTime()
     {
-        if (Authentication.CurrentUser == null) return;
+        if (FirebaseManager.CurrentUser == null) return;
 
-        float currentAverageTime = Authentication.CurrentUser.averageTime;
-        int currentCompletedSessionsCount = Authentication.CurrentUser.completedLevelCount;
+        float currentAverageTime = FirebaseManager.CurrentUser.averageTime;
+        int currentCompletedSessionsCount = FirebaseManager.CurrentUser.completedLevelCount;
 
         float newAverageTime;
         if (currentCompletedSessionsCount == 0)
@@ -233,22 +233,22 @@ public class GameManager : MonoBehaviour
             newAverageTime = ((currentAverageTime * currentCompletedSessionsCount) + levelTimer) / (currentCompletedSessionsCount + 1);
         }
 
-        Authentication.CurrentUser.averageTime = newAverageTime;
+        FirebaseManager.CurrentUser.averageTime = newAverageTime;
     }
 
     private void SaveEnemiesKilled()
     {
-        if (Authentication.CurrentUser == null) return;
+        if (FirebaseManager.CurrentUser == null) return;
 
-        Authentication.CurrentUser.enemiesKilled += enemiesKilled;
+        FirebaseManager.CurrentUser.enemiesKilled += enemiesKilled;
     }
 
     private void SaveAverageEnemiesKilled()
     {
-        if (Authentication.CurrentUser == null) return;
+        if (FirebaseManager.CurrentUser == null) return;
 
-        float currentAverageEnemiesKilled = Authentication.CurrentUser.averageEnemiesKilled;
-        int currentCompletedSessionsCount = Authentication.CurrentUser.completedLevelCount;
+        float currentAverageEnemiesKilled = FirebaseManager.CurrentUser.averageEnemiesKilled;
+        int currentCompletedSessionsCount = FirebaseManager.CurrentUser.completedLevelCount;
 
         float newAverageEnemiesKilled;
         if (currentCompletedSessionsCount == 0)
@@ -260,22 +260,22 @@ public class GameManager : MonoBehaviour
             newAverageEnemiesKilled = ((currentAverageEnemiesKilled * currentCompletedSessionsCount) + enemiesKilled) / (currentCompletedSessionsCount + 1);
         }
 
-        Authentication.CurrentUser.averageEnemiesKilled = newAverageEnemiesKilled;
+        FirebaseManager.CurrentUser.averageEnemiesKilled = newAverageEnemiesKilled;
     }
 
     private void SaveKnockBacks()
     {
-        if (Authentication.CurrentUser == null) return;
+        if (FirebaseManager.CurrentUser == null) return;
 
-        Authentication.CurrentUser.knockBacks += knockBacks;
+        FirebaseManager.CurrentUser.knockBacks += knockBacks;
     }
 
     private void SaveAverageKnockBack()
     {
-        if (Authentication.CurrentUser == null) return;
+        if (FirebaseManager.CurrentUser == null) return;
 
-        float currentAverageKnockBacks = Authentication.CurrentUser.averageKnockBacks;
-        int currentCompletedSessionsCount = Authentication.CurrentUser.completedLevelCount;
+        float currentAverageKnockBacks = FirebaseManager.CurrentUser.averageKnockBacks;
+        int currentCompletedSessionsCount = FirebaseManager.CurrentUser.completedLevelCount;
 
         float newAverageKnockBacks;
         if (currentCompletedSessionsCount == 0)
@@ -287,25 +287,25 @@ public class GameManager : MonoBehaviour
             newAverageKnockBacks = ((currentAverageKnockBacks * currentCompletedSessionsCount) + knockBacks) / (currentCompletedSessionsCount + 1);
         }
 
-        Authentication.CurrentUser.averageKnockBacks = newAverageKnockBacks;
+        FirebaseManager.CurrentUser.averageKnockBacks = newAverageKnockBacks;
     }
 
     private void SaveDifficultyLevelCompletedCount()
     {
-        if (Authentication.CurrentUser != null)
+        if (FirebaseManager.CurrentUser != null)
         {
-            Authentication.CurrentUser.completedLevelCount++;
-            int currentDifficulty = Authentication.CurrentUser.gameProgress.gameDifficulty;
+            FirebaseManager.CurrentUser.completedLevelCount++;
+            int currentDifficulty = FirebaseManager.CurrentUser.gameProgress.gameDifficulty;
             switch (currentDifficulty)
             {
                 case 1:
-                    Authentication.CurrentUser.easyLevelCompleted++;
+                    FirebaseManager.CurrentUser.easyLevelCompleted++;
                     break;
                 case 2:
-                    Authentication.CurrentUser.normalLevelCompleted++;
+                    FirebaseManager.CurrentUser.normalLevelCompleted++;
                     break;
                 case 3:
-                    Authentication.CurrentUser.hardLevelCompleted++;
+                    FirebaseManager.CurrentUser.hardLevelCompleted++;
                     break;
             }
         }
@@ -313,33 +313,33 @@ public class GameManager : MonoBehaviour
 
     private void SaveLevelProgression()
     {
-        if (Authentication.CurrentUser == null) return;
+        if (FirebaseManager.CurrentUser == null) return;
 
         string nextLevelKey = "Level" + nextLevelIndex;
-        if (!Authentication.CurrentUser.levelProgress.ContainsKey(nextLevelKey))
+        if (!FirebaseManager.CurrentUser.levelProgress.ContainsKey(nextLevelKey))
         {
-            Authentication.CurrentUser.levelProgress[nextLevelKey] = new LevelStats();
+            FirebaseManager.CurrentUser.levelProgress[nextLevelKey] = new LevelStats();
         }
-        Authentication.CurrentUser.levelProgress[nextLevelKey].unlocked = true;
+        FirebaseManager.CurrentUser.levelProgress[nextLevelKey].unlocked = true;
 
         if (NoMoreLevels() == false)
         {
-            Authentication.CurrentUser.gameProgress.continueLevelNumber = nextLevelIndex;
+            FirebaseManager.CurrentUser.gameProgress.continueLevelNumber = nextLevelIndex;
 
             SkinManager skinManager = SkinManager.instance;
 
             if (skinManager != null)
             {
-                Authentication.CurrentUser.gameProgress.lastUsedSkin = skinManager.GetSkinId();
+                FirebaseManager.CurrentUser.gameProgress.lastUsedSkin = skinManager.GetSkinId();
             }
         }
     }
 
     private void SaveCurrentUserData()
     {
-        if (Authentication.instance != null && Authentication.CurrentUser != null)
+        if (FirebaseManager.instance != null && FirebaseManager.CurrentUser != null)
         {
-            Authentication.instance.SaveUserDataToRealtimeDatabase();
+            FirebaseManager.instance.SaveUserDataToRealtimeDatabase();
         }
     }
 

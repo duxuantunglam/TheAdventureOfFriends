@@ -41,9 +41,9 @@ public class UI_LevelSelection : MonoBehaviour
 
         levelsUnlocked[1] = true;
 
-        if (Authentication.CurrentUser == null || Authentication.CurrentUser.levelProgress == null)
+        if (FirebaseManager.CurrentUser == null || FirebaseManager.CurrentUser.levelProgress == null)
         {
-            Debug.LogWarning("Authentication.CurrentUser or levelProgress is null. Loading only Level 1.");
+            Debug.LogWarning("FirebaseManager.CurrentUser or levelProgress is null. Loading only Level 1.");
             return;
         }
 
@@ -51,7 +51,7 @@ public class UI_LevelSelection : MonoBehaviour
         {
             string levelKey = "Level" + i;
 
-            bool levelUnlockedFromFirebase = Authentication.CurrentUser.levelProgress.ContainsKey(levelKey) && Authentication.CurrentUser.levelProgress[levelKey].unlocked;
+            bool levelUnlockedFromFirebase = FirebaseManager.CurrentUser.levelProgress.ContainsKey(levelKey) && FirebaseManager.CurrentUser.levelProgress[levelKey].unlocked;
 
             if (levelUnlockedFromFirebase)
             {

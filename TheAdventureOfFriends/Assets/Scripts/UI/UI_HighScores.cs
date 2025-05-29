@@ -23,42 +23,42 @@ public class UI_HighScores : MonoBehaviour
 
     private int TotalFruitCollected()
     {
-        if (Authentication.CurrentUser == null)
+        if (FirebaseManager.CurrentUser == null)
         {
-            Debug.LogWarning("Authentication.CurrentUser is null. Cannot get total fruits.");
+            Debug.LogWarning("FirebaseManager.CurrentUser is null. Cannot get total fruits.");
             return 0;
         }
 
-        return Authentication.CurrentUser.totalFruitAmount;
+        return FirebaseManager.CurrentUser.totalFruitAmount;
     }
 
     private float AverageTime()
     {
-        if (Authentication.CurrentUser == null)
+        if (FirebaseManager.CurrentUser == null)
         {
-            Debug.LogWarning("Authentication.CurrentUser is null. Cannot get average time.");
+            Debug.LogWarning("FirebaseManager.CurrentUser is null. Cannot get average time.");
             return 0f;
         }
-        return Authentication.CurrentUser.averageTime;
+        return FirebaseManager.CurrentUser.averageTime;
     }
 
     private int TotalEnemiesKilled()
     {
-        if (Authentication.CurrentUser == null)
+        if (FirebaseManager.CurrentUser == null)
         {
-            Debug.LogWarning("Authentication.CurrentUser is null. Cannot get total enemies killed.");
+            Debug.LogWarning("FirebaseManager.CurrentUser is null. Cannot get total enemies killed.");
             return 0;
         }
-        return Authentication.CurrentUser.enemiesKilled;
+        return FirebaseManager.CurrentUser.enemiesKilled;
     }
 
     private int TotalKnockBacks()
     {
-        if (Authentication.CurrentUser == null)
+        if (FirebaseManager.CurrentUser == null)
         {
-            Debug.LogWarning("Authentication.CurrentUser is null. Cannot get total knockBacks.");
+            Debug.LogWarning("FirebaseManager.CurrentUser is null. Cannot get total knockBacks.");
             return 0;
         }
-        return Authentication.CurrentUser.knockBacks;
+        return FirebaseManager.CurrentUser.knockBacks;
     }
 }
