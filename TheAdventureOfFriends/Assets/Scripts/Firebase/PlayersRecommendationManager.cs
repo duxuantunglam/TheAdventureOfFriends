@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Firebase.Database;
+using Newtonsoft.Json;
 using UnityEngine;
 
 [Serializable]
@@ -76,7 +77,7 @@ public class PlayersRecommendationManager
                 foreach (var childSnapshot in snapshot.Children)
                 {
                     string json = childSnapshot.GetRawJsonValue();
-                    PlayersRecommendationByFeatures playerStats = JsonUtility.FromJson<PlayersRecommendationByFeatures>(json);
+                    PlayersRecommendationByFeatures playerStats = JsonConvert.DeserializeObject<PlayersRecommendationByFeatures>(json);
 
                     if (playerStats != null)
                     {
@@ -106,7 +107,7 @@ public class PlayersRecommendationManager
                 foreach (var childSnapshot in snapshot.Children)
                 {
                     string json = childSnapshot.GetRawJsonValue();
-                    PlayersRecommendationByBehaviors playerBehavior = JsonUtility.FromJson<PlayersRecommendationByBehaviors>(json);
+                    PlayersRecommendationByBehaviors playerBehavior = JsonConvert.DeserializeObject<PlayersRecommendationByBehaviors>(json);
 
                     if (playerBehavior != null)
                     {

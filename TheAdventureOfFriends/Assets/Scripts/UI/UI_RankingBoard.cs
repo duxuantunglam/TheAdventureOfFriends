@@ -3,6 +3,7 @@ using System.Linq;
 using Firebase.Auth;
 using Firebase.Database;
 using Firebase.Extensions;
+using Newtonsoft.Json;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -107,7 +108,7 @@ public class UI_RankingBoard : MonoBehaviour
                     foreach (var userSnapshot in snapshot.Children)
                     {
                         string json = userSnapshot.GetRawJsonValue();
-                        UserData userData = JsonUtility.FromJson<UserData>(json);
+                        UserData userData = JsonConvert.DeserializeObject<UserData>(json);
                         allPlayersData.Add(userData);
                     }
 

@@ -277,7 +277,6 @@ public class FirebaseManager : MonoBehaviour
                 if (snapshot.Exists)
                 {
                     string json = snapshot.GetRawJsonValue();
-                    // UserData userData = JsonUtility.FromJson<UserData>(json);
                     UserData userData = JsonConvert.DeserializeObject<UserData>(json);
                     Debug.Log("Authentication: User data loaded successfully.");
                     CurrentUser = userData;
@@ -313,7 +312,6 @@ public class FirebaseManager : MonoBehaviour
         }
 
         string json = JsonConvert.SerializeObject(CurrentUser);
-        Debug.Log("JSON to be saved: " + json);
         dbReference.Child("PlayerStats").Child(auth.CurrentUser.UserId).SetRawJsonValueAsync(json)
             .ContinueWithOnMainThread(task =>
             {

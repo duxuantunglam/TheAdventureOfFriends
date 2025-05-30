@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Firebase.Database;
 using Firebase.Extensions;
+using Newtonsoft.Json;
 using UnityEngine;
 
 public class InvitationManager : MonoBehaviour
@@ -50,7 +51,7 @@ public class InvitationManager : MonoBehaviour
         if (!args.Snapshot.Exists) return;
 
         string invitationJson = args.Snapshot.GetRawJsonValue();
-        InvitationData invitation = JsonUtility.FromJson<InvitationData>(invitationJson);
+        InvitationData invitation = JsonConvert.DeserializeObject<InvitationData>(invitationJson);
 
         if (invitation == null)
         {
