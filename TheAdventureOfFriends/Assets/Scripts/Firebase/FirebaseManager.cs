@@ -286,6 +286,7 @@ public class FirebaseManager : MonoBehaviour
                     }
 
                     CalculateLast7DaysAverages();
+                    CalculateLast1MonthAverages();
                 }
                 else
                 {
@@ -298,6 +299,7 @@ public class FirebaseManager : MonoBehaviour
                     SaveUserDataToRealtimeDatabase();
 
                     CalculateLast7DaysAverages();
+                    CalculateLast1MonthAverages();
                 }
             }
         });
@@ -451,6 +453,60 @@ public class FirebaseManager : MonoBehaviour
         else
         {
             Debug.LogWarning("FirebaseManager.CurrentUser or dailyStatsHistory is null. Cannot calculate 7 days averages.");
+        }
+    }
+
+    private void CalculateLast1MonthAverages()
+    {
+        UserData currentUserData = FirebaseManager.CurrentUser;
+
+        if (currentUserData != null && currentUserData.dailyStatsHistory != null)
+        {
+            int totalCompletedLevelsLast1Month = 0;
+            int totalFruitLast1Month = 0;
+            float totalTimeLast1Month = 0f;
+            int totalEnemiesKilledLast1Month = 0;
+            int totalKnockBacksLast1Month = 0;
+
+            DateTime today = DateTime.Now.Date;
+
+            for (int i = 0; i < 30; i++)
+            {
+                DateTime dateToCheck = today.AddDays(-i);
+                string dateKey = dateToCheck.ToString("yyyy-MM-dd");
+
+                if (currentUserData.dailyStatsHistory.TryGetValue(dateKey, out DailyStats dailyStats))
+                {
+                    totalCompletedLevelsLast1Month += dailyStats.completedLevelCount;
+                    totalFruitLast1Month += dailyStats.totalFruitAmount;
+                    totalTimeLast1Month += dailyStats.totalTimePlayGame;
+                    totalEnemiesKilledLast1Month += dailyStats.enemiesKilled;
+                    totalKnockBacksLast1Month += dailyStats.knockBacks;
+                }
+            }
+
+            if (totalCompletedLevelsLast1Month > 0)
+            {
+                currentUserData.averageFruitL1M = (float)totalFruitLast1Month / totalCompletedLevelsLast1Month;
+                currentUserData.averageTimeL1M = totalTimeLast1Month / totalCompletedLevelsLast1Month;
+                currentUserData.averageEnemiesKilledL1M = (float)totalEnemiesKilledLast1Month / totalCompletedLevelsLast1Month;
+                currentUserData.averageKnockBacksL1M = (float)totalKnockBacksLast1Month / totalCompletedLevelsLast1Month;
+            }
+            else
+            {
+                currentUserData.averageFruitL1M = 0f;
+                currentUserData.averageTimeL1M = 0f;
+                currentUserData.averageEnemiesKilledL1M = 0f;
+                currentUserData.averageKnockBacksL1M = 0f;
+            }
+
+            Debug.Log("Calculated averageFeatures in 1 month.");
+
+            SaveUserDataToRealtimeDatabase();
+        }
+        else
+        {
+            Debug.LogWarning("FirebaseManager.CurrentUser or dailyStatsHistory is null. Cannot calculate 1 month averages.");
         }
     }
 
