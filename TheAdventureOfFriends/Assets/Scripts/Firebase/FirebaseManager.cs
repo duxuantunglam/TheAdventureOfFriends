@@ -283,6 +283,7 @@ public class FirebaseManager : MonoBehaviour
                     if (auth.CurrentUser != null)
                     {
                         CurrentUser.userName = auth.CurrentUser.DisplayName ?? "Unknown";
+                        CurrentUser.id = auth.CurrentUser.UserId;
                     }
 
                     CalculateLast7DaysAverages();
