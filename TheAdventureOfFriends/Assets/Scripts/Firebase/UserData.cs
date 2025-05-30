@@ -27,6 +27,7 @@ public class UserData
     public long lastOnlineTime = 0;
 
     public int completedLevelCount = 0;
+    public float totalTimePlayGame = 0f;
     public int easyLevelCompleted = 0;
     public int normalLevelCompleted = 0;
     public int hardLevelCompleted = 0;

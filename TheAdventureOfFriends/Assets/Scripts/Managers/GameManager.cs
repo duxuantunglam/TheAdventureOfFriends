@@ -145,6 +145,7 @@ public class GameManager : MonoBehaviour
         SaveFruitInfo();
         SaveEnemiesKilled();
         SaveKnockBacks();
+        SaveTotalTimePlayGame();
 
         SaveAverageFruit();
         SaveAverageTime();
@@ -214,6 +215,13 @@ public class GameManager : MonoBehaviour
         {
             FirebaseManager.CurrentUser.levelProgress[levelKey].bestTime = levelTimer;
         }
+    }
+
+    private void SaveTotalTimePlayGame()
+    {
+        if (FirebaseManager.CurrentUser == null) return;
+
+        FirebaseManager.CurrentUser.totalTimePlayGame += levelTimer;
     }
 
     private void SaveAverageTime()
