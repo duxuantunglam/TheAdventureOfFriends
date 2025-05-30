@@ -523,4 +523,18 @@ public class FirebaseManager : MonoBehaviour
             auth = null;
         }
     }
+
+    public void UpdateDataAfterLevelComplete()
+    {
+        if (CurrentUser == null)
+        {
+            Debug.LogWarning("CurrentUser is null. Cannot update data after level complete.");
+            return;
+        }
+
+        CalculateLast7DaysAverages();
+        CalculateLast1MonthAverages();
+
+        SaveUserDataToRealtimeDatabase();
+    }
 }

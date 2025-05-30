@@ -189,6 +189,8 @@ public class GameManager : MonoBehaviour
         {
             Debug.LogWarning("FirebaseManager.CurrentUser is null. Cannot update daily stats.");
         }
+
+        FirebaseManager.instance.UpdateDataAfterLevelComplete();
     }
 
     private void SaveFruitInfo()
