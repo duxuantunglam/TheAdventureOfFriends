@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -154,9 +155,40 @@ public class GameManager : MonoBehaviour
 
         SaveDifficultyLevelCompletedCount();
 
+        UpdateDailyStats();
+
         SaveCurrentUserData();
 
         LoadNextScene();
+    }
+
+    private void UpdateDailyStats()
+    {
+        UserData currentUserData = FirebaseManager.CurrentUser;
+
+        if (currentUserData != null)
+        {
+            string today = DateTime.Now.ToString("yyyy-MM-dd");
+
+            if (!currentUserData.dailyStatsHistory.ContainsKey(today))
+            {
+                currentUserData.dailyStatsHistory[today] = new DailyStats();
+            }
+
+            DailyStats dailyStats = currentUserData.dailyStatsHistory[today];
+
+            dailyStats.completedLevelCount++;
+            dailyStats.totalFruitAmount += fruitCollected;
+            dailyStats.totalTimePlayGame += levelTimer;
+            dailyStats.enemiesKilled += enemiesKilled;
+            dailyStats.knockBacks += knockBacks;
+
+            Debug.Log($"DailyStats have been updated {today}");
+        }
+        else
+        {
+            Debug.LogWarning("FirebaseManager.CurrentUser is null. Cannot update daily stats.");
+        }
     }
 
     private void SaveFruitInfo()

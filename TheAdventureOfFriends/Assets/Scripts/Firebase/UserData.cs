@@ -19,6 +19,16 @@ public class LevelStats
 }
 
 [Serializable]
+public class DailyStats
+{
+    public int completedLevelCount = 0;
+    public int totalFruitAmount = 0;
+    public float totalTimePlayGame = 0f;
+    public int enemiesKilled = 0;
+    public int knockBacks = 0;
+}
+
+[Serializable]
 public class UserData
 {
     public string userName;
@@ -39,19 +49,21 @@ public class UserData
     public int knockBacks = 0;
     public float averageKnockBacks = 0f;
 
+    public float averageFruitL1W = 0f;
+    public float averageTimeL1W = 0f;
+    public float averageEnemiesKilledL1W = 0f;
+    public float averageKnockBacksL1W = 0f;
+
     public Dictionary<string, LevelStats> levelProgress = new Dictionary<string, LevelStats>();
-
     public Dictionary<string, bool> skinUnlockedName = new Dictionary<string, bool>();
-
     public GameData gameProgress = new GameData();
     public int[] playTimeInDay = new int[8];
+    public Dictionary<string, DailyStats> dailyStatsHistory = new Dictionary<string, DailyStats>();
 
     public UserData()
     {
         levelProgress["Level1"] = new LevelStats { unlocked = true };
-
         skinUnlockedName["0"] = true;
-
         averageTime = 0f;
         completedLevelCount = 0;
         gameProgress = new GameData();

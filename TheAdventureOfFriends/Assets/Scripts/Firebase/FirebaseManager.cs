@@ -1,9 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Firebase;
 using Firebase.Auth;
 using Firebase.Database;
 using Firebase.Extensions;
+using Newtonsoft.Json;
 using UnityEngine;
 
 public class FirebaseManager : MonoBehaviour
@@ -275,13 +277,16 @@ public class FirebaseManager : MonoBehaviour
                 if (snapshot.Exists)
                 {
                     string json = snapshot.GetRawJsonValue();
-                    UserData userData = JsonUtility.FromJson<UserData>(json);
+                    // UserData userData = JsonUtility.FromJson<UserData>(json);
+                    UserData userData = JsonConvert.DeserializeObject<UserData>(json);
                     Debug.Log("Authentication: User data loaded successfully.");
                     CurrentUser = userData;
                     if (auth.CurrentUser != null)
                     {
                         CurrentUser.userName = auth.CurrentUser.DisplayName ?? "Unknown";
                     }
+
+                    CalculateLast7DaysAverages();
                 }
                 else
                 {
@@ -292,6 +297,8 @@ public class FirebaseManager : MonoBehaviour
                         id = auth.CurrentUser.UserId,
                     };
                     SaveUserDataToRealtimeDatabase();
+
+                    CalculateLast7DaysAverages();
                 }
             }
         });
@@ -305,7 +312,8 @@ public class FirebaseManager : MonoBehaviour
             return;
         }
 
-        string json = JsonUtility.ToJson(CurrentUser);
+        string json = JsonConvert.SerializeObject(CurrentUser);
+        Debug.Log("JSON to be saved: " + json);
         dbReference.Child("PlayerStats").Child(auth.CurrentUser.UserId).SetRawJsonValueAsync(json)
             .ContinueWithOnMainThread(task =>
             {
@@ -391,6 +399,60 @@ public class FirebaseManager : MonoBehaviour
             int slot = DateTime.Now.Hour / 3;
             CurrentUser.playTimeInDay[slot]++;
             dbReference.Child("PlayerStats").Child(auth.CurrentUser.UserId).Child("playTimeInDay").Child(slot.ToString()).SetValueAsync(CurrentUser.playTimeInDay[slot]);
+        }
+    }
+
+    private void CalculateLast7DaysAverages()
+    {
+        UserData currentUserData = FirebaseManager.CurrentUser;
+
+        if (currentUserData != null && currentUserData.dailyStatsHistory != null)
+        {
+            int totalCompletedLevelsLast7Days = 0;
+            int totalFruitLast7Days = 0;
+            float totalTimeLast7Days = 0f;
+            int totalEnemiesKilledLast7Days = 0;
+            int totalKnockBacksLast7Days = 0;
+
+            DateTime today = DateTime.Now.Date;
+
+            for (int i = 0; i < 7; i++)
+            {
+                DateTime dateToCheck = today.AddDays(-i);
+                string dateKey = dateToCheck.ToString("yyyy-MM-dd");
+
+                if (currentUserData.dailyStatsHistory.TryGetValue(dateKey, out DailyStats dailyStats))
+                {
+                    totalCompletedLevelsLast7Days += dailyStats.completedLevelCount;
+                    totalFruitLast7Days += dailyStats.totalFruitAmount;
+                    totalTimeLast7Days += dailyStats.totalTimePlayGame;
+                    totalEnemiesKilledLast7Days += dailyStats.enemiesKilled;
+                    totalKnockBacksLast7Days += dailyStats.knockBacks;
+                }
+            }
+
+            if (totalCompletedLevelsLast7Days > 0)
+            {
+                currentUserData.averageFruitL1W = (float)totalFruitLast7Days / totalCompletedLevelsLast7Days;
+                currentUserData.averageTimeL1W = totalTimeLast7Days / totalCompletedLevelsLast7Days;
+                currentUserData.averageEnemiesKilledL1W = (float)totalEnemiesKilledLast7Days / totalCompletedLevelsLast7Days;
+                currentUserData.averageKnockBacksL1W = (float)totalKnockBacksLast7Days / totalCompletedLevelsLast7Days;
+            }
+            else
+            {
+                currentUserData.averageFruitL1W = 0f;
+                currentUserData.averageTimeL1W = 0f;
+                currentUserData.averageEnemiesKilledL1W = 0f;
+                currentUserData.averageKnockBacksL1W = 0f;
+            }
+
+            Debug.Log("Calculated averageFeatures in 7 days.");
+
+            SaveUserDataToRealtimeDatabase();
+        }
+        else
+        {
+            Debug.LogWarning("FirebaseManager.CurrentUser or dailyStatsHistory is null. Cannot calculate 7 days averages.");
         }
     }
 

@@ -65,6 +65,7 @@
         "interactable",
         "knockback",
         "Mathf",
+        "Newtonsoft",
         "paratemtrs",
         "Prefs",
         "Proyecto",
