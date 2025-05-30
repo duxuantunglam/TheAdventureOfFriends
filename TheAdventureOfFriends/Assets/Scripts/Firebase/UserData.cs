@@ -53,11 +53,13 @@ public class UserData
     public float averageTimeL1W = 0f;
     public float averageEnemiesKilledL1W = 0f;
     public float averageKnockBacksL1W = 0f;
+    public float totalTimePlayGameL1W = 0f;
 
     public float averageFruitL1M = 0f;
     public float averageTimeL1M = 0f;
     public float averageEnemiesKilledL1M = 0f;
     public float averageKnockBacksL1M = 0f;
+    public float totalTimePlayGameL1M = 0f;
 
     public Dictionary<string, LevelStats> levelProgress = new Dictionary<string, LevelStats>();
     public Dictionary<string, bool> skinUnlockedName = new Dictionary<string, bool>();

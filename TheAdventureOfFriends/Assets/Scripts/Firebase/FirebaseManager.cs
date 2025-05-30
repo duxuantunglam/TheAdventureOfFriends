@@ -438,6 +438,7 @@ public class FirebaseManager : MonoBehaviour
                 currentUserData.averageTimeL1W = totalTimeLast7Days / totalCompletedLevelsLast7Days;
                 currentUserData.averageEnemiesKilledL1W = (float)totalEnemiesKilledLast7Days / totalCompletedLevelsLast7Days;
                 currentUserData.averageKnockBacksL1W = (float)totalKnockBacksLast7Days / totalCompletedLevelsLast7Days;
+                currentUserData.totalTimePlayGameL1W = totalTimeLast7Days;
             }
             else
             {
@@ -445,6 +446,7 @@ public class FirebaseManager : MonoBehaviour
                 currentUserData.averageTimeL1W = 0f;
                 currentUserData.averageEnemiesKilledL1W = 0f;
                 currentUserData.averageKnockBacksL1W = 0f;
+                currentUserData.totalTimePlayGameL1W = 0f;
             }
 
             Debug.Log("Calculated averageFeatures in 7 days.");
@@ -492,6 +494,7 @@ public class FirebaseManager : MonoBehaviour
                 currentUserData.averageTimeL1M = totalTimeLast1Month / totalCompletedLevelsLast1Month;
                 currentUserData.averageEnemiesKilledL1M = (float)totalEnemiesKilledLast1Month / totalCompletedLevelsLast1Month;
                 currentUserData.averageKnockBacksL1M = (float)totalKnockBacksLast1Month / totalCompletedLevelsLast1Month;
+                currentUserData.totalTimePlayGameL1M = totalTimeLast1Month;
             }
             else
             {
@@ -499,6 +502,7 @@ public class FirebaseManager : MonoBehaviour
                 currentUserData.averageTimeL1M = 0f;
                 currentUserData.averageEnemiesKilledL1M = 0f;
                 currentUserData.averageKnockBacksL1M = 0f;
+                currentUserData.totalTimePlayGameL1M = 0f;
             }
 
             Debug.Log("Calculated averageFeatures in 1 month.");

@@ -33,6 +33,8 @@ public class PlayersRecommendationByBehaviors
     public int normalLevelCompleted;
     public int hardLevelCompleted;
     public float totalTimePlayGame;
+    public float totalTimePlayGameL1W;
+    public float totalTimePlayGameL1M;
     public int[] playTimeInDay = new int[8];
 }
 
@@ -72,7 +74,7 @@ public class PlayersRecommendationManager
     private PlayersRecommendationManager() { }
 
     private readonly float[] contentBasedWeights = new float[] { 1.0f, 0.5f, 1.5f, 0.3f, 1.5f, 1.0f, 2.0f, 0.8f, 1.3f, 0.8f, 1.8f, 0.6f };
-    private readonly float[] collaborativeWeights = new float[] { 1.0f, 1.5f, 2.0f, 1.5f, 0.8f, 0.8f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f };
+    private readonly float[] collaborativeWeights = new float[] { 1.0f, 1.5f, 2.0f, 1.5f, 1.0f, 1.0f, 0.8f, 0.8f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f };
 
     private async Task<List<PlayersRecommendationByFeatures>> LoadAllPlayerFeatureAsync()
     {
@@ -273,6 +275,12 @@ public class PlayersRecommendationManager
         float minTotalTimePlayGame = playerBehaviorsList.Min(p => p.totalTimePlayGame);
         float maxTotalTimePlayGame = playerBehaviorsList.Max(p => p.totalTimePlayGame);
 
+        float minTotalTimePlayGameL1W = playerBehaviorsList.Min(p => p.totalTimePlayGameL1W);
+        float maxTotalTimePlayGameL1W = playerBehaviorsList.Max(p => p.totalTimePlayGameL1W);
+
+        float minTotalTimePlayGameL1M = playerBehaviorsList.Min(p => p.totalTimePlayGameL1M);
+        float maxTotalTimePlayGameL1M = playerBehaviorsList.Max(p => p.totalTimePlayGameL1M);
+
         float[] minPlayTime = new float[8];
         float[] maxPlayTime = new float[8];
         for (int i = 0; i < 8; i++)
@@ -288,7 +296,7 @@ public class PlayersRecommendationManager
         {
             if (!playerIds.Contains(playerBehavior.id)) continue;
 
-            float[] vector = new float[11];
+            float[] vector = new float[14];
             float rangeEasy = maxEasy - minEasy;
             vector[0] = (rangeEasy == 0) ? 0 : (playerBehavior.easyLevelCompleted - minEasy) / rangeEasy;
 
@@ -301,10 +309,16 @@ public class PlayersRecommendationManager
             float rangeTotalTimePlayGame = maxTotalTimePlayGame - minTotalTimePlayGame;
             vector[3] = (rangeTotalTimePlayGame == 0) ? 0 : (playerBehavior.totalTimePlayGame - minTotalTimePlayGame) / rangeTotalTimePlayGame;
 
+            float rangeTotalTimePlayGameL1W = maxTotalTimePlayGameL1W - minTotalTimePlayGameL1W;
+            vector[4] = (rangeTotalTimePlayGameL1W == 0) ? 0 : (playerBehavior.totalTimePlayGameL1W - minTotalTimePlayGameL1W) / rangeTotalTimePlayGameL1W;
+
+            float rangeTotalTimePlayGameL1M = maxTotalTimePlayGameL1M - minTotalTimePlayGameL1M;
+            vector[5] = (rangeTotalTimePlayGameL1M == 0) ? 0 : (playerBehavior.totalTimePlayGameL1M - minTotalTimePlayGameL1M) / rangeTotalTimePlayGameL1M;
+
             for (int i = 0; i < 8; i++)
             {
                 float rangePlayTime = maxPlayTime[i] - minPlayTime[i];
-                vector[i + 4] = (rangePlayTime == 0) ? 0 : (playerBehavior.playTimeInDay[i] - minPlayTime[i]) / rangePlayTime;
+                vector[i + 6] = (rangePlayTime == 0) ? 0 : (playerBehavior.playTimeInDay[i] - minPlayTime[i]) / rangePlayTime;
             }
 
             normalizedVectors.Add(vector);
