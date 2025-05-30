@@ -328,7 +328,7 @@ public class FirebaseManager : MonoBehaviour
             return;
         }
 
-        dbReference.Child("PlayerStats").Child(userId).Child("isOnline").SetValueAsync(isOnline).ContinueWithOnMainThread(task =>
+        dbReference.Child("PlayerStats").Child("isOnline").SetValueAsync(isOnline).ContinueWithOnMainThread(task =>
         {
             if (task.IsFaulted)
             {
@@ -349,7 +349,7 @@ public class FirebaseManager : MonoBehaviour
             return;
         }
 
-        dbReference.Child("PlayerStats").Child(userId).Child("isOnline").OnDisconnect().SetValue(statusOnDisconnect).ContinueWithOnMainThread(task =>
+        dbReference.Child("PlayerStats").Child("isOnline").OnDisconnect().SetValue(statusOnDisconnect).ContinueWithOnMainThread(task =>
         {
             if (task.IsFaulted)
             {
@@ -370,7 +370,7 @@ public class FirebaseManager : MonoBehaviour
             return;
         }
 
-        dbReference.Child("PlayerStats").Child(userId).Child("lastOnlineTime").SetValueAsync(ServerValue.Timestamp).ContinueWithOnMainThread(task =>
+        dbReference.Child("PlayerStats").Child("lastOnlineTime").SetValueAsync(ServerValue.Timestamp).ContinueWithOnMainThread(task =>
         {
             if (task.IsFaulted)
             {
