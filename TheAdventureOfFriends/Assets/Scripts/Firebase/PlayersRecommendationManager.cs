@@ -15,6 +15,14 @@ public class PlayersRecommendationByFeatures
     public float averageTime;
     public float averageEnemiesKilled;
     public float averageKnockBacks;
+    public float averageFruitL1W;
+    public float averageTimeL1W;
+    public float averageEnemiesKilledL1W;
+    public float averageKnockBacksL1W;
+    public float averageFruitL1M;
+    public float averageTimeL1M;
+    public float averageEnemiesKilledL1M;
+    public float averageKnockBacksL1M;
 }
 
 public class PlayersRecommendationByBehaviors
@@ -24,6 +32,7 @@ public class PlayersRecommendationByBehaviors
     public int easyLevelCompleted;
     public int normalLevelCompleted;
     public int hardLevelCompleted;
+    public float totalTimePlayGame;
     public int[] playTimeInDay = new int[8];
 }
 
@@ -62,8 +71,8 @@ public class PlayersRecommendationManager
 
     private PlayersRecommendationManager() { }
 
-    private readonly float[] contentBasedWeights = new float[] { 1.5f, 0.8f, 2.0f, 0.5f };
-    private readonly float[] collaborativeWeights = new float[] { 1.0f, 1.5f, 2.0f, 0.8f, 0.8f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f };
+    private readonly float[] contentBasedWeights = new float[] { 1.0f, 0.5f, 1.5f, 0.3f, 1.5f, 1.0f, 2.0f, 0.8f, 1.3f, 0.8f, 1.8f, 0.6f };
+    private readonly float[] collaborativeWeights = new float[] { 1.0f, 1.5f, 2.0f, 1.5f, 0.8f, 0.8f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f };
 
     private async Task<List<PlayersRecommendationByFeatures>> LoadAllPlayerFeatureAsync()
     {
@@ -159,37 +168,45 @@ public class PlayersRecommendationManager
         return onlineStatus;
     }
 
-    // private float[] NormalizeVector(float[] vector)
-    // {
-    //     float sumOfSquares = 0;
-    //     for (int i = 0; i < vector.Length; i++)
-    //     {
-    //         sumOfSquares += vector[i] * vector[i];
-    //     }
-    //     float magnitude = Mathf.Sqrt(sumOfSquares);
-
-    //     if (magnitude == 0) return new float[vector.Length];
-
-    //     float[] normalizedVector = new float[vector.Length];
-    //     for (int i = 0; i < vector.Length; i++)
-    //     {
-    //         normalizedVector[i] = vector[i] / magnitude;
-    //     }
-    //     return normalizedVector;
-    // }
-
     private List<float[]> NormalizeMinMaxContentBased(List<PlayersRecommendationByFeatures> playerFeaturesList, List<string> playerIds)
     {
         if (playerFeaturesList == null || playerFeaturesList.Count == 0) return new List<float[]>();
 
         float minFruit = playerFeaturesList.Min(p => p.averageFruit);
         float maxFruit = playerFeaturesList.Max(p => p.averageFruit);
+
         float minTime = playerFeaturesList.Min(p => p.averageTime);
         float maxTime = playerFeaturesList.Max(p => p.averageTime);
-        float minEnemies = playerFeaturesList.Min(p => p.averageEnemiesKilled);
-        float maxEnemies = playerFeaturesList.Max(p => p.averageEnemiesKilled);
+
+        float minEnemiesKilled = playerFeaturesList.Min(p => p.averageEnemiesKilled);
+        float maxEnemiesKilled = playerFeaturesList.Max(p => p.averageEnemiesKilled);
+
         float minKnockBacks = playerFeaturesList.Min(p => p.averageKnockBacks);
         float maxKnockBacks = playerFeaturesList.Max(p => p.averageKnockBacks);
+
+        float minFruitL1W = playerFeaturesList.Min(p => p.averageFruitL1W);
+        float maxFruitL1W = playerFeaturesList.Max(p => p.averageFruitL1W);
+
+        float minTimeL1W = playerFeaturesList.Min(p => p.averageTimeL1W);
+        float maxTimeL1W = playerFeaturesList.Max(p => p.averageTimeL1W);
+
+        float minEnemiesKilledL1W = playerFeaturesList.Min(p => p.averageEnemiesKilledL1W);
+        float maxEnemiesKilledL1W = playerFeaturesList.Max(p => p.averageEnemiesKilledL1W);
+
+        float minKnockBacksL1W = playerFeaturesList.Min(p => p.averageKnockBacksL1W);
+        float maxKnockBacksL1W = playerFeaturesList.Max(p => p.averageKnockBacksL1W);
+
+        float minFruitL1M = playerFeaturesList.Min(p => p.averageFruitL1M);
+        float maxFruitL1M = playerFeaturesList.Max(p => p.averageFruitL1M);
+
+        float minTimeL1M = playerFeaturesList.Min(p => p.averageTimeL1M);
+        float maxTimeL1M = playerFeaturesList.Max(p => p.averageTimeL1M);
+
+        float minEnemiesKilledL1M = playerFeaturesList.Min(p => p.averageEnemiesKilledL1M);
+        float maxEnemiesKilledL1M = playerFeaturesList.Max(p => p.averageEnemiesKilledL1M);
+
+        float minKnockBacksL1M = playerFeaturesList.Min(p => p.averageKnockBacksL1M);
+        float maxKnockBacksL1M = playerFeaturesList.Max(p => p.averageKnockBacksL1M);
 
         List<float[]> normalizedVectors = new List<float[]>();
 
@@ -197,18 +214,42 @@ public class PlayersRecommendationManager
         {
             if (!playerIds.Contains(playerStats.id)) continue;
 
-            float[] vector = new float[4];
+            float[] vector = new float[12];
             float rangeFruit = maxFruit - minFruit;
             vector[0] = (rangeFruit == 0) ? 0 : (playerStats.averageFruit - minFruit) / rangeFruit;
 
             float rangeTime = maxTime - minTime;
             vector[1] = (rangeTime == 0) ? 0 : (playerStats.averageTime - minTime) / rangeTime;
 
-            float rangeEnemies = maxEnemies - minEnemies;
-            vector[2] = (rangeEnemies == 0) ? 0 : (playerStats.averageEnemiesKilled - minEnemies) / rangeEnemies;
+            float rangeEnemies = maxEnemiesKilled - minEnemiesKilled;
+            vector[2] = (rangeEnemies == 0) ? 0 : (playerStats.averageEnemiesKilled - minEnemiesKilled) / rangeEnemies;
 
             float rangeKnockBacks = maxKnockBacks - minKnockBacks;
             vector[3] = (rangeKnockBacks == 0) ? 0 : (playerStats.averageKnockBacks - minKnockBacks) / rangeKnockBacks;
+
+            float rangeFruitL1W = maxFruitL1W - minFruitL1W;
+            vector[4] = (rangeFruitL1W == 0) ? 0 : (playerStats.averageFruitL1W - minFruitL1W) / rangeFruitL1W;
+
+            float rangeTimeL1W = maxTimeL1W - minTimeL1W;
+            vector[5] = (rangeTimeL1W == 0) ? 0 : (playerStats.averageTimeL1W - minTimeL1W) / rangeTimeL1W;
+
+            float rangeEnemiesKilledL1W = maxEnemiesKilledL1W - minEnemiesKilledL1W;
+            vector[6] = (rangeEnemiesKilledL1W == 0) ? 0 : (playerStats.averageEnemiesKilledL1W - minEnemiesKilledL1W) / rangeEnemiesKilledL1W;
+
+            float rangeKnockBacksL1W = maxKnockBacksL1W - minKnockBacksL1W;
+            vector[7] = (rangeKnockBacksL1W == 0) ? 0 : (playerStats.averageKnockBacksL1W - minKnockBacksL1W) / rangeKnockBacksL1W;
+
+            float rangeFruitL1M = maxFruitL1M - minFruitL1M;
+            vector[8] = (rangeFruitL1M == 0) ? 0 : (playerStats.averageFruitL1M - minFruitL1M) / rangeFruitL1M;
+
+            float rangeTimeL1M = maxTimeL1M - minTimeL1M;
+            vector[9] = (rangeTimeL1M == 0) ? 0 : (playerStats.averageTimeL1M - minTimeL1M) / rangeTimeL1M;
+
+            float rangeEnemiesKilledL1M = maxEnemiesKilledL1M - minEnemiesKilledL1M;
+            vector[10] = (rangeEnemiesKilledL1M == 0) ? 0 : (playerStats.averageEnemiesKilledL1M - minEnemiesKilledL1M) / rangeEnemiesKilledL1M;
+
+            float rangeKnockBacksL1M = maxKnockBacksL1M - minKnockBacksL1M;
+            vector[11] = (rangeKnockBacksL1M == 0) ? 0 : (playerStats.averageKnockBacksL1M - minKnockBacksL1M) / rangeKnockBacksL1M;
 
             normalizedVectors.Add(vector);
         }
@@ -222,10 +263,15 @@ public class PlayersRecommendationManager
 
         float minEasy = playerBehaviorsList.Min(p => p.easyLevelCompleted);
         float maxEasy = playerBehaviorsList.Max(p => p.easyLevelCompleted);
+
         float minNormal = playerBehaviorsList.Min(p => p.normalLevelCompleted);
         float maxNormal = playerBehaviorsList.Max(p => p.normalLevelCompleted);
+
         float minHard = playerBehaviorsList.Min(p => p.hardLevelCompleted);
         float maxHard = playerBehaviorsList.Max(p => p.hardLevelCompleted);
+
+        float minTotalTimePlayGame = playerBehaviorsList.Min(p => p.totalTimePlayGame);
+        float maxTotalTimePlayGame = playerBehaviorsList.Max(p => p.totalTimePlayGame);
 
         float[] minPlayTime = new float[8];
         float[] maxPlayTime = new float[8];
@@ -252,10 +298,13 @@ public class PlayersRecommendationManager
             float rangeHard = maxHard - minHard;
             vector[2] = (rangeHard == 0) ? 0 : (playerBehavior.hardLevelCompleted - minHard) / rangeHard;
 
+            float rangeTotalTimePlayGame = maxTotalTimePlayGame - minTotalTimePlayGame;
+            vector[3] = (rangeTotalTimePlayGame == 0) ? 0 : (playerBehavior.totalTimePlayGame - minTotalTimePlayGame) / rangeTotalTimePlayGame;
+
             for (int i = 0; i < 8; i++)
             {
                 float rangePlayTime = maxPlayTime[i] - minPlayTime[i];
-                vector[i + 3] = (rangePlayTime == 0) ? 0 : (playerBehavior.playTimeInDay[i] - minPlayTime[i]) / rangePlayTime;
+                vector[i + 4] = (rangePlayTime == 0) ? 0 : (playerBehavior.playTimeInDay[i] - minPlayTime[i]) / rangePlayTime;
             }
 
             normalizedVectors.Add(vector);
@@ -292,78 +341,6 @@ public class PlayersRecommendationManager
 
         return dotProduct / (magnitude1 * magnitude2);
     }
-
-    // public async Task<List<RecommendedPlayerData>> GetContentBasedRecommendedPlayersAsync(string currentUserId)
-    // {
-    //     List<PlayersRecommendationByFeatures> allPlayerStats = await LoadAllPlayerFeatureAsync();
-
-    //     if (allPlayerStats == null || allPlayerStats.Count == 0)
-    //     {
-    //         Debug.LogWarning("No player stats loaded.");
-    //         return new List<RecommendedPlayerData>();
-    //     }
-
-    //     PlayersRecommendationByFeatures currentUserStats = allPlayerStats.FirstOrDefault(p => p.id == currentUserId);
-
-    //     if (currentUserStats == null)
-    //     {
-    //         Debug.LogWarning($"Stats not found for current user ID: {currentUserId}. Cannot generate recommendations.");
-
-    //         return allPlayerStats.Where(p => p.id != currentUserId)
-    //                             .Select(p => new RecommendedPlayerData { userId = p.id, userName = p.userName, status = "Unknown", isOnline = false })
-    //                             .ToList();
-    //     }
-
-    //     List<string> otherPlayerIds = allPlayerStats.Where(p => p.id != currentUserId).Select(p => p.id).ToList();
-
-    //     Dictionary<string, bool> onlineStatus = await LoadPlayerOnlineStatusAsync(otherPlayerIds);
-
-    //     float[] currentUserVector = new float[] {
-    //         currentUserStats.averageFruit,
-    //         currentUserStats.averageTime,
-    //         currentUserStats.averageEnemiesKilled,
-    //         currentUserStats.averageKnockBacks
-    //     };
-
-    //     float[] normalizedCurrentUserVector = NormalizeVector(currentUserVector);
-
-    //     List<RecommendedPlayerInfo> recommendedPlayers = new List<RecommendedPlayerInfo>();
-
-    //     foreach (var otherPlayerStats in allPlayerStats.Where(p => p.id != currentUserId))
-    //     {
-    //         float[] otherPlayerVector = new float[] {
-    //             otherPlayerStats.averageFruit,
-    //             otherPlayerStats.averageTime,
-    //             otherPlayerStats.averageEnemiesKilled,
-    //             otherPlayerStats.averageKnockBacks
-    //         };
-
-    //         float[] normalizedOtherPlayerVector = NormalizeVector(otherPlayerVector);
-
-    //         float suitabilityScore = CalculateCosineSimilarity(normalizedCurrentUserVector, normalizedOtherPlayerVector);
-
-    //         RecommendedPlayerInfo recommendedPlayer = new RecommendedPlayerInfo
-    //         {
-    //             userId = otherPlayerStats.id,
-    //             userName = otherPlayerStats.userName,
-    //             isOnline = onlineStatus.ContainsKey(otherPlayerStats.id) ? onlineStatus[otherPlayerStats.id] : false,
-    //             status = (onlineStatus.ContainsKey(otherPlayerStats.id) && onlineStatus[otherPlayerStats.id]) ? "Online" : "Offline",
-    //             suitabilityScore = suitabilityScore
-    //         };
-
-    //         recommendedPlayers.Add(recommendedPlayer);
-    //     }
-
-    //     recommendedPlayers = recommendedPlayers.OrderByDescending(p => p.suitabilityScore).ToList();
-
-    //     if (!string.IsNullOrEmpty(currentUserId))
-    //     {
-    //         recommendedPlayers = recommendedPlayers.Where(p => p.userId != currentUserId).ToList();
-    //         Debug.Log($"Filtered out current user {currentUserId} from recommended list. List count: {recommendedPlayers.Count}");
-    //     }
-
-    //     return recommendedPlayers.Cast<RecommendedPlayerData>().ToList();
-    // }
 
     public async Task<List<RecommendedPlayerData>> GetContentBasedRecommendedPlayersAsync(string currentUserId)
     {
@@ -424,70 +401,6 @@ public class PlayersRecommendationManager
 
         return recommendedPlayers.Cast<RecommendedPlayerData>().ToList();
     }
-
-    // public async Task<List<RecommendedPlayerData>> GetCollaborativeRecommendedPlayersAsync(string currentUserId)
-    // {
-    //     List<PlayersRecommendationByBehaviors> allPlayerBehaviors = await LoadAllPlayerBehaviorsAsync();
-
-    //     if (allPlayerBehaviors == null || allPlayerBehaviors.Count == 0)
-    //     {
-    //         Debug.LogWarning("No player behaviors loaded.");
-    //         return new List<RecommendedPlayerData>();
-    //     }
-
-    //     PlayersRecommendationByBehaviors currentUserBehavior = allPlayerBehaviors.FirstOrDefault(p => p.id == currentUserId);
-
-    //     if (currentUserBehavior == null)
-    //     {
-    //         Debug.LogWarning($"Behavior stats not found for current user ID: {currentUserId}. Cannot generate recommendations.");
-
-    //         return allPlayerBehaviors.Where(p => p.id != currentUserId)
-    //                                  .Select(p => new RecommendedPlayerData { userId = p.id, userName = p.userName, status = "Unknown", isOnline = false })
-    //                                  .ToList();
-    //     }
-
-    //     List<string> otherPlayerIds = allPlayerBehaviors.Where(p => p.id != currentUserId).Select(p => p.id).ToList();
-
-    //     Dictionary<string, bool> onlineStatus = await LoadPlayerOnlineStatusAsync(otherPlayerIds);
-
-    //     float[] currentUserVector = new float[11];
-    //     currentUserVector[0] = currentUserBehavior.easyLevelCompleted;
-    //     currentUserVector[1] = currentUserBehavior.normalLevelCompleted;
-    //     currentUserVector[2] = currentUserBehavior.hardLevelCompleted;
-    //     Array.Copy(currentUserBehavior.playTimeInDay, 0, currentUserVector, 3, 8);
-
-    //     float[] normalizedCurrentUserVector = NormalizeVector(currentUserVector);
-
-    //     List<RecommendedPlayerInfo> recommendedPlayers = new List<RecommendedPlayerInfo>();
-
-    //     foreach (var otherPlayerBehavior in allPlayerBehaviors.Where(p => p.id != currentUserId))
-    //     {
-    //         float[] otherPlayerVector = new float[11];
-    //         otherPlayerVector[0] = otherPlayerBehavior.easyLevelCompleted;
-    //         otherPlayerVector[1] = otherPlayerBehavior.normalLevelCompleted;
-    //         otherPlayerVector[2] = otherPlayerBehavior.hardLevelCompleted;
-    //         Array.Copy(otherPlayerBehavior.playTimeInDay, 0, otherPlayerVector, 3, 8);
-
-    //         float[] normalizedOtherPlayerVector = NormalizeVector(otherPlayerVector);
-
-    //         float suitabilityScore = CalculateCosineSimilarity(normalizedCurrentUserVector, normalizedOtherPlayerVector);
-
-    //         RecommendedPlayerInfo recommendedPlayer = new RecommendedPlayerInfo
-    //         {
-    //             userId = otherPlayerBehavior.id,
-    //             userName = otherPlayerBehavior.userName,
-    //             isOnline = onlineStatus.ContainsKey(otherPlayerBehavior.id) ? onlineStatus[otherPlayerBehavior.id] : false,
-    //             status = (onlineStatus.ContainsKey(otherPlayerBehavior.id) && onlineStatus[otherPlayerBehavior.id]) ? "Online" : "Offline",
-    //             suitabilityScore = suitabilityScore
-    //         };
-
-    //         recommendedPlayers.Add(recommendedPlayer);
-    //     }
-
-    //     recommendedPlayers = recommendedPlayers.OrderByDescending(p => p.suitabilityScore).ToList();
-
-    //     return recommendedPlayers.Cast<RecommendedPlayerData>().ToList();
-    // }
 
     public async Task<List<RecommendedPlayerData>> GetCollaborativeRecommendedPlayersAsync(string currentUserId)
     {
