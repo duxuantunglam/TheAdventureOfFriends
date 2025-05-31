@@ -31,6 +31,8 @@ public class UI_WaitingRoom : MonoBehaviour
 
     private Dictionary<string, UI_PlayersInRoom> playerUIItems = new Dictionary<string, UI_PlayersInRoom>();
 
+    private bool isWaitingRoomUIActive = false;
+
     public event Action OnLeaveRoomCompleted;
     public event Action<string> OnGameStarted;
 
@@ -63,6 +65,8 @@ public class UI_WaitingRoom : MonoBehaviour
             waitingRoomUIPanel.SetActive(false);
         }
 
+        isWaitingRoomUIActive = false;
+
         StopListeningToRoomChanges();
         ClearPlayerListUI();
         currentRoomId = null;
@@ -81,6 +85,8 @@ public class UI_WaitingRoom : MonoBehaviour
             Debug.LogError("UI_WaitingRoom: Current user ID is not set.");
             return;
         }
+
+        Debug.Log($"ShowRoom called. UserId: {userId}, RoomId: {roomId}, InvitedUserId: {invitedUserId}");
 
         JoinRoomHandling();
 
@@ -102,6 +108,7 @@ public class UI_WaitingRoom : MonoBehaviour
         else
         {
             currentRoomId = roomId;
+            Debug.Log($"Joining existing room: {roomId}");
             await JoinRoom(currentUserId, currentRoomId);
         }
 
@@ -132,8 +139,6 @@ public class UI_WaitingRoom : MonoBehaviour
         await newRoomRef.SetRawJsonValueAsync(JsonUtility.ToJson(roomData));
 
         Debug.Log($"Room {currentRoomId} created successfully by {creatingUserId}");
-
-        JoinRoomHandling();
 
         ListenToRoomChanges(currentRoomId);
 
@@ -232,8 +237,6 @@ public class UI_WaitingRoom : MonoBehaviour
                     Debug.Log($"User {userId} joined room {roomId}");
                     currentRoomId = roomId;
 
-                    JoinRoomHandling();
-
                     ListenToRoomChanges(roomId);
                 }
             });
@@ -294,19 +297,39 @@ public class UI_WaitingRoom : MonoBehaviour
 
     private void JoinRoomHandling()
     {
+        Debug.Log($"JoinRoomHandling called. isWaitingRoomUIActive: {isWaitingRoomUIActive}");
+
         if (waitingRoomUIPanel != null && waitingRoomUIPanel.transform.parent != null)
         {
-            Transform parentCanvas = waitingRoomUIPanel.transform.parent;
-            for (int i = 0; i < parentCanvas.childCount; i++)
-            {
-                GameObject child = parentCanvas.GetChild(i).gameObject;
-                if (child != waitingRoomUIPanel)
-                {
-                    child.SetActive(false);
-                }
-            }
+            bool isCurrentlyActive = waitingRoomUIPanel.activeSelf;
+            Debug.Log($"WaitingRoom UI current active state: {isCurrentlyActive}");
 
-            waitingRoomUIPanel.SetActive(true);
+            if (!isCurrentlyActive || !isWaitingRoomUIActive)
+            {
+                Transform parentCanvas = waitingRoomUIPanel.transform.parent;
+                for (int i = 0; i < parentCanvas.childCount; i++)
+                {
+                    GameObject child = parentCanvas.GetChild(i).gameObject;
+                    if (child != waitingRoomUIPanel)
+                    {
+                        child.SetActive(false);
+                    }
+                }
+
+                waitingRoomUIPanel.SetActive(true);
+                isWaitingRoomUIActive = true;
+                Debug.Log("Waiting room UI activated");
+            }
+            else
+            {
+                Debug.Log("Waiting room UI is already active and flag is set, ensuring it's visible");
+
+                waitingRoomUIPanel.SetActive(true);
+            }
+        }
+        else
+        {
+            Debug.LogError("WaitingRoomUIPanel or its parent is null!");
         }
     }
 
@@ -349,7 +372,6 @@ public class UI_WaitingRoom : MonoBehaviour
                              {
                                  Debug.Log($"Room {currentRoomId} status set to in_game. Game should start now.");
                                  OnGameStarted?.Invoke(currentRoomId);
-                                 // HideRoom();
                              }
                          });
                 }
@@ -427,6 +449,18 @@ public class UI_WaitingRoom : MonoBehaviour
 
                 playersInRoom.Add(new PlayerInRoomInfo { userId = playerId, userName = playerName, isReady = isReady });
             }
+        }
+
+        Debug.Log($"Players in room: {playersInRoom.Count}");
+        foreach (var player in playersInRoom)
+        {
+            Debug.Log($"  - {player.userName} (ID: {player.userId}, Ready: {player.isReady})");
+        }
+
+        if (playersInRoom.Count > 0 && !waitingRoomUIPanel.activeSelf)
+        {
+            Debug.Log("Room data exists but UI is not active. Re-activating UI.");
+            JoinRoomHandling();
         }
 
         UpdatePlayerListUI(playersInRoom);
