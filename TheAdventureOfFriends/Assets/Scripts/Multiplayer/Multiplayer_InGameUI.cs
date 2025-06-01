@@ -22,40 +22,120 @@ public class Multiplayer_InGameUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI winnerText;
     [SerializeField] private Button returnToMenuButton;
 
+    // Firebase tracking
     private DatabaseReference roomsRef;
     private string currentRoomId;
     private string currentPlayerId;
     private bool isListeningToGameStats = false;
+    private bool hasCurrentPlayerFinished = false;
 
     private void Awake()
     {
         instance = this;
         fadeEffect = GetComponentInChildren<UI_FadeEffect>();
 
+        // Initialize Firebase
         roomsRef = FirebaseDatabase.DefaultInstance.GetReference("Rooms");
 
+        // Auto-assign UI elements from scene
+        AssignUIElementsFromScene();
+
+        // Setup Return to Menu button
         if (returnToMenuButton != null)
         {
             returnToMenuButton.onClick.AddListener(ReturnToMainMenu);
         }
     }
 
+    private void AssignUIElementsFromScene()
+    {
+        // Auto-find UI elements in scene
+        if (gameResultsPanel == null)
+        {
+            gameResultsPanel = GameObject.Find("GameResultsPanel");
+            if (gameResultsPanel == null)
+                Debug.LogError("Multiplayer_InGameUI: GameResultsPanel not found in scene!");
+        }
+
+        if (player1ResultsText == null)
+        {
+            GameObject player1TextObj = GameObject.Find("Player1Results_Text");
+            if (player1TextObj != null)
+                player1ResultsText = player1TextObj.GetComponent<TextMeshProUGUI>();
+            else
+                Debug.LogError("Multiplayer_InGameUI: Player1Results_Text not found in scene!");
+        }
+
+        if (player2ResultsText == null)
+        {
+            GameObject player2TextObj = GameObject.Find("Player2Results_Text");
+            if (player2TextObj != null)
+                player2ResultsText = player2TextObj.GetComponent<TextMeshProUGUI>();
+            else
+                Debug.LogError("Multiplayer_InGameUI: Player2Results_Text not found in scene!");
+        }
+
+        if (winnerText == null)
+        {
+            GameObject winnerTextObj = GameObject.Find("FinalResult_Text");
+            if (winnerTextObj != null)
+                winnerText = winnerTextObj.GetComponent<TextMeshProUGUI>();
+            else
+                Debug.LogError("Multiplayer_InGameUI: FinalResult_Text not found in scene!");
+        }
+
+        if (returnToMenuButton == null)
+        {
+            GameObject returnButtonObj = GameObject.Find("Return_To_Menu_Button");
+            if (returnButtonObj != null)
+                returnToMenuButton = returnButtonObj.GetComponent<Button>();
+            else
+                Debug.LogError("Multiplayer_InGameUI: Return_To_Menu_Button not found in scene!");
+        }
+
+        Debug.Log("Multiplayer_InGameUI: UI elements auto-assignment completed.");
+    }
+
     private void Start()
     {
         fadeEffect.ScreenFade(0, 1);
 
+        // Get current room and player info
         currentRoomId = PlayerPrefs.GetString("CurrentMultiplayerRoomId", "");
         if (FirebaseManager.CurrentUser != null)
         {
             currentPlayerId = FirebaseManager.CurrentUser.id;
         }
 
+        // Initially hide results panel and winner text
         if (gameResultsPanel != null)
         {
             gameResultsPanel.SetActive(false);
         }
 
+        if (winnerText != null)
+        {
+            winnerText.gameObject.SetActive(false);
+        }
+
+        // Initialize player result texts
+        InitializePlayerResultTexts();
+
+        // Start listening to game stats changes
         StartListeningToGameStats();
+    }
+
+    private void InitializePlayerResultTexts()
+    {
+        if (player1ResultsText != null)
+        {
+            player1ResultsText.text = "Player 1\nWaiting...";
+        }
+
+        if (player2ResultsText != null)
+        {
+            player2ResultsText.text = "Player 2\nWaiting...";
+        }
     }
 
     private void OnDestroy()
@@ -75,10 +155,11 @@ public class Multiplayer_InGameUI : MonoBehaviour
 
     public void ShowResultsPanel()
     {
-        if (gameResultsPanel != null)
+        if (gameResultsPanel != null && !hasCurrentPlayerFinished)
         {
+            hasCurrentPlayerFinished = true;
             gameResultsPanel.SetActive(true);
-            Debug.Log("Multiplayer_InGameUI: Results panel shown.");
+            Debug.Log("Multiplayer_InGameUI: Results panel shown for current player.");
         }
     }
 
@@ -128,41 +209,60 @@ public class Multiplayer_InGameUI : MonoBehaviour
     {
         if (gameStats == null) return;
 
-        if (player1ResultsText != null && !string.IsNullOrEmpty(gameStats.player1.playerId))
+        // Update Player 1 results
+        UpdatePlayerResultsText(gameStats.player1, player1ResultsText, "Player 1");
+
+        // Update Player 2 results  
+        UpdatePlayerResultsText(gameStats.player2, player2ResultsText, "Player 2");
+
+        // Check if current player finished to show results panel
+        bool currentPlayerFinished = false;
+        if (gameStats.player1.playerId == currentPlayerId && gameStats.player1.hasFinished)
         {
-            if (gameStats.player1.hasFinished)
-            {
-                string player1Results = $"{gameStats.player1.playerName}\n" +
-                                      $"Score: {gameStats.player1.totalScore:F2}\n" +
-                                      $"Time: {gameStats.player1.completionTime:F1}s\n" +
-                                      $"Fruits: {gameStats.player1.fruitCollected}\n" +
-                                      $"Enemies: {gameStats.player1.enemiesKilled}";
-                player1ResultsText.text = player1Results;
-            }
-            else
-            {
-                player1ResultsText.text = $"{gameStats.player1.playerName}\nPlaying...";
-            }
+            currentPlayerFinished = true;
+        }
+        else if (gameStats.player2.playerId == currentPlayerId && gameStats.player2.hasFinished)
+        {
+            currentPlayerFinished = true;
         }
 
-        if (player2ResultsText != null && !string.IsNullOrEmpty(gameStats.player2.playerId))
+        if (currentPlayerFinished && !hasCurrentPlayerFinished)
         {
-            if (gameStats.player2.hasFinished)
-            {
-                string player2Results = $"{gameStats.player2.playerName}\n" +
-                                      $"Score: {gameStats.player2.totalScore:F2}\n" +
-                                      $"Time: {gameStats.player2.completionTime:F1}s\n" +
-                                      $"Fruits: {gameStats.player2.fruitCollected}\n" +
-                                      $"Enemies: {gameStats.player2.enemiesKilled}";
-                player2ResultsText.text = player2Results;
-            }
-            else
-            {
-                player2ResultsText.text = $"{gameStats.player2.playerName}\nPlaying...";
-            }
+            ShowResultsPanel();
         }
 
-        if (winnerText != null)
+        // Show winner only when both players finished
+        UpdateWinnerDisplay(gameStats);
+    }
+
+    private void UpdatePlayerResultsText(MultiplayerPlayerStats playerStats, TextMeshProUGUI textComponent, string defaultName)
+    {
+        if (textComponent == null) return;
+
+        if (string.IsNullOrEmpty(playerStats.playerId))
+        {
+            // Player slot not filled yet
+            textComponent.text = $"{defaultName}\nWaiting for player...";
+        }
+        else if (playerStats.hasFinished)
+        {
+            // Player finished - show only total score
+            string playerResults = $"{playerStats.playerName}\nScore: {playerStats.totalScore:F1}";
+            textComponent.text = playerResults;
+        }
+        else
+        {
+            // Player joined but still playing
+            textComponent.text = $"{playerStats.playerName}\nWaiting...";
+        }
+    }
+
+    private void UpdateWinnerDisplay(MultiplayerGameStats gameStats)
+    {
+        if (winnerText == null) return;
+
+        // Only show winner when both players have finished
+        if (gameStats.player1.hasFinished && gameStats.player2.hasFinished)
         {
             if (gameStats.gameStatus == "finished")
             {
@@ -175,17 +275,13 @@ public class Multiplayer_InGameUI : MonoBehaviour
                     winnerText.text = $"{gameStats.winnerName} Wins!";
                 }
                 winnerText.gameObject.SetActive(true);
-            }
-            else
-            {
-                winnerText.gameObject.SetActive(false);
+                Debug.Log($"Multiplayer_InGameUI: Winner displayed - {gameStats.winnerName}");
             }
         }
-
-        if ((gameStats.player1.playerId == currentPlayerId && gameStats.player1.hasFinished) ||
-            (gameStats.player2.playerId == currentPlayerId && gameStats.player2.hasFinished))
+        else
         {
-            ShowResultsPanel();
+            // Hide winner text if not both finished
+            winnerText.gameObject.SetActive(false);
         }
     }
 
@@ -193,6 +289,7 @@ public class Multiplayer_InGameUI : MonoBehaviour
     {
         Debug.Log("Multiplayer_InGameUI: Returning to Main Menu...");
 
+        // Track player exit from scene
         if (!string.IsNullOrEmpty(currentRoomId) && !string.IsNullOrEmpty(currentPlayerId))
         {
             roomsRef.Child(currentRoomId).Child("playersInScene").Child(currentPlayerId).RemoveValueAsync()
@@ -204,12 +301,15 @@ public class Multiplayer_InGameUI : MonoBehaviour
                     }
                 });
 
+            // Check if both players have left the scene to cleanup room
             CheckAndCleanupRoom();
         }
 
+        // Clear PlayerPrefs
         PlayerPrefs.DeleteKey("CurrentMultiplayerRoomId");
         PlayerPrefs.Save();
 
+        // Load Main Menu
         SceneManager.LoadScene("MainMenu");
     }
 
@@ -229,6 +329,7 @@ public class Multiplayer_InGameUI : MonoBehaviour
 
                 if (!playersInSceneSnapshot.Exists || playersInSceneSnapshot.ChildrenCount == 0)
                 {
+                    // No players left in scene, cleanup the room
                     Debug.Log($"Multiplayer_InGameUI: No players left in scene. Cleaning up room {currentRoomId}");
 
                     roomsRef.Child(currentRoomId).RemoveValueAsync().ContinueWithOnMainThread(cleanupTask =>

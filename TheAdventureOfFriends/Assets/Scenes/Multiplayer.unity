@@ -17579,7 +17579,7 @@ MonoBehaviour:
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
-  m_paragraphSpacing: 300
+  m_paragraphSpacing: 0
   m_charWidthMaxAdj: 0
   m_TextWrappingMode: 1
   m_wordWrappingRatios: 0.4
@@ -17715,7 +17715,7 @@ MonoBehaviour:
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
-  m_paragraphSpacing: 300
+  m_paragraphSpacing: 0
   m_charWidthMaxAdj: 0
   m_TextWrappingMode: 1
   m_wordWrappingRatios: 0.4
@@ -18004,7 +18004,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 4504366024242513464, guid: ba52afbf51c1cb2499174fd99930c66d, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 51.19579
+      value: 0.4348154
       objectReference: {fileID: 0}
     - target: {fileID: 4504366024242513464, guid: ba52afbf51c1cb2499174fd99930c66d, type: 3}
       propertyPath: m_LocalPosition.y
@@ -28758,7 +28758,7 @@ MonoBehaviour:
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
-  m_paragraphSpacing: 300
+  m_paragraphSpacing: 0
   m_charWidthMaxAdj: 0
   m_TextWrappingMode: 1
   m_wordWrappingRatios: 0.4
