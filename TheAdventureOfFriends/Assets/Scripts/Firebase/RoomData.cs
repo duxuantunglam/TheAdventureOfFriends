@@ -13,4 +13,6 @@ public class RoomData
 {
     public Dictionary<string, RoomPlayerData> players = new Dictionary<string, RoomPlayerData>();
     public string status;
+    public string currentScene;
+    public Dictionary<string, bool> playersInScene = new Dictionary<string, bool>();
 }
