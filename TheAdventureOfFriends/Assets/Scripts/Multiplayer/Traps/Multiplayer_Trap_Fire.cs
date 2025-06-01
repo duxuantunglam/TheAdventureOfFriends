@@ -4,7 +4,7 @@ using UnityEngine;
 public class Multiplayer_Trap_Fire : MonoBehaviour
 {
     [SerializeField] private float offDuration;
-    [SerializeField] private Trap_FireButton fireButton;
+    [SerializeField] private Multiplayer_Trap_FireButton multiplayerFireButton;
     private Animator anim;
     private CapsuleCollider2D fireCollider;
     private bool isActive;
@@ -16,13 +16,13 @@ public class Multiplayer_Trap_Fire : MonoBehaviour
     }
     private void Start()
     {
-        if (fireButton == null)
+        if (multiplayerFireButton == null)
             Debug.LogWarning("You don't have fire button on " + gameObject.name + "!");
 
         SetFire(true);
     }
 
-    public void SwitchOffFire()
+    public void SwitchOffMultiplayerFire()
     {
         if (isActive == false)
             return;
