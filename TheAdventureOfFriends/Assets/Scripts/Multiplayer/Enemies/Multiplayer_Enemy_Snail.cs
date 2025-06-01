@@ -5,7 +5,7 @@ using UnityEngine;
 public class Multiplayer_Enemy_Snail : MultiplayerEnemy
 {
     [Header("Snail details")]
-    [SerializeField] private Enemy_SnailBody bodyPrefab;
+    [SerializeField] private Multiplayer_Enemy_SnailBody bodyPrefab;
     [SerializeField] private float maxSpeed = 10;
     private bool hasBody = true;
 
@@ -71,7 +71,7 @@ public class Multiplayer_Enemy_Snail : MultiplayerEnemy
 
     private void CreateBody()
     {
-        Enemy_SnailBody newBody = Instantiate(bodyPrefab, transform.position, Quaternion.identity);
+        Multiplayer_Enemy_SnailBody newBody = Instantiate(bodyPrefab, transform.position, Quaternion.identity);
 
 
         if (Random.Range(0, 100) < 50)

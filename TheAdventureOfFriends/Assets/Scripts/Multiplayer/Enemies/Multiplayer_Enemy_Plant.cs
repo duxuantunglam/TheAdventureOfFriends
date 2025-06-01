@@ -5,7 +5,7 @@ using UnityEngine;
 public class Multiplayer_Enemy_Plant : MultiplayerEnemy
 {
     [Header("Plant details")]
-    [SerializeField] private Enemy_Bullet bulletPrefab;
+    [SerializeField] private Multiplayer_Enemy_Bullet bulletPrefab;
     [SerializeField] private Transform gunPoint;
     [SerializeField] private float bulletSpeed = 7;
     [SerializeField] private float attackCoolDown = 1.5f;
@@ -29,7 +29,7 @@ public class Multiplayer_Enemy_Plant : MultiplayerEnemy
 
     private void CreateBullet()
     {
-        Enemy_Bullet newBullet = Instantiate(bulletPrefab, gunPoint.position, Quaternion.identity);
+        Multiplayer_Enemy_Bullet newBullet = Instantiate(bulletPrefab, gunPoint.position, Quaternion.identity);
 
         Vector2 bulletVelocity = new Vector2(facingDir * bulletSpeed, 0);
         newBullet.SetVelocity(bulletVelocity);
