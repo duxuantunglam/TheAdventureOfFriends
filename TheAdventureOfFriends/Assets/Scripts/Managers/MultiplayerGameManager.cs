@@ -33,7 +33,7 @@ public class MultiplayerGameStats
 {
     public MultiplayerPlayerStats player1;
     public MultiplayerPlayerStats player2;
-    public string gameStatus;
+    public string gameStatus; // "playing", "finished"
     public string winnerId;
     public string winnerName;
 
@@ -428,6 +428,12 @@ public class MultiplayerGameManager : MonoBehaviour
                     Debug.Log("MultiplayerGameManager: Room status updated to waiting.");
                 }
             });
+
+        // Set flag for UI_WaitingRoom to detect return from multiplayer
+        PlayerPrefs.SetString("ReturnFromMultiplayerRoom", currentRoomId);
+        PlayerPrefs.Save();
+
+        Debug.Log($"MultiplayerGameManager: Set return flag for room {currentRoomId}. Loading MainMenu scene.");
 
         // Load MainMenu scene to return to waiting room
         SceneManager.LoadScene("MainMenu");
