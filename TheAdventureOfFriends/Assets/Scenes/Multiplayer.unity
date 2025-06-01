@@ -18004,7 +18004,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 4504366024242513464, guid: ba52afbf51c1cb2499174fd99930c66d, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0.4348154
+      value: 51.19579
       objectReference: {fileID: 0}
     - target: {fileID: 4504366024242513464, guid: ba52afbf51c1cb2499174fd99930c66d, type: 3}
       propertyPath: m_LocalPosition.y
@@ -30359,6 +30359,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   timerText: {fileID: 3192211842872754199}
   fruitText: {fileID: 3266206037414956548}
+  gameResultsPanel: {fileID: 1440761587}
+  player1ResultsText: {fileID: 423536336}
+  player2ResultsText: {fileID: 427110869}
+  winnerText: {fileID: 1566446220}
+  returnToMenuButton: {fileID: 5560305}
 --- !u!1 &8081514975339951872
 GameObject:
   m_ObjectHideFlags: 0

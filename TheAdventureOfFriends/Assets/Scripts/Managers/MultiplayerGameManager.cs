@@ -286,9 +286,16 @@ public class MultiplayerGameManager : MonoBehaviour
 
         Debug.Log($"MultiplayerGameManager: Level finished! Score: {finalScore:F2}");
 
-        // Instead of returning to waiting room, show results panel
-        // The results panel will be handled in BƯỚC 2
-        Debug.Log("MultiplayerGameManager: Player finished! Results panel will be shown.");
+        // Show results panel via InGameUI
+        if (inGameUI != null)
+        {
+            inGameUI.ShowResultsPanel();
+            Debug.Log("MultiplayerGameManager: Results panel triggered!");
+        }
+        else
+        {
+            Debug.LogError("MultiplayerGameManager: InGameUI is null, cannot show results panel!");
+        }
     }
 
     private float CalculateFinalScore()
