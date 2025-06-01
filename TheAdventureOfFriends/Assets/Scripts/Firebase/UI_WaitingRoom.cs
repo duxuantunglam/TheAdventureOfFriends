@@ -6,6 +6,7 @@ using Firebase.Database;
 using Firebase.Extensions;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using Action = System.Action;
 
@@ -361,17 +362,30 @@ public class UI_WaitingRoom : MonoBehaviour
                 if (allReady)
                 {
                     Debug.Log($"Starting game in room {currentRoomId}. Both players are Ready.");
-                    await dbReference.Child("Rooms").Child(currentRoomId).Child("status").SetValueAsync("in_game")
+
+                    var updates = new Dictionary<string, object>
+                    {
+                        { "status", "in_game" },
+                        { "currentScene", "Multiplayer" }
+                    };
+
+                    await dbReference.Child("Rooms").Child(currentRoomId).UpdateChildrenAsync(updates)
                          .ContinueWithOnMainThread(task =>
                          {
                              if (task.IsFaulted)
                              {
-                                 Debug.LogError($"Failed to set room status to in_game for room {currentRoomId}: {task.Exception}");
+                                 Debug.LogError($"Failed to start game for room {currentRoomId}: {task.Exception}");
                              }
                              else if (task.IsCompleted)
                              {
-                                 Debug.Log($"Room {currentRoomId} status set to in_game. Game should start now.");
-                                 OnGameStarted?.Invoke(currentRoomId);
+                                 Debug.Log($"Room {currentRoomId} game started successfully. Loading Multiplayer scene.");
+
+                                 // Store room ID for Multiplayer scene to access
+                                 PlayerPrefs.SetString("CurrentMultiplayerRoomId", currentRoomId);
+                                 PlayerPrefs.Save();
+
+                                 // Load Multiplayer scene
+                                 SceneManager.LoadScene("Multiplayer");
                              }
                          });
                 }
@@ -468,11 +482,16 @@ public class UI_WaitingRoom : MonoBehaviour
         CheckAndEnableStartButton(playersInRoom);
 
         string roomStatus = snapshot.Child("status").GetValue(true)?.ToString();
-        if (roomStatus == "in_game")
+        string currentScene = snapshot.Child("currentScene").GetValue(true)?.ToString();
+
+        if (roomStatus == "in_game" && currentScene == "Multiplayer")
         {
-            Debug.Log($"Room {currentRoomId} status is in_game. Triggering game start.");
-            OnGameStarted?.Invoke(currentRoomId);
-            HideRoom();
+            Debug.Log($"Room {currentRoomId} status is in_game with currentScene = Multiplayer. Loading Multiplayer scene.");
+
+            PlayerPrefs.SetString("CurrentMultiplayerRoomId", currentRoomId);
+            PlayerPrefs.Save();
+
+            SceneManager.LoadScene("Multiplayer");
         }
     }
 

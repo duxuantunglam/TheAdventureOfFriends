@@ -108,7 +108,8 @@ public class MultiplayerGameManager : MonoBehaviour
             currentPlayerName = FirebaseManager.CurrentUser.userName;
         }
 
-        currentRoomId = PlayerPrefs.GetString("CurrentRoomId", "");
+        // Get room ID from new PlayerPrefs key set by UI_WaitingRoom
+        currentRoomId = PlayerPrefs.GetString("CurrentMultiplayerRoomId", "");
 
         if (string.IsNullOrEmpty(currentRoomId))
         {
@@ -116,7 +117,12 @@ public class MultiplayerGameManager : MonoBehaviour
             return;
         }
 
+        Debug.Log($"MultiplayerGameManager: Initializing game for room {currentRoomId}, player {currentPlayerId}");
+
         gameTimer = 0;
+
+        // Track that this player has entered the Multiplayer scene
+        TrackPlayerPresenceInScene();
 
         InitializeMultiplayerGame();
         CollectFruitInfo();
@@ -280,7 +286,9 @@ public class MultiplayerGameManager : MonoBehaviour
 
         Debug.Log($"MultiplayerGameManager: Level finished! Score: {finalScore:F2}");
 
-        Invoke(nameof(ReturnToWaitingRoom), 3f);
+        // Instead of returning to waiting room, show results panel
+        // The results panel will be handled in BƯỚC 2
+        Debug.Log("MultiplayerGameManager: Player finished! Results panel will be shown.");
     }
 
     private float CalculateFinalScore()
@@ -383,6 +391,40 @@ public class MultiplayerGameManager : MonoBehaviour
                     Debug.Log("MultiplayerGameManager: Game stats saved successfully.");
                 }
             });
+    }
+
+    private void TrackPlayerPresenceInScene()
+    {
+        if (string.IsNullOrEmpty(currentRoomId) || string.IsNullOrEmpty(currentPlayerId)) return;
+
+        roomsRef.Child(currentRoomId).Child("playersInScene").Child(currentPlayerId).SetValueAsync(true)
+            .ContinueWithOnMainThread(task =>
+            {
+                if (task.IsFaulted)
+                {
+                    Debug.LogError($"MultiplayerGameManager: Failed to track player presence: {task.Exception}");
+                }
+                else if (task.IsCompleted)
+                {
+                    Debug.Log($"MultiplayerGameManager: Player {currentPlayerId} presence tracked in scene.");
+                }
+            });
+    }
+
+    private void OnDestroy()
+    {
+        // Cleanup player presence when leaving scene
+        if (!string.IsNullOrEmpty(currentRoomId) && !string.IsNullOrEmpty(currentPlayerId) && roomsRef != null)
+        {
+            roomsRef.Child(currentRoomId).Child("playersInScene").Child(currentPlayerId).RemoveValueAsync()
+                .ContinueWithOnMainThread(task =>
+                {
+                    if (task.IsCompleted)
+                    {
+                        Debug.Log($"MultiplayerGameManager: Player {currentPlayerId} presence removed from scene.");
+                    }
+                });
+        }
     }
 
     private void ReturnToWaitingRoom()
