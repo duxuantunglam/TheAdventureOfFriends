@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Firebase.Database;
 using Firebase.Extensions;
+using Newtonsoft.Json;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -351,17 +352,23 @@ public class UI_WaitingRoom : MonoBehaviour
                 bool allReady = true;
                 foreach (var playerChild in playersSnapshot.Children)
                 {
+                    string playerId = playerChild.Key;
+                    string playerName = playerChild.Child("userName").GetValue(true)?.ToString() ?? "Unknown";
                     bool isReady = playerChild.Child("isReady").GetValue(true) as bool? ?? false;
+
+                    playersInRoom.Add(new PlayerInRoomInfo { userId = playerId, userName = playerName, isReady = isReady });
+
                     if (!isReady)
                     {
                         allReady = false;
-                        break;
                     }
                 }
 
                 if (allReady)
                 {
                     Debug.Log($"Starting game in room {currentRoomId}. Both players are Ready.");
+
+                    await CreateInitialGameStats(playersInRoom);
 
                     var updates = new Dictionary<string, object>
                     {
@@ -404,6 +411,61 @@ public class UI_WaitingRoom : MonoBehaviour
             Debug.LogWarning($"Attempted to start game in room {currentRoomId} but it no longer exists.");
             HideRoom();
             OnLeaveRoomCompleted?.Invoke();
+        }
+    }
+
+    /// <summary>
+    /// Tạo gameStats ban đầu với thông tin đầy đủ của cả 2 players
+    /// </summary>
+    private async Task CreateInitialGameStats(List<PlayerInRoomInfo> players)
+    {
+        if (players.Count != 2)
+        {
+            Debug.LogError($"CreateInitialGameStats: Expected 2 players, got {players.Count}");
+            return;
+        }
+
+        // Tạo gameStats object với thông tin đầy đủ
+        var gameStats = new
+        {
+            player1 = new
+            {
+                playerId = players[0].userId,
+                playerName = players[0].userName,
+                fruitCollected = 0,
+                completionTime = 0f,
+                enemiesKilled = 0,
+                knockBacks = 0,
+                totalScore = 0f,
+                hasFinished = false
+            },
+            player2 = new
+            {
+                playerId = players[1].userId,
+                playerName = players[1].userName,
+                fruitCollected = 0,
+                completionTime = 0f,
+                enemiesKilled = 0,
+                knockBacks = 0,
+                totalScore = 0f,
+                hasFinished = false
+            },
+            gameStatus = "playing",
+            winnerId = "",
+            winnerName = ""
+        };
+
+        try
+        {
+            string gameStatsJson = JsonConvert.SerializeObject(gameStats);
+            await dbReference.Child("Rooms").Child(currentRoomId).Child("gameStats").SetRawJsonValueAsync(gameStatsJson);
+            Debug.Log($"✅ GameStats created successfully for room {currentRoomId}");
+            Debug.Log($"Player1: {players[0].userName} ({players[0].userId})");
+            Debug.Log($"Player2: {players[1].userName} ({players[1].userId})");
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"❌ Failed to create initial gameStats: {e.Message}");
         }
     }
 

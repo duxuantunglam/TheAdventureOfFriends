@@ -161,7 +161,6 @@ public class MultiplayerGameManager : MonoBehaviour
             if (task.IsFaulted)
             {
                 Debug.LogError("MultiplayerGameManager: Failed to load game stats: " + task.Exception);
-                CreateNewGameStats();
                 return;
             }
 
@@ -172,38 +171,17 @@ public class MultiplayerGameManager : MonoBehaviour
                 {
                     string json = snapshot.GetRawJsonValue();
                     gameStats = JsonConvert.DeserializeObject<MultiplayerGameStats>(json);
-                    Debug.Log("MultiplayerGameManager: Game stats loaded successfully.");
+                    Debug.Log("✅ MultiplayerGameManager: Game stats loaded successfully from Firebase.");
+                    Debug.Log($"Player1: {gameStats.player1.playerName} ({gameStats.player1.playerId})");
+                    Debug.Log($"Player2: {gameStats.player2.playerName} ({gameStats.player2.playerId})");
                 }
                 else
                 {
-                    CreateNewGameStats();
+                    Debug.LogError("❌ MultiplayerGameManager: GameStats should exist but not found! This indicates a problem with game initialization.");
+                    // Không tạo mới nữa, vì gameStats phải được tạo trong UI_WaitingRoom
                 }
             }
         });
-    }
-
-    private void CreateNewGameStats()
-    {
-        gameStats = new MultiplayerGameStats();
-
-        if (IsPlayer1())
-        {
-            gameStats.player1.playerId = currentPlayerId;
-            gameStats.player1.playerName = currentPlayerName;
-        }
-        else
-        {
-            gameStats.player2.playerId = currentPlayerId;
-            gameStats.player2.playerName = currentPlayerName;
-        }
-
-        SaveGameStatsToFirebase();
-        Debug.Log("MultiplayerGameManager: New game stats created.");
-    }
-
-    private bool IsPlayer1()
-    {
-        return gameStats == null || string.IsNullOrEmpty(gameStats.player1.playerId);
     }
 
     private void CreateManagersIfNeeded()
@@ -314,45 +292,39 @@ public class MultiplayerGameManager : MonoBehaviour
 
     private void UpdateCurrentPlayerStats(float finalScore)
     {
-        if (gameStats == null) return;
+        if (gameStats == null)
+        {
+            Debug.LogError("MultiplayerGameManager: gameStats is null! Cannot update player stats.");
+            return;
+        }
 
-        MultiplayerPlayerStats currentPlayerStats;
+        MultiplayerPlayerStats currentPlayerStats = null;
 
         if (gameStats.player1.playerId == currentPlayerId)
         {
             currentPlayerStats = gameStats.player1;
+            Debug.Log($"✅ Updating stats for Player1: {gameStats.player1.playerName}");
         }
         else if (gameStats.player2.playerId == currentPlayerId)
         {
             currentPlayerStats = gameStats.player2;
+            Debug.Log($"✅ Updating stats for Player2: {gameStats.player2.playerName}");
         }
         else
         {
-            if (string.IsNullOrEmpty(gameStats.player1.playerId))
-            {
-                gameStats.player1.playerId = currentPlayerId;
-                gameStats.player1.playerName = currentPlayerName;
-                currentPlayerStats = gameStats.player1;
-            }
-            else if (string.IsNullOrEmpty(gameStats.player2.playerId))
-            {
-                gameStats.player2.playerId = currentPlayerId;
-                gameStats.player2.playerName = currentPlayerName;
-                currentPlayerStats = gameStats.player2;
-            }
-            else
-            {
-                Debug.LogError("MultiplayerGameManager: No available player slot!");
-                return;
-            }
+            Debug.LogError($"❌ MultiplayerGameManager: Current player {currentPlayerId} not found in gameStats! Player1: {gameStats.player1.playerId}, Player2: {gameStats.player2.playerId}");
+            return;
         }
 
+        // Cập nhật stats cho player hiện tại
         currentPlayerStats.fruitCollected = fruitCollected;
         currentPlayerStats.completionTime = gameTimer;
         currentPlayerStats.enemiesKilled = enemiesKilled;
         currentPlayerStats.knockBacks = knockBacks;
         currentPlayerStats.totalScore = finalScore;
         currentPlayerStats.hasFinished = true;
+
+        Debug.Log($"🎯 Final stats for {currentPlayerStats.playerName}: Fruits={fruitCollected}, Time={gameTimer:F1}s, Enemies={enemiesKilled}, Knockbacks={knockBacks}, Score={finalScore:F1}");
 
         CheckForGameCompletion();
     }
