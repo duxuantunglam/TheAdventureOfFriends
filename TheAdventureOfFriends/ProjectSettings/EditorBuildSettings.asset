@@ -27,7 +27,7 @@ EditorBuildSettings:
     path: Assets/Scenes/TheEnd.unity
     guid: dd4732484ab9f4d48b00dab45811e64f
   - enabled: 1
-    path: Assets/Scenes/MultiplayerScene.unity
-    guid: 134ee50204718364b9849e68c1d33123
+    path: Assets/Scenes/Multiplayer.unity
+    guid: 47d14dcd91c83cc49847f24e40d2c30f
   m_configObjects: {}
   m_UseUCBPForAssetBundles: 0
