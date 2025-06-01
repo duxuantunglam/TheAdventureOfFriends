@@ -5,7 +5,7 @@ using UnityEngine.SceneManagement;
 public class UI_InGame : MonoBehaviour
 {
     public static UI_InGame instance;
-    public UI_FadeEffect fadeEffect { get; private set; } // read-only
+    public UI_FadeEffect fadeEffect { get; private set; }
 
     [SerializeField] private TextMeshProUGUI timerText;
     [SerializeField] private TextMeshProUGUI fruitText;

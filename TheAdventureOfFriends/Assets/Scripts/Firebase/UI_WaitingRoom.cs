@@ -6,11 +6,10 @@ using Firebase.Database;
 using Firebase.Extensions;
 using TMPro;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using Action = System.Action;
 
-[System.Serializable]
+[Serializable]
 public class PlayerInRoomInfo
 {
     public string userId;
@@ -26,12 +25,6 @@ public class UI_WaitingRoom : MonoBehaviour
     [SerializeField] private Button startGameButton;
     [SerializeField] private Button leaveRoomButton;
 
-    [Header("Game Results UI")]
-    [SerializeField] private GameObject gameResultsPanel;
-    [SerializeField] private TextMeshProUGUI gameResultsText;
-    [SerializeField] private Button viewDetailsButton;
-    [SerializeField] private Button closeResultsButton;
-
     private DatabaseReference dbReference;
     private string currentRoomId;
     private string currentUserId;
@@ -39,7 +32,6 @@ public class UI_WaitingRoom : MonoBehaviour
     private Dictionary<string, UI_PlayersInRoom> playerUIItems = new Dictionary<string, UI_PlayersInRoom>();
 
     private bool isWaitingRoomUIActive = false;
-    private bool isListeningToGameStats = false;
 
     public event Action OnLeaveRoomCompleted;
     public event Action<string> OnGameStarted;
@@ -64,169 +56,6 @@ public class UI_WaitingRoom : MonoBehaviour
         {
             waitingRoomUIPanel.SetActive(false);
         }
-
-        // Initialize game results UI
-        if (gameResultsPanel != null)
-        {
-            gameResultsPanel.SetActive(false);
-        }
-
-        if (viewDetailsButton != null)
-        {
-            viewDetailsButton.onClick.AddListener(ShowGameDetails);
-        }
-
-        if (closeResultsButton != null)
-        {
-            closeResultsButton.onClick.AddListener(CloseGameResults);
-        }
-    }
-
-    private void Start()
-    {
-        // Check if we're returning from a multiplayer game
-        CheckForGameReturn();
-    }
-
-    private void CheckForGameReturn()
-    {
-        string returnRoomId = PlayerPrefs.GetString("ReturnFromMultiplayerRoom", "");
-        if (!string.IsNullOrEmpty(returnRoomId))
-        {
-            Debug.Log($"UI_WaitingRoom: Returning from multiplayer game in room {returnRoomId}");
-
-            // Clear the return flag
-            PlayerPrefs.DeleteKey("ReturnFromMultiplayerRoom");
-
-            // Rejoin the room and show results
-            StartCoroutine(HandleGameReturn(returnRoomId));
-        }
-    }
-
-    private System.Collections.IEnumerator HandleGameReturn(string roomId)
-    {
-        yield return new WaitForSeconds(0.5f); // Small delay to ensure Firebase is ready
-
-        // Set current room info
-        currentRoomId = roomId;
-        currentUserId = FirebaseManager.CurrentUser?.id;
-
-        if (string.IsNullOrEmpty(currentUserId))
-        {
-            Debug.LogError("UI_WaitingRoom: No current user found when returning from game.");
-            yield break;
-        }
-
-        // Show waiting room UI
-        JoinRoomHandling();
-
-        // Listen to room changes
-        ListenToRoomChanges(currentRoomId);
-
-        // Check for game results
-        CheckAndShowGameResults();
-    }
-
-    private void CheckAndShowGameResults()
-    {
-        if (string.IsNullOrEmpty(currentRoomId)) return;
-
-        dbReference.Child("Rooms").Child(currentRoomId).Child("gameStats").GetValueAsync()
-            .ContinueWithOnMainThread(task =>
-            {
-                if (task.IsFaulted)
-                {
-                    Debug.LogError("UI_WaitingRoom: Failed to load game stats: " + task.Exception);
-                    return;
-                }
-
-                if (task.IsCompleted && task.Result.Exists)
-                {
-                    try
-                    {
-                        string json = task.Result.GetRawJsonValue();
-                        var gameStats = Newtonsoft.Json.JsonConvert.DeserializeObject<MultiplayerGameStats>(json);
-
-                        if (gameStats != null && gameStats.gameStatus == "finished")
-                        {
-                            ShowGameResults(gameStats);
-                        }
-                    }
-                    catch (System.Exception e)
-                    {
-                        Debug.LogError("UI_WaitingRoom: Error parsing game stats: " + e.Message);
-                    }
-                }
-            });
-    }
-
-    private void ShowGameResults(MultiplayerGameStats gameStats)
-    {
-        if (gameResultsPanel == null || gameResultsText == null) return;
-
-        string resultsText = "Game Results:\n\n";
-
-        // Player 1 results
-        resultsText += $"Player 1: {gameStats.player1.playerName}\n";
-        resultsText += $"Score: {gameStats.player1.totalScore:F1}\n";
-        resultsText += $"Fruits: {gameStats.player1.fruitCollected}, Time: {gameStats.player1.completionTime:F1}s\n";
-        resultsText += $"Enemies: {gameStats.player1.enemiesKilled}, Knockbacks: {gameStats.player1.knockBacks}\n\n";
-
-        // Player 2 results
-        resultsText += $"Player 2: {gameStats.player2.playerName}\n";
-        resultsText += $"Score: {gameStats.player2.totalScore:F1}\n";
-        resultsText += $"Fruits: {gameStats.player2.fruitCollected}, Time: {gameStats.player2.completionTime:F1}s\n";
-        resultsText += $"Enemies: {gameStats.player2.enemiesKilled}, Knockbacks: {gameStats.player2.knockBacks}\n\n";
-
-        // Winner
-        if (gameStats.winnerName == "Tie")
-        {
-            resultsText += "Result: It's a Tie!";
-        }
-        else
-        {
-            resultsText += $"Winner: {gameStats.winnerName}!";
-        }
-
-        gameResultsText.text = resultsText;
-        gameResultsPanel.SetActive(true);
-
-        Debug.Log("UI_WaitingRoom: Game results displayed.");
-    }
-
-    private void ShowGameDetails()
-    {
-        // You can implement a more detailed view here
-        Debug.Log("UI_WaitingRoom: Show game details button clicked.");
-    }
-
-    private void CloseGameResults()
-    {
-        if (gameResultsPanel != null)
-        {
-            gameResultsPanel.SetActive(false);
-        }
-
-        // Clear game stats after viewing results
-        ClearGameStats();
-    }
-
-    private void ClearGameStats()
-    {
-        if (string.IsNullOrEmpty(currentRoomId)) return;
-
-        dbReference.Child("Rooms").Child(currentRoomId).Child("gameStats").RemoveValueAsync()
-            .ContinueWithOnMainThread(task =>
-            {
-                if (task.IsFaulted)
-                {
-                    Debug.LogError("UI_WaitingRoom: Failed to clear game stats: " + task.Exception);
-                }
-                else if (task.IsCompleted)
-                {
-                    Debug.Log("UI_WaitingRoom: Game stats cleared successfully.");
-                }
-            });
     }
 
     public void HideRoom()
@@ -234,11 +63,6 @@ public class UI_WaitingRoom : MonoBehaviour
         if (waitingRoomUIPanel != null)
         {
             waitingRoomUIPanel.SetActive(false);
-        }
-
-        if (gameResultsPanel != null)
-        {
-            gameResultsPanel.SetActive(false);
         }
 
         isWaitingRoomUIActive = false;
@@ -374,73 +198,139 @@ public class UI_WaitingRoom : MonoBehaviour
 
         if (!roomSnapshot.Exists)
         {
-            Debug.LogError($"Room {roomId} does not exist.");
+            Debug.LogError($"Attempted to join room {roomId} but it does not exist.");
             HideRoom();
             OnLeaveRoomCompleted?.Invoke();
             return;
         }
 
-        RoomPlayerData playerData = new RoomPlayerData { userName = userName, isReady = false };
-        await roomPlayersRef.Child(userId).SetRawJsonValueAsync(JsonUtility.ToJson(playerData));
+        DataSnapshot playerSnapshot = await roomPlayersRef.Child(userId).GetValueAsync();
+        if (playerSnapshot.Exists)
+        {
+            Debug.LogWarning($"User {userId} is already in room {roomId}. Assuming reconnection or duplicate join attempt. Proceeding to listen.");
+            currentRoomId = roomId;
+            ListenToRoomChanges(roomId);
+            return;
+        }
 
-        Debug.Log($"Player {userId} joined room {roomId}");
+        long currentPlayerCount = roomSnapshot.Child("players").ChildrenCount;
+        if (currentPlayerCount >= 2)
+        {
+            Debug.LogWarning($"Room {roomId} is already full ({currentPlayerCount} players). User {userId} cannot join.");
+            HideRoom();
+            return;
+        }
 
-        ListenToRoomChanges(roomId);
+        RoomPlayerData newPlayerData = new RoomPlayerData { userName = userName, isReady = false };
+
+        await roomPlayersRef.Child(userId).SetRawJsonValueAsync(JsonUtility.ToJson(newPlayerData))
+            .ContinueWithOnMainThread(task =>
+            {
+                if (task.IsFaulted)
+                {
+                    Debug.LogError($"Failed to join room {roomId} for user {userId}: {task.Exception}");
+
+                    HideRoom();
+                }
+                else if (task.IsCompleted)
+                {
+                    Debug.Log($"User {userId} joined room {roomId}");
+                    currentRoomId = roomId;
+
+                    ListenToRoomChanges(roomId);
+                }
+            });
     }
 
     public async void LeaveRoom()
     {
         if (dbReference == null || string.IsNullOrEmpty(currentRoomId) || string.IsNullOrEmpty(currentUserId)) return;
 
-        Debug.Log($"Player {currentUserId} is leaving room {currentRoomId}");
-
-        try
-        {
-            await dbReference.Child("Rooms").Child(currentRoomId).Child("players").Child(currentUserId).RemoveValueAsync();
-
-            DataSnapshot roomSnapshot = await dbReference.Child("Rooms").Child(currentRoomId).GetValueAsync();
-            if (roomSnapshot.Exists)
-            {
-                DataSnapshot playersSnapshot = roomSnapshot.Child("players");
-                if (!playersSnapshot.Exists || playersSnapshot.ChildrenCount == 0)
-                {
-                    Debug.Log($"Room {currentRoomId} is now empty. Deleting room.");
-                    await dbReference.Child("Rooms").Child(currentRoomId).RemoveValueAsync();
-                }
-            }
-
-            Debug.Log($"Player {currentUserId} successfully left room {currentRoomId}");
-        }
-        catch (System.Exception ex)
-        {
-            Debug.LogError($"Error leaving room {currentRoomId}: {ex.Message}");
-        }
+        Debug.Log($"User {currentUserId} attempting to leave room {currentRoomId}");
 
         StopListeningToRoomChanges();
-        ClearPlayerListUI();
 
-        OnLeaveRoomCompleted?.Invoke();
-        HideRoom();
+        DatabaseReference currentPlayerRef = dbReference.Child("Rooms").Child(currentRoomId).Child("players").Child(currentUserId);
+
+        await currentPlayerRef.RemoveValueAsync()
+           .ContinueWithOnMainThread(async task =>
+           {
+               if (task.IsFaulted)
+               {
+                   Debug.LogError($"Failed to remove user {currentUserId} from room {currentRoomId}: {task.Exception}");
+               }
+               else if (task.IsCompleted)
+               {
+                   Debug.Log($"User {currentUserId} left room {currentRoomId}");
+
+                   DataSnapshot roomSnapshotAfterLeave = await dbReference.Child("Rooms").Child(currentRoomId).GetValueAsync();
+
+                   if (roomSnapshotAfterLeave.Exists && roomSnapshotAfterLeave.Child("players").ChildrenCount == 0)
+                   {
+                       Debug.Log($"Room {currentRoomId} is empty, deleting room.");
+                       await dbReference.Child("Rooms").Child(currentRoomId).RemoveValueAsync()
+                           .ContinueWithOnMainThread(deleteRoomTask =>
+                           {
+                               if (deleteRoomTask.IsFaulted)
+                               {
+                                   Debug.LogError($"Failed to delete empty room {currentRoomId}: {deleteRoomTask.Exception}");
+                               }
+                               else if (deleteRoomTask.IsCompleted)
+                               {
+                                   Debug.Log($"Empty room {currentRoomId} deleted.");
+                               }
+                           });
+                   }
+                   else if (!roomSnapshotAfterLeave.Exists)
+                   {
+                       Debug.LogWarning($"Room {currentRoomId} was already deleted by another player.");
+                   }
+                   else
+                   {
+                       Debug.Log($"Room {currentRoomId} still has players ({roomSnapshotAfterLeave.Child("players").ChildrenCount}), not deleting.");
+                   }
+
+                   OnLeaveRoomCompleted?.Invoke();
+               }
+           });
     }
 
     private void JoinRoomHandling()
     {
-        isWaitingRoomUIActive = true;
+        Debug.Log($"JoinRoomHandling called. isWaitingRoomUIActive: {isWaitingRoomUIActive}");
 
-        if (waitingRoomUIPanel != null)
+        if (waitingRoomUIPanel != null && waitingRoomUIPanel.transform.parent != null)
         {
-            waitingRoomUIPanel.SetActive(true);
+            bool isCurrentlyActive = waitingRoomUIPanel.activeSelf;
+            Debug.Log($"WaitingRoom UI current active state: {isCurrentlyActive}");
+
+            if (!isCurrentlyActive || !isWaitingRoomUIActive)
+            {
+                Transform parentCanvas = waitingRoomUIPanel.transform.parent;
+                for (int i = 0; i < parentCanvas.childCount; i++)
+                {
+                    GameObject child = parentCanvas.GetChild(i).gameObject;
+                    if (child != waitingRoomUIPanel)
+                    {
+                        child.SetActive(false);
+                    }
+                }
+
+                waitingRoomUIPanel.SetActive(true);
+                isWaitingRoomUIActive = true;
+                Debug.Log("Waiting room UI activated");
+            }
+            else
+            {
+                Debug.Log("Waiting room UI is already active and flag is set, ensuring it's visible");
+
+                waitingRoomUIPanel.SetActive(true);
+            }
         }
-
-        ClearPlayerListUI();
-
-        if (startGameButton != null)
+        else
         {
-            startGameButton.interactable = false;
-            startGameButton.gameObject.SetActive(false);
+            Debug.LogError("WaitingRoomUIPanel or its parent is null!");
         }
-
-        Debug.Log("UI_WaitingRoom: Waiting room UI activated.");
     }
 
     public async void StartGame()
@@ -471,18 +361,19 @@ public class UI_WaitingRoom : MonoBehaviour
                 if (allReady)
                 {
                     Debug.Log($"Starting game in room {currentRoomId}. Both players are Ready.");
-
-                    // Set room status to in_game
-                    await dbReference.Child("Rooms").Child(currentRoomId).Child("status").SetValueAsync("in_game");
-
-                    // Store room ID for the multiplayer scene
-                    PlayerPrefs.SetString("CurrentRoomId", currentRoomId);
-                    PlayerPrefs.Save();
-
-                    Debug.Log($"Room {currentRoomId} status set to in_game. Loading Multiplayer scene.");
-
-                    // Load the Multiplayer scene
-                    SceneManager.LoadScene("Multiplayer");
+                    await dbReference.Child("Rooms").Child(currentRoomId).Child("status").SetValueAsync("in_game")
+                         .ContinueWithOnMainThread(task =>
+                         {
+                             if (task.IsFaulted)
+                             {
+                                 Debug.LogError($"Failed to set room status to in_game for room {currentRoomId}: {task.Exception}");
+                             }
+                             else if (task.IsCompleted)
+                             {
+                                 Debug.Log($"Room {currentRoomId} status set to in_game. Game should start now.");
+                                 OnGameStarted?.Invoke(currentRoomId);
+                             }
+                         });
                 }
                 else
                 {
@@ -577,20 +468,11 @@ public class UI_WaitingRoom : MonoBehaviour
         CheckAndEnableStartButton(playersInRoom);
 
         string roomStatus = snapshot.Child("status").GetValue(true)?.ToString();
-        if (roomStatus == "waiting" && isWaitingRoomUIActive)
+        if (roomStatus == "in_game")
         {
-            // Check if there are game stats (players returning from multiplayer)
-            DataSnapshot gameStatsSnapshot = snapshot.Child("gameStats");
-            if (gameStatsSnapshot.Exists)
-            {
-                Debug.Log($"Room {currentRoomId} status returned to waiting with game stats available.");
-                CheckAndShowGameResults();
-            }
-        }
-        else if (roomStatus == "in_game")
-        {
-            Debug.Log($"Room {currentRoomId} status is in_game. Game should be starting/running.");
-            // Don't hide room here since we might already be in the multiplayer scene
+            Debug.Log($"Room {currentRoomId} status is in_game. Triggering game start.");
+            OnGameStarted?.Invoke(currentRoomId);
+            HideRoom();
         }
     }
 

@@ -33,7 +33,7 @@ public class MultiplayerGameStats
 {
     public MultiplayerPlayerStats player1;
     public MultiplayerPlayerStats player2;
-    public string gameStatus; // "playing", "finished"
+    public string gameStatus;
     public string winnerId;
     public string winnerName;
 
@@ -51,11 +51,10 @@ public class MultiplayerGameManager : MonoBehaviour
 {
     public static MultiplayerGameManager instance;
 
-    private UI_InGame inGameUI;
+    private Multiplayer_InGameUI inGameUI;
 
     [Header("Level Management")]
-    [SerializeField] private float levelTimer;
-    [SerializeField] private int currentLevelIndex;
+    [SerializeField] private float gameTimer;
 
     [Header("Fruit Management")]
     public bool fruitAreRandom;
@@ -68,9 +67,6 @@ public class MultiplayerGameManager : MonoBehaviour
     [Header("Knockback Management")]
     public int knockBacks;
 
-    [Header("Checkpoint")]
-    public bool canReactive;
-
     [Header("Managers")]
     [SerializeField] private AudioManager audioManager;
     [SerializeField] private PlayerManager playerManager;
@@ -82,7 +78,7 @@ public class MultiplayerGameManager : MonoBehaviour
     [SerializeField] private float fruitWeight = 2.0f;
     [SerializeField] private float timeWeight = 1.5f;
     [SerializeField] private float enemyWeight = 1.0f;
-    [SerializeField] private float knockbackWeight = 0.5f;
+    [SerializeField] private float knockbackWeight = -1.0f;
 
     // Multiplayer specific variables
     private string currentRoomId;
@@ -102,19 +98,16 @@ public class MultiplayerGameManager : MonoBehaviour
 
     private void Start()
     {
-        inGameUI = UI_InGame.instance;
+        inGameUI = Multiplayer_InGameUI.instance;
 
-        // Initialize Firebase reference
         roomsRef = FirebaseDatabase.DefaultInstance.GetReference("Rooms");
 
-        // Get current player info from Firebase
         if (FirebaseManager.CurrentUser != null)
         {
             currentPlayerId = FirebaseManager.CurrentUser.id;
             currentPlayerName = FirebaseManager.CurrentUser.userName;
         }
 
-        // Get room ID from a static variable or PlayerPrefs (should be set when joining room)
         currentRoomId = PlayerPrefs.GetString("CurrentRoomId", "");
 
         if (string.IsNullOrEmpty(currentRoomId))
@@ -123,14 +116,12 @@ public class MultiplayerGameManager : MonoBehaviour
             return;
         }
 
-        currentLevelIndex = SceneManager.GetActiveScene().buildIndex;
-        levelTimer = 0;
+        gameTimer = 0;
 
         InitializeMultiplayerGame();
         CollectFruitInfo();
         CreateManagersIfNeeded();
 
-        // Force difficulty to Easy for multiplayer
         SetDifficultyToEasy();
     }
 
@@ -138,8 +129,8 @@ public class MultiplayerGameManager : MonoBehaviour
     {
         if (!hasPlayerFinished)
         {
-            levelTimer += Time.deltaTime;
-            inGameUI.UpdateTimerUI(levelTimer);
+            gameTimer += Time.deltaTime;
+            inGameUI.UpdateMultiplayerTimerUI(gameTimer);
         }
     }
 
@@ -154,7 +145,6 @@ public class MultiplayerGameManager : MonoBehaviour
 
     private void InitializeMultiplayerGame()
     {
-        // Load existing game stats or create new ones
         LoadMultiplayerGameStats();
     }
 
@@ -190,7 +180,6 @@ public class MultiplayerGameManager : MonoBehaviour
     {
         gameStats = new MultiplayerGameStats();
 
-        // Initialize current player stats
         if (IsPlayer1())
         {
             gameStats.player1.playerId = currentPlayerId;
@@ -208,8 +197,6 @@ public class MultiplayerGameManager : MonoBehaviour
 
     private bool IsPlayer1()
     {
-        // Simple check: first player to join becomes player1
-        // You might want to implement a more sophisticated logic
         return gameStats == null || string.IsNullOrEmpty(gameStats.player1.playerId);
     }
 
@@ -233,10 +220,10 @@ public class MultiplayerGameManager : MonoBehaviour
 
     private void CollectFruitInfo()
     {
-        Fruit[] allFruit = FindObjectsByType<Fruit>(FindObjectsSortMode.None);
+        MultiplayerFruit[] allFruit = FindObjectsByType<MultiplayerFruit>(FindObjectsSortMode.None);
         totalFruit = allFruit.Length;
 
-        inGameUI.UpdateFruitUI(fruitCollected, totalFruit);
+        inGameUI.UpdateMultiplayerFruitUI(fruitCollected, totalFruit);
     }
 
     [ContextMenu("Parent All Fruit")]
@@ -245,9 +232,9 @@ public class MultiplayerGameManager : MonoBehaviour
         if (fruitParent == null)
             return;
 
-        Fruit[] allFruit = FindObjectsByType<Fruit>(FindObjectsSortMode.None);
+        MultiplayerFruit[] allFruit = FindObjectsByType<MultiplayerFruit>(FindObjectsSortMode.None);
 
-        foreach (Fruit fruit in allFruit)
+        foreach (MultiplayerFruit fruit in allFruit)
         {
             fruit.transform.parent = fruitParent;
         }
@@ -256,13 +243,13 @@ public class MultiplayerGameManager : MonoBehaviour
     public void AddFruit()
     {
         fruitCollected++;
-        inGameUI.UpdateFruitUI(fruitCollected, totalFruit);
+        inGameUI.UpdateMultiplayerFruitUI(fruitCollected, totalFruit);
     }
 
     public void RemoveFruit()
     {
         fruitCollected--;
-        inGameUI.UpdateFruitUI(fruitCollected, totalFruit);
+        inGameUI.UpdateMultiplayerFruitUI(fruitCollected, totalFruit);
     }
 
     public int FruitCollected() => fruitCollected;
@@ -281,37 +268,27 @@ public class MultiplayerGameManager : MonoBehaviour
 
     public void LevelFinished()
     {
-        if (hasPlayerFinished) return; // Prevent multiple calls
+        if (hasPlayerFinished) return;
 
         hasPlayerFinished = true;
 
-        // Calculate final score
         float finalScore = CalculateFinalScore();
 
-        // Update current player's stats
         UpdateCurrentPlayerStats(finalScore);
 
-        // Save to Firebase
         SaveGameStatsToFirebase();
 
         Debug.Log($"MultiplayerGameManager: Level finished! Score: {finalScore:F2}");
 
-        // Return to waiting room after a short delay
         Invoke(nameof(ReturnToWaitingRoom), 3f);
     }
 
     private float CalculateFinalScore()
     {
-        // Score calculation formula: higher is better
-        // Fruit: more is better (positive)
-        // Time: less is better (negative impact)  
-        // Enemies: more is better (positive)
-        // Knockbacks: less is better (negative impact)
-
         float fruitScore = fruitCollected * fruitWeight;
-        float timeScore = Mathf.Max(0, (120f - levelTimer)) * timeWeight; // Bonus for finishing under 2 minutes
+        float timeScore = gameTimer * timeWeight;
         float enemyScore = enemiesKilled * enemyWeight;
-        float knockbackScore = Mathf.Max(0, (10 - knockBacks)) * knockbackWeight; // Penalty for knockbacks
+        float knockbackScore = knockBacks * knockbackWeight;
 
         float totalScore = fruitScore + timeScore + enemyScore + knockbackScore;
 
@@ -336,7 +313,6 @@ public class MultiplayerGameManager : MonoBehaviour
         }
         else
         {
-            // Player not found, add as available slot
             if (string.IsNullOrEmpty(gameStats.player1.playerId))
             {
                 gameStats.player1.playerId = currentPlayerId;
@@ -356,15 +332,13 @@ public class MultiplayerGameManager : MonoBehaviour
             }
         }
 
-        // Update stats
         currentPlayerStats.fruitCollected = fruitCollected;
-        currentPlayerStats.completionTime = levelTimer;
+        currentPlayerStats.completionTime = gameTimer;
         currentPlayerStats.enemiesKilled = enemiesKilled;
         currentPlayerStats.knockBacks = knockBacks;
         currentPlayerStats.totalScore = finalScore;
         currentPlayerStats.hasFinished = true;
 
-        // Check if both players finished to determine winner
         CheckForGameCompletion();
     }
 
@@ -372,7 +346,6 @@ public class MultiplayerGameManager : MonoBehaviour
     {
         if (gameStats.player1.hasFinished && gameStats.player2.hasFinished)
         {
-            // Both players finished, determine winner
             if (gameStats.player1.totalScore > gameStats.player2.totalScore)
             {
                 gameStats.winnerId = gameStats.player1.playerId;
@@ -385,7 +358,6 @@ public class MultiplayerGameManager : MonoBehaviour
             }
             else
             {
-                // Tie - could be handled differently
                 gameStats.winnerName = "Tie";
             }
 
@@ -415,7 +387,6 @@ public class MultiplayerGameManager : MonoBehaviour
 
     private void ReturnToWaitingRoom()
     {
-        // Update room status back to 'waiting'
         roomsRef.Child(currentRoomId).Child("status").SetValueAsync("waiting")
             .ContinueWithOnMainThread(task =>
             {
@@ -429,26 +400,22 @@ public class MultiplayerGameManager : MonoBehaviour
                 }
             });
 
-        // Set flag for UI_WaitingRoom to detect return from multiplayer
         PlayerPrefs.SetString("ReturnFromMultiplayerRoom", currentRoomId);
         PlayerPrefs.Save();
 
         Debug.Log($"MultiplayerGameManager: Set return flag for room {currentRoomId}. Loading MainMenu scene.");
 
-        // Load MainMenu scene to return to waiting room
         SceneManager.LoadScene("MainMenu");
     }
 
     public void RestartLevel()
     {
-        // Reset stats
         fruitCollected = 0;
         enemiesKilled = 0;
         knockBacks = 0;
-        levelTimer = 0;
+        gameTimer = 0;
         hasPlayerFinished = false;
 
-        // Reset player stats in Firebase
         if (gameStats != null)
         {
             if (gameStats.player1.playerId == currentPlayerId)
@@ -471,19 +438,16 @@ public class MultiplayerGameManager : MonoBehaviour
             SaveGameStatsToFirebase();
         }
 
-        // Reload current scene
-        UI_InGame.instance.fadeEffect.ScreenFade(1, .75f, LoadCurrentScene);
+        Multiplayer_InGameUI.instance.fadeEffect.ScreenFade(1, .75f, LoadCurrentScene);
     }
 
     private void LoadCurrentScene() => SceneManager.LoadScene(SceneManager.GetActiveScene().name);
 
-    // Public method to get current game stats (useful for UI display)
     public MultiplayerGameStats GetGameStats()
     {
         return gameStats;
     }
 
-    // Public method to get current player's stats
     public MultiplayerPlayerStats GetCurrentPlayerStats()
     {
         if (gameStats == null) return null;
