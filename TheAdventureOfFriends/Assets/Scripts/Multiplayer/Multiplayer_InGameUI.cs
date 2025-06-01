@@ -34,13 +34,10 @@ public class Multiplayer_InGameUI : MonoBehaviour
         instance = this;
         fadeEffect = GetComponentInChildren<UI_FadeEffect>();
 
-        // Initialize Firebase
         roomsRef = FirebaseDatabase.DefaultInstance.GetReference("Rooms");
 
-        // Auto-assign UI elements from scene
         AssignUIElementsFromScene();
 
-        // Setup Return to Menu button
         if (returnToMenuButton != null)
         {
             returnToMenuButton.onClick.AddListener(ReturnToMainMenu);
@@ -49,7 +46,6 @@ public class Multiplayer_InGameUI : MonoBehaviour
 
     private void AssignUIElementsFromScene()
     {
-        // Auto-find UI elements in scene
         if (gameResultsPanel == null)
         {
             gameResultsPanel = GameObject.Find("GameResultsPanel");
@@ -100,14 +96,12 @@ public class Multiplayer_InGameUI : MonoBehaviour
     {
         fadeEffect.ScreenFade(0, 1);
 
-        // Get current room and player info
         currentRoomId = PlayerPrefs.GetString("CurrentMultiplayerRoomId", "");
         if (FirebaseManager.CurrentUser != null)
         {
             currentPlayerId = FirebaseManager.CurrentUser.id;
         }
 
-        // Initially hide results panel and winner text
         if (gameResultsPanel != null)
         {
             gameResultsPanel.SetActive(false);
@@ -118,10 +112,8 @@ public class Multiplayer_InGameUI : MonoBehaviour
             winnerText.gameObject.SetActive(false);
         }
 
-        // Initialize player result texts
         InitializePlayerResultTexts();
 
-        // Start listening to game stats changes
         StartListeningToGameStats();
     }
 
@@ -129,12 +121,12 @@ public class Multiplayer_InGameUI : MonoBehaviour
     {
         if (player1ResultsText != null)
         {
-            player1ResultsText.text = "Player 1\nWaiting...";
+            player1ResultsText.text = "Player 1: Waiting...";
         }
 
         if (player2ResultsText != null)
         {
-            player2ResultsText.text = "Player 2\nWaiting...";
+            player2ResultsText.text = "Player 2: Waiting...";
         }
     }
 
@@ -241,19 +233,16 @@ public class Multiplayer_InGameUI : MonoBehaviour
 
         if (string.IsNullOrEmpty(playerStats.playerId))
         {
-            // Player slot not filled yet
-            textComponent.text = $"{defaultName}\nWaiting for player...";
+            textComponent.text = $"{defaultName} : Waiting for player...";
         }
         else if (playerStats.hasFinished)
         {
-            // Player finished - show only total score
-            string playerResults = $"{playerStats.playerName}\nScore: {playerStats.totalScore:F1}";
+            string playerResults = $"{playerStats.playerName} : {playerStats.totalScore:F1} points";
             textComponent.text = playerResults;
         }
         else
         {
-            // Player joined but still playing
-            textComponent.text = $"{playerStats.playerName}\nWaiting...";
+            textComponent.text = $"{playerStats.playerName} : Waiting...";
         }
     }
 
@@ -261,7 +250,6 @@ public class Multiplayer_InGameUI : MonoBehaviour
     {
         if (winnerText == null) return;
 
-        // Only show winner when both players have finished
         if (gameStats.player1.hasFinished && gameStats.player2.hasFinished)
         {
             if (gameStats.gameStatus == "finished")
@@ -280,7 +268,6 @@ public class Multiplayer_InGameUI : MonoBehaviour
         }
         else
         {
-            // Hide winner text if not both finished
             winnerText.gameObject.SetActive(false);
         }
     }
@@ -289,7 +276,6 @@ public class Multiplayer_InGameUI : MonoBehaviour
     {
         Debug.Log("Multiplayer_InGameUI: Returning to Main Menu...");
 
-        // Track player exit from scene
         if (!string.IsNullOrEmpty(currentRoomId) && !string.IsNullOrEmpty(currentPlayerId))
         {
             roomsRef.Child(currentRoomId).Child("playersInScene").Child(currentPlayerId).RemoveValueAsync()
@@ -301,15 +287,12 @@ public class Multiplayer_InGameUI : MonoBehaviour
                     }
                 });
 
-            // Check if both players have left the scene to cleanup room
             CheckAndCleanupRoom();
         }
 
-        // Clear PlayerPrefs
         PlayerPrefs.DeleteKey("CurrentMultiplayerRoomId");
         PlayerPrefs.Save();
 
-        // Load Main Menu
         SceneManager.LoadScene("MainMenu");
     }
 
@@ -329,7 +312,6 @@ public class Multiplayer_InGameUI : MonoBehaviour
 
                 if (!playersInSceneSnapshot.Exists || playersInSceneSnapshot.ChildrenCount == 0)
                 {
-                    // No players left in scene, cleanup the room
                     Debug.Log($"Multiplayer_InGameUI: No players left in scene. Cleaning up room {currentRoomId}");
 
                     roomsRef.Child(currentRoomId).RemoveValueAsync().ContinueWithOnMainThread(cleanupTask =>
