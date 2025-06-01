@@ -119,8 +119,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1798635361542074697}
-  - component: {fileID: 9164296131948995763}
   - component: {fileID: 2403356939163106492}
+  - component: {fileID: -5132735738608874037}
   m_Layer: 0
   m_Name: fruitMelon
   m_TagString: Untagged
@@ -144,20 +144,6 @@ Transform:
   - {fileID: 1487464507949231010}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &9164296131948995763
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6825651424828711778}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 11ae4b64af737fa4dbcd473f5af0a243, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  fruitType: 1
-  pickupVFX: {fileID: 393940888041111820, guid: ca45706880af3d7409453772267e1ac4, type: 3}
 --- !u!58 &2403356939163106492
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -194,3 +180,17 @@ CircleCollider2D:
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
   m_Radius: 0.7
+--- !u!114 &-5132735738608874037
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6825651424828711778}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0bd1a97e80445c843a48919c5bd0ac86, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  fruitType: 4
+  pickupVFX: {fileID: 393940888041111820, guid: ca45706880af3d7409453772267e1ac4, type: 3}

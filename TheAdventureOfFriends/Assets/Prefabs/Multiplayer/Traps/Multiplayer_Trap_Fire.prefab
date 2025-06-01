@@ -182,10 +182,10 @@ GameObject:
   - component: {fileID: 1136435258134759759}
   - component: {fileID: 7026064834341010976}
   - component: {fileID: 2255581230937546234}
-  - component: {fileID: 4412176563028650444}
-  - component: {fileID: 7016705331369440329}
+  - component: {fileID: 7115734306368941953}
+  - component: {fileID: 6337626626540165028}
   m_Layer: 0
-  m_Name: Trap_Fire
+  m_Name: Multiplayer_Trap_Fire
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -321,7 +321,7 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &4412176563028650444
+--- !u!114 &7115734306368941953
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -330,20 +330,20 @@ MonoBehaviour:
   m_GameObject: {fileID: 5811650743989387781}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e40302f0ff10f4e44a2cc7c2dab4520d, type: 3}
+  m_Script: {fileID: 11500000, guid: ff59477900abfef44bb4671d1b6822f5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &6337626626540165028
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5811650743989387781}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9ca86c76b5ca6b24ab3a87abfb40f7c5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   offDuration: 5
   fireButton: {fileID: 6257156158266620977}
---- !u!114 &7016705331369440329
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5811650743989387781}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5c4d2518e08f1264e80a46ec45fd9b73, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 

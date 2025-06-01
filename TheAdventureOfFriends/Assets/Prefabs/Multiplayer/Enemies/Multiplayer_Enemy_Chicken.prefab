@@ -256,8 +256,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5441385112967498748}
-  - component: {fileID: 6552746292148296853}
   - component: {fileID: 2917071471280493565}
+  - component: {fileID: 3187912142190445373}
   m_Layer: 6
   m_Name: DamageTrigger
   m_TagString: Untagged
@@ -280,18 +280,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 2885024190340596909}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &6552746292148296853
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7859327484152367617}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5c4d2518e08f1264e80a46ec45fd9b73, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!61 &2917071471280493565
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -338,3 +326,15 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 1.4485955, y: 1.1080027}
   m_EdgeRadius: 0
+--- !u!114 &3187912142190445373
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7859327484152367617}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ff59477900abfef44bb4671d1b6822f5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

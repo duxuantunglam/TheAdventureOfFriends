@@ -41,7 +41,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2876921462043405804}
   - component: {fileID: 663193218905249635}
-  - component: {fileID: 5107368956996461628}
+  - component: {fileID: 6954547647615765565}
   m_Layer: 0
   m_Name: DamageTrigger
   m_TagString: Untagged
@@ -110,7 +110,7 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 2.8724756, y: 1.4398117}
   m_EdgeRadius: 0
---- !u!114 &5107368956996461628
+--- !u!114 &6954547647615765565
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -119,7 +119,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1280413986102250553}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5c4d2518e08f1264e80a46ec45fd9b73, type: 3}
+  m_Script: {fileID: 11500000, guid: ff59477900abfef44bb4671d1b6822f5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &5384099977660525348
@@ -394,7 +394,7 @@ MonoBehaviour:
   maxSpeed: 8
   speedUpRate: 1.5
   impactPower: {x: 5, y: 9}
-  dustFx: {fileID: 0}
+  dustFx: {fileID: 4710365576317921330}
   cameraImpulseDir: {x: 0.6, y: 0.6}
 --- !u!1001 &8553351460894333437
 PrefabInstance:
@@ -456,5 +456,10 @@ PrefabInstance:
 --- !u!4 &3477190210665914787 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5112409956621613150, guid: 0eb5e7084e8ad1d4f98d79648fd56edb, type: 3}
+  m_PrefabInstance: {fileID: 8553351460894333437}
+  m_PrefabAsset: {fileID: 0}
+--- !u!198 &4710365576317921330 stripped
+ParticleSystem:
+  m_CorrespondingSourceObject: {fileID: 4029894142044975567, guid: 0eb5e7084e8ad1d4f98d79648fd56edb, type: 3}
   m_PrefabInstance: {fileID: 8553351460894333437}
   m_PrefabAsset: {fileID: 0}

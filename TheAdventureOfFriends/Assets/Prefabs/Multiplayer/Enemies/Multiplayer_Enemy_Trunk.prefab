@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1701354485851584886}
   - component: {fileID: 1424600798024708209}
-  - component: {fileID: 3823450503282075879}
+  - component: {fileID: 1425337679377227400}
   m_Layer: 0
   m_Name: DamageTrigger
   m_TagString: Untagged
@@ -79,7 +79,7 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 2.1174889, y: 0.9864187}
   m_EdgeRadius: 0
---- !u!114 &3823450503282075879
+--- !u!114 &1425337679377227400
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -88,7 +88,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1306299494923302766}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5c4d2518e08f1264e80a46ec45fd9b73, type: 3}
+  m_Script: {fileID: 11500000, guid: ff59477900abfef44bb4671d1b6822f5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &1333871675778917537
@@ -362,13 +362,13 @@ MonoBehaviour:
   wallCheckDistance: 0.7
   whatIsGround:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 8
   playerDetectionDistance: 15
   whatIsPlayer:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 128
   groundCheck: {fileID: 8857189724799953352}
-  bulletPrefab: {fileID: 2274734340518885071, guid: 17f8a8a9c00a9a043a126a603fe35a8d, type: 3}
+  bulletPrefab: {fileID: 3874393682062186686, guid: 17f8a8a9c00a9a043a126a603fe35a8d, type: 3}
   gunPoint: {fileID: 1979430268148709199}
   bulletSpeed: 7
   attackCoolDown: 1.5

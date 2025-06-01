@@ -255,7 +255,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8157284243111578897}
   - component: {fileID: 2707413952706202324}
-  - component: {fileID: 7849090088158195536}
+  - component: {fileID: 9103172294207202023}
   m_Layer: 0
   m_Name: DamageTrigger
   m_TagString: Untagged
@@ -324,7 +324,7 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 1.6351156, y: 1.2651229}
   m_EdgeRadius: 0
---- !u!114 &7849090088158195536
+--- !u!114 &9103172294207202023
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -333,6 +333,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 4294900400461842515}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5c4d2518e08f1264e80a46ec45fd9b73, type: 3}
+  m_Script: {fileID: 11500000, guid: ff59477900abfef44bb4671d1b6822f5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
