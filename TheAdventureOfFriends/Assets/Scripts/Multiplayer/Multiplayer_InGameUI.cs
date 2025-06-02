@@ -603,16 +603,42 @@ public class Multiplayer_InGameUI : MonoBehaviour
 
     private void RateOpponent(string rating)
     {
+        if (currentGameStats == null || !bothPlayersFinished)
+        {
+            Debug.LogWarning("⚠️ Cannot rate opponent: Game not completed or no gameStats available");
+            return;
+        }
+
         Debug.Log($"🌟 Player {currentPlayerId} rated opponent: {rating}");
 
-        // TODO: Implement in Step 2:
-        // 1. Save rating to Match_History
-        // 2. Save gameStats to Match_History  
-        // 3. Return to MainMenu
+        DisableRatingButtons();
 
-        Debug.Log("⚠️ Rating system not implemented yet - will be added in Step 2");
+        MatchHistoryManager.SaveMatchHistoryWithRating(
+            currentRoomId,
+            currentGameStats,
+            currentPlayerId,
+            rating,
+            (success) =>
+            {
+                if (success)
+                {
+                    Debug.Log("✅ Match history saved successfully! Returning to main menu...");
+                }
+                else
+                {
+                    Debug.LogError("❌ Failed to save match history, but still returning to main menu");
+                }
 
-        // For now, just return to menu
-        ReturnToMainMenu();
+                ReturnToMainMenu();
+            });
+    }
+
+    private void DisableRatingButtons()
+    {
+        if (goodButton != null) goodButton.interactable = false;
+        if (mediumButton != null) mediumButton.interactable = false;
+        if (badButton != null) badButton.interactable = false;
+
+        Debug.Log("🔒 Rating buttons disabled to prevent multiple submissions");
     }
 }
