@@ -407,7 +407,7 @@ public class GameManager : MonoBehaviour
     }
     private bool NoMoreLevels()
     {
-        int lastLevelIndex = SceneManager.sceneCountInBuildSettings - 3;
+        int lastLevelIndex = SceneManager.sceneCountInBuildSettings - 4;
         bool noMoreLevels = currentLevelIndex == lastLevelIndex;
 
         return noMoreLevels;
