@@ -260,8 +260,6 @@ public class MultiplayerGameManager : MonoBehaviour
 
         UpdateCurrentPlayerStats(finalScore);
 
-        SaveGameStatsToFirebase();
-
         Debug.Log($"MultiplayerGameManager: Level finished! Score: {finalScore:F2}");
 
         // Show results panel via InGameUI
@@ -298,21 +296,80 @@ public class MultiplayerGameManager : MonoBehaviour
             return;
         }
 
+        Debug.Log($"🔄 Loading latest gameStats before updating for player {currentPlayerId}...");
+
+        // Load gameStats mới nhất từ Firebase trước khi cập nhật
+        roomsRef.Child(currentRoomId).Child("gameStats").GetValueAsync().ContinueWithOnMainThread(task =>
+        {
+            if (task.IsFaulted)
+            {
+                Debug.LogError($"❌ Failed to load latest gameStats: {task.Exception}");
+                // Fallback: sử dụng gameStats local hiện tại
+                UpdatePlayerStatsWithLatestData(gameStats, finalScore);
+                return;
+            }
+
+            if (task.IsCompleted)
+            {
+                DataSnapshot snapshot = task.Result;
+                if (snapshot.Exists)
+                {
+                    try
+                    {
+                        string json = snapshot.GetRawJsonValue();
+                        MultiplayerGameStats latestGameStats = JsonConvert.DeserializeObject<MultiplayerGameStats>(json);
+
+                        Debug.Log($"✅ Latest gameStats loaded successfully!");
+                        Debug.Log($"Latest Player1 finished: {latestGameStats.player1.hasFinished}, score: {latestGameStats.player1.totalScore}");
+                        Debug.Log($"Latest Player2 finished: {latestGameStats.player2.hasFinished}, score: {latestGameStats.player2.totalScore}");
+
+                        // Cập nhật gameStats local với dữ liệu mới nhất
+                        gameStats = latestGameStats;
+
+                        // Cập nhật stats với dữ liệu mới nhất
+                        UpdatePlayerStatsWithLatestData(latestGameStats, finalScore);
+                    }
+                    catch (System.Exception e)
+                    {
+                        Debug.LogError($"❌ Failed to deserialize latest gameStats: {e.Message}");
+                        // Fallback: sử dụng gameStats local hiện tại
+                        UpdatePlayerStatsWithLatestData(gameStats, finalScore);
+                    }
+                }
+                else
+                {
+                    Debug.LogError("❌ Latest gameStats not found on Firebase!");
+                    // Fallback: sử dụng gameStats local hiện tại
+                    UpdatePlayerStatsWithLatestData(gameStats, finalScore);
+                }
+            }
+        });
+    }
+
+    private void UpdatePlayerStatsWithLatestData(MultiplayerGameStats latestGameStats, float finalScore)
+    {
         MultiplayerPlayerStats currentPlayerStats = null;
 
-        if (gameStats.player1.playerId == currentPlayerId)
+        if (latestGameStats.player1.playerId == currentPlayerId)
         {
-            currentPlayerStats = gameStats.player1;
-            Debug.Log($"✅ Updating stats for Player1: {gameStats.player1.playerName}");
+            currentPlayerStats = latestGameStats.player1;
+            Debug.Log($"✅ Updating stats for Player1: {latestGameStats.player1.playerName}");
         }
-        else if (gameStats.player2.playerId == currentPlayerId)
+        else if (latestGameStats.player2.playerId == currentPlayerId)
         {
-            currentPlayerStats = gameStats.player2;
-            Debug.Log($"✅ Updating stats for Player2: {gameStats.player2.playerName}");
+            currentPlayerStats = latestGameStats.player2;
+            Debug.Log($"✅ Updating stats for Player2: {latestGameStats.player2.playerName}");
         }
         else
         {
-            Debug.LogError($"❌ MultiplayerGameManager: Current player {currentPlayerId} not found in gameStats! Player1: {gameStats.player1.playerId}, Player2: {gameStats.player2.playerId}");
+            Debug.LogError($"❌ MultiplayerGameManager: Current player {currentPlayerId} not found in latest gameStats! Player1: {latestGameStats.player1.playerId}, Player2: {latestGameStats.player2.playerId}");
+            return;
+        }
+
+        // Kiểm tra nếu player này đã hoàn thành trước đó
+        if (currentPlayerStats.hasFinished)
+        {
+            Debug.LogWarning($"⚠️ Player {currentPlayerStats.playerName} has already finished! Score: {currentPlayerStats.totalScore}. Skipping update to prevent overwrite.");
             return;
         }
 
@@ -326,30 +383,49 @@ public class MultiplayerGameManager : MonoBehaviour
 
         Debug.Log($"🎯 Final stats for {currentPlayerStats.playerName}: Fruits={fruitCollected}, Time={gameTimer:F1}s, Enemies={enemiesKilled}, Knockbacks={knockBacks}, Score={finalScore:F1}");
 
+        // Cập nhật gameStats local với dữ liệu mới nhất
+        gameStats = latestGameStats;
+
         CheckForGameCompletion();
+
+        // Lưu với dữ liệu đã được cập nhật
+        SaveGameStatsToFirebase();
     }
 
     private void CheckForGameCompletion()
     {
+        Debug.Log($"🔍 Checking game completion...");
+        Debug.Log($"Player1 ({gameStats.player1.playerName}) finished: {gameStats.player1.hasFinished}, score: {gameStats.player1.totalScore}");
+        Debug.Log($"Player2 ({gameStats.player2.playerName}) finished: {gameStats.player2.hasFinished}, score: {gameStats.player2.totalScore}");
+
         if (gameStats.player1.hasFinished && gameStats.player2.hasFinished)
         {
+            Debug.Log("🎉 Both players have finished! Determining winner...");
+
             if (gameStats.player1.totalScore > gameStats.player2.totalScore)
             {
                 gameStats.winnerId = gameStats.player1.playerId;
                 gameStats.winnerName = gameStats.player1.playerName;
+                Debug.Log($"🏆 Player1 ({gameStats.player1.playerName}) wins with score {gameStats.player1.totalScore} vs {gameStats.player2.totalScore}");
             }
             else if (gameStats.player2.totalScore > gameStats.player1.totalScore)
             {
                 gameStats.winnerId = gameStats.player2.playerId;
                 gameStats.winnerName = gameStats.player2.playerName;
+                Debug.Log($"🏆 Player2 ({gameStats.player2.playerName}) wins with score {gameStats.player2.totalScore} vs {gameStats.player1.totalScore}");
             }
             else
             {
                 gameStats.winnerName = "Tie";
+                Debug.Log($"🤝 It's a tie! Both players scored {gameStats.player1.totalScore}");
             }
 
             gameStats.gameStatus = "finished";
-            Debug.Log($"MultiplayerGameManager: Game completed! Winner: {gameStats.winnerName}");
+            Debug.Log($"✅ MultiplayerGameManager: Game completed! Winner: {gameStats.winnerName}");
+        }
+        else
+        {
+            Debug.Log("⏳ Game not completed yet - waiting for other player...");
         }
     }
 
@@ -357,17 +433,22 @@ public class MultiplayerGameManager : MonoBehaviour
     {
         if (gameStats == null || string.IsNullOrEmpty(currentRoomId)) return;
 
+        Debug.Log($"💾 Saving gameStats to Firebase for room {currentRoomId}...");
+        Debug.Log($"Player1: {gameStats.player1.playerName} - Finished: {gameStats.player1.hasFinished}, Score: {gameStats.player1.totalScore}");
+        Debug.Log($"Player2: {gameStats.player2.playerName} - Finished: {gameStats.player2.hasFinished}, Score: {gameStats.player2.totalScore}");
+        Debug.Log($"Game Status: {gameStats.gameStatus}, Winner: {gameStats.winnerName}");
+
         string json = JsonConvert.SerializeObject(gameStats);
         roomsRef.Child(currentRoomId).Child("gameStats").SetRawJsonValueAsync(json)
             .ContinueWithOnMainThread(task =>
             {
                 if (task.IsFaulted)
                 {
-                    Debug.LogError("MultiplayerGameManager: Failed to save game stats: " + task.Exception);
+                    Debug.LogError($"❌ MultiplayerGameManager: Failed to save game stats: {task.Exception}");
                 }
                 else if (task.IsCompleted)
                 {
-                    Debug.Log("MultiplayerGameManager: Game stats saved successfully.");
+                    Debug.Log("✅ MultiplayerGameManager: Game stats saved successfully to Firebase.");
                 }
             });
     }
