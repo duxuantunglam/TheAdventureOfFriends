@@ -22,7 +22,6 @@ public class Multiplayer_InGameUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI winnerText;
     [SerializeField] private Button returnToMenuButton;
 
-    // Firebase tracking
     private DatabaseReference roomsRef;
     private string currentRoomId;
     private string currentPlayerId;
@@ -201,13 +200,10 @@ public class Multiplayer_InGameUI : MonoBehaviour
     {
         if (gameStats == null) return;
 
-        // Update Player 1 results
         UpdatePlayerResultsText(gameStats.player1, player1ResultsText, "Player 1");
 
-        // Update Player 2 results  
         UpdatePlayerResultsText(gameStats.player2, player2ResultsText, "Player 2");
 
-        // Check if current player finished to show results panel
         bool currentPlayerFinished = false;
         if (gameStats.player1.playerId == currentPlayerId && gameStats.player1.hasFinished)
         {
@@ -223,7 +219,6 @@ public class Multiplayer_InGameUI : MonoBehaviour
             ShowResultsPanel();
         }
 
-        // Show winner only when both players finished
         UpdateWinnerDisplay(gameStats);
     }
 

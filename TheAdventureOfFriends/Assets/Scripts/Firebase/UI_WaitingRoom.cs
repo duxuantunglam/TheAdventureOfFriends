@@ -36,7 +36,6 @@ public class UI_WaitingRoom : MonoBehaviour
     private bool isWaitingRoomUIActive = false;
 
     public event Action OnLeaveRoomCompleted;
-    public event Action<string> OnGameStarted;
 
     private void Awake()
     {
