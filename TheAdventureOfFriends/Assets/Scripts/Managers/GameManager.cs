@@ -370,7 +370,6 @@ public class GameManager : MonoBehaviour
             }
             FirebaseManager.CurrentUser.levelProgress[nextLevelKey].unlocked = true;
 
-
             FirebaseManager.CurrentUser.gameProgress.continueLevelNumber = nextLevelIndex;
 
             SkinManager skinManager = SkinManager.instance;
