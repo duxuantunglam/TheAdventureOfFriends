@@ -46,7 +46,7 @@ public class GameManager : MonoBehaviour
     {
         inGameUI = UI_InGame.instance;
 
-        currentLevelIndex = SceneManager.GetActiveScene().buildIndex;
+        currentLevelIndex = SceneManager.GetActiveScene().buildIndex - 2;
 
         nextLevelIndex = currentLevelIndex + 1;
 
