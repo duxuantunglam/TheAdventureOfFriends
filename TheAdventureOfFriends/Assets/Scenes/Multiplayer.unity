@@ -19619,7 +19619,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &647643318
 RectTransform:
   m_ObjectHideFlags: 0
@@ -19627,7 +19627,7 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 647643317}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -19638,7 +19638,7 @@ RectTransform:
   - {fileID: 1053467419}
   - {fileID: 1047161704}
   - {fileID: 582624286}
-  m_Father: {fileID: 1440761588}
+  m_Father: {fileID: 1913058913}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
@@ -19693,7 +19693,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 4504366024242513464, guid: ba52afbf51c1cb2499174fd99930c66d, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 51.19579
+      value: 0.4348154
       objectReference: {fileID: 0}
     - target: {fileID: 4504366024242513464, guid: ba52afbf51c1cb2499174fd99930c66d, type: 3}
       propertyPath: m_LocalPosition.y
@@ -20798,7 +20798,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1152878121
 RectTransform:
   m_ObjectHideFlags: 0
@@ -31169,7 +31169,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1440761588
 RectTransform:
   m_ObjectHideFlags: 0
@@ -31183,7 +31183,6 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1152878121}
-  - {fileID: 647643318}
   m_Father: {fileID: 1913058913}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -32483,6 +32482,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1440761588}
+  - {fileID: 647643318}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -33400,7 +33400,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &4995477198502990742
 RectTransform:
   m_ObjectHideFlags: 0
@@ -33725,6 +33725,21 @@ MonoBehaviour:
   player2ResultsText: {fileID: 427110869}
   winnerText: {fileID: 1566446220}
   returnToMenuButton: {fileID: 5560305}
+  viewDetailsButton: {fileID: 0}
+  detailsPanel: {fileID: 647643317}
+  player1NameText: {fileID: 15297281}
+  player2NameText: {fileID: 1077741071}
+  player1FruitText: {fileID: 1658079255}
+  player2FruitText: {fileID: 335676216}
+  player1EnemiesKilledText: {fileID: 133052876}
+  player2EnemiesKilledText: {fileID: 266485866}
+  player1KnockBacksText: {fileID: 132246692}
+  player2KnockBacksText: {fileID: 192372168}
+  player1TimeText: {fileID: 1901046434}
+  player2TimeText: {fileID: 681816439}
+  goodButton: {fileID: 183139308}
+  mediumButton: {fileID: 267468741}
+  badButton: {fileID: 527538504}
 --- !u!1 &8081514975339951872
 GameObject:
   m_ObjectHideFlags: 0

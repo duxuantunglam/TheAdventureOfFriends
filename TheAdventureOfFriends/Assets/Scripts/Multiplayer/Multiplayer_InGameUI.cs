@@ -21,12 +21,34 @@ public class Multiplayer_InGameUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI player2ResultsText;
     [SerializeField] private TextMeshProUGUI winnerText;
     [SerializeField] private Button returnToMenuButton;
+    [SerializeField] private Button viewDetailsButton;
 
+    [Header("Details Panel")]
+    [SerializeField] private GameObject detailsPanel;
+    [SerializeField] private TextMeshProUGUI player1NameText;
+    [SerializeField] private TextMeshProUGUI player2NameText;
+    [SerializeField] private TextMeshProUGUI player1FruitText;
+    [SerializeField] private TextMeshProUGUI player2FruitText;
+    [SerializeField] private TextMeshProUGUI player1EnemiesKilledText;
+    [SerializeField] private TextMeshProUGUI player2EnemiesKilledText;
+    [SerializeField] private TextMeshProUGUI player1KnockBacksText;
+    [SerializeField] private TextMeshProUGUI player2KnockBacksText;
+    [SerializeField] private TextMeshProUGUI player1TimeText;
+    [SerializeField] private TextMeshProUGUI player2TimeText;
+    [SerializeField] private Button goodButton;
+    [SerializeField] private Button mediumButton;
+    [SerializeField] private Button badButton;
+
+    // Firebase tracking
     private DatabaseReference roomsRef;
     private string currentRoomId;
     private string currentPlayerId;
     private bool isListeningToGameStats = false;
     private bool hasCurrentPlayerFinished = false;
+
+    // Details panel tracking
+    private MultiplayerGameStats currentGameStats;
+    private bool bothPlayersFinished = false;
 
     private void Awake()
     {
@@ -40,6 +62,26 @@ public class Multiplayer_InGameUI : MonoBehaviour
         if (returnToMenuButton != null)
         {
             returnToMenuButton.onClick.AddListener(ReturnToMainMenu);
+        }
+
+        if (viewDetailsButton != null)
+        {
+            viewDetailsButton.onClick.AddListener(ShowDetailsPanel);
+        }
+
+        if (goodButton != null)
+        {
+            goodButton.onClick.AddListener(() => RateOpponent("Good"));
+        }
+
+        if (mediumButton != null)
+        {
+            mediumButton.onClick.AddListener(() => RateOpponent("Medium"));
+        }
+
+        if (badButton != null)
+        {
+            badButton.onClick.AddListener(() => RateOpponent("Bad"));
         }
     }
 
@@ -88,6 +130,141 @@ public class Multiplayer_InGameUI : MonoBehaviour
                 Debug.LogError("Multiplayer_InGameUI: Return_To_Menu_Button not found in scene!");
         }
 
+        if (viewDetailsButton == null)
+        {
+            GameObject viewDetailsButtonObj = GameObject.Find("ViewDetails_Button");
+            if (viewDetailsButtonObj != null)
+                viewDetailsButton = viewDetailsButtonObj.GetComponent<Button>();
+            else
+                Debug.LogError("Multiplayer_InGameUI: ViewDetails_Button not found in scene!");
+        }
+
+        if (detailsPanel == null)
+        {
+            GameObject detailsPanelObj = GameObject.Find("DetailsPanel");
+            if (detailsPanelObj != null)
+                detailsPanel = detailsPanelObj;
+            else
+                Debug.LogError("Multiplayer_InGameUI: DetailsPanel not found in scene!");
+        }
+
+        if (player1NameText == null)
+        {
+            GameObject player1NameTextObj = GameObject.Find("Player1Name_Text");
+            if (player1NameTextObj != null)
+                player1NameText = player1NameTextObj.GetComponent<TextMeshProUGUI>();
+            else
+                Debug.LogError("Multiplayer_InGameUI: Player1Name_Text not found in scene!");
+        }
+
+        if (player2NameText == null)
+        {
+            GameObject player2NameTextObj = GameObject.Find("Player2Name_Text");
+            if (player2NameTextObj != null)
+                player2NameText = player2NameTextObj.GetComponent<TextMeshProUGUI>();
+            else
+                Debug.LogError("Multiplayer_InGameUI: Player2Name_Text not found in scene!");
+        }
+
+        if (player1FruitText == null)
+        {
+            GameObject player1FruitTextObj = GameObject.Find("Player1Fruit_Text");
+            if (player1FruitTextObj != null)
+                player1FruitText = player1FruitTextObj.GetComponent<TextMeshProUGUI>();
+            else
+                Debug.LogError("Multiplayer_InGameUI: Player1Fruit_Text not found in scene!");
+        }
+
+        if (player2FruitText == null)
+        {
+            GameObject player2FruitTextObj = GameObject.Find("Player2Fruit_Text");
+            if (player2FruitTextObj != null)
+                player2FruitText = player2FruitTextObj.GetComponent<TextMeshProUGUI>();
+            else
+                Debug.LogError("Multiplayer_InGameUI: Player2Fruit_Text not found in scene!");
+        }
+
+        if (player1EnemiesKilledText == null)
+        {
+            GameObject player1EnemiesKilledTextObj = GameObject.Find("Player1EnemiesKilled_Text");
+            if (player1EnemiesKilledTextObj != null)
+                player1EnemiesKilledText = player1EnemiesKilledTextObj.GetComponent<TextMeshProUGUI>();
+            else
+                Debug.LogError("Multiplayer_InGameUI: Player1EnemiesKilled_Text not found in scene!");
+        }
+
+        if (player2EnemiesKilledText == null)
+        {
+            GameObject player2EnemiesKilledTextObj = GameObject.Find("Player2EnemiesKilled_Text");
+            if (player2EnemiesKilledTextObj != null)
+                player2EnemiesKilledText = player2EnemiesKilledTextObj.GetComponent<TextMeshProUGUI>();
+            else
+                Debug.LogError("Multiplayer_InGameUI: Player2EnemiesKilled_Text not found in scene!");
+        }
+
+        if (player1KnockBacksText == null)
+        {
+            GameObject player1KnockBacksTextObj = GameObject.Find("Player1KnockBacks_Text");
+            if (player1KnockBacksTextObj != null)
+                player1KnockBacksText = player1KnockBacksTextObj.GetComponent<TextMeshProUGUI>();
+            else
+                Debug.LogError("Multiplayer_InGameUI: Player1KnockBacks_Text not found in scene!");
+        }
+
+        if (player2KnockBacksText == null)
+        {
+            GameObject player2KnockBacksTextObj = GameObject.Find("Player2KnockBacks_Text");
+            if (player2KnockBacksTextObj != null)
+                player2KnockBacksText = player2KnockBacksTextObj.GetComponent<TextMeshProUGUI>();
+            else
+                Debug.LogError("Multiplayer_InGameUI: Player2KnockBacks_Text not found in scene!");
+        }
+
+        if (player1TimeText == null)
+        {
+            GameObject player1TimeTextObj = GameObject.Find("Player1Time_Text");
+            if (player1TimeTextObj != null)
+                player1TimeText = player1TimeTextObj.GetComponent<TextMeshProUGUI>();
+            else
+                Debug.LogError("Multiplayer_InGameUI: Player1Time_Text not found in scene!");
+        }
+
+        if (player2TimeText == null)
+        {
+            GameObject player2TimeTextObj = GameObject.Find("Player2Time_Text");
+            if (player2TimeTextObj != null)
+                player2TimeText = player2TimeTextObj.GetComponent<TextMeshProUGUI>();
+            else
+                Debug.LogError("Multiplayer_InGameUI: Player2Time_Text not found in scene!");
+        }
+
+        if (goodButton == null)
+        {
+            GameObject goodButtonObj = GameObject.Find("Good_Button");
+            if (goodButtonObj != null)
+                goodButton = goodButtonObj.GetComponent<Button>();
+            else
+                Debug.LogError("Multiplayer_InGameUI: Good_Button not found in scene!");
+        }
+
+        if (mediumButton == null)
+        {
+            GameObject mediumButtonObj = GameObject.Find("Medium_Button");
+            if (mediumButtonObj != null)
+                mediumButton = mediumButtonObj.GetComponent<Button>();
+            else
+                Debug.LogError("Multiplayer_InGameUI: Medium_Button not found in scene!");
+        }
+
+        if (badButton == null)
+        {
+            GameObject badButtonObj = GameObject.Find("Bad_Button");
+            if (badButtonObj != null)
+                badButton = badButtonObj.GetComponent<Button>();
+            else
+                Debug.LogError("Multiplayer_InGameUI: Bad_Button not found in scene!");
+        }
+
         Debug.Log("Multiplayer_InGameUI: UI elements auto-assignment completed.");
     }
 
@@ -104,6 +281,16 @@ public class Multiplayer_InGameUI : MonoBehaviour
         if (gameResultsPanel != null)
         {
             gameResultsPanel.SetActive(false);
+        }
+
+        if (detailsPanel != null)
+        {
+            detailsPanel.SetActive(false);
+        }
+
+        if (viewDetailsButton != null)
+        {
+            viewDetailsButton.interactable = false; // Disabled until both players finish
         }
 
         if (winnerText != null)
@@ -200,10 +387,16 @@ public class Multiplayer_InGameUI : MonoBehaviour
     {
         if (gameStats == null) return;
 
+        // Store current gameStats for details panel
+        currentGameStats = gameStats;
+
+        // Update Player 1 results
         UpdatePlayerResultsText(gameStats.player1, player1ResultsText, "Player 1");
 
+        // Update Player 2 results  
         UpdatePlayerResultsText(gameStats.player2, player2ResultsText, "Player 2");
 
+        // Check if current player finished to show results panel
         bool currentPlayerFinished = false;
         if (gameStats.player1.playerId == currentPlayerId && gameStats.player1.hasFinished)
         {
@@ -219,6 +412,17 @@ public class Multiplayer_InGameUI : MonoBehaviour
             ShowResultsPanel();
         }
 
+        // Check if both players finished
+        bothPlayersFinished = gameStats.player1.hasFinished && gameStats.player2.hasFinished;
+
+        // Enable View Details button when both players finished
+        if (viewDetailsButton != null)
+        {
+            viewDetailsButton.interactable = bothPlayersFinished;
+            Debug.Log($"🔧 View Details button enabled: {bothPlayersFinished}");
+        }
+
+        // Show winner only when both players finished
         UpdateWinnerDisplay(gameStats);
     }
 
@@ -323,5 +527,92 @@ public class Multiplayer_InGameUI : MonoBehaviour
                 }
             }
         });
+    }
+
+    private void ShowDetailsPanel()
+    {
+        if (currentGameStats == null || !bothPlayersFinished)
+        {
+            Debug.LogWarning("⚠️ Cannot show details panel: Game not completed or no gameStats available");
+            return;
+        }
+
+        Debug.Log("🎯 Showing details panel...");
+
+        // Hide results panel
+        if (gameResultsPanel != null)
+        {
+            gameResultsPanel.SetActive(false);
+        }
+
+        // Show details panel
+        if (detailsPanel != null)
+        {
+            detailsPanel.SetActive(true);
+        }
+
+        // Populate details data
+        PopulateDetailsData();
+    }
+
+    private void PopulateDetailsData()
+    {
+        if (currentGameStats == null) return;
+
+        Debug.Log("📊 Populating details data...");
+
+        // Player names
+        if (player1NameText != null)
+            player1NameText.text = currentGameStats.player1.playerName;
+
+        if (player2NameText != null)
+            player2NameText.text = currentGameStats.player2.playerName;
+
+        // Fruit collected
+        if (player1FruitText != null)
+            player1FruitText.text = currentGameStats.player1.fruitCollected.ToString();
+
+        if (player2FruitText != null)
+            player2FruitText.text = currentGameStats.player2.fruitCollected.ToString();
+
+        // Enemies killed
+        if (player1EnemiesKilledText != null)
+            player1EnemiesKilledText.text = currentGameStats.player1.enemiesKilled.ToString();
+
+        if (player2EnemiesKilledText != null)
+            player2EnemiesKilledText.text = currentGameStats.player2.enemiesKilled.ToString();
+
+        // Knockbacks
+        if (player1KnockBacksText != null)
+            player1KnockBacksText.text = currentGameStats.player1.knockBacks.ToString();
+
+        if (player2KnockBacksText != null)
+            player2KnockBacksText.text = currentGameStats.player2.knockBacks.ToString();
+
+        // Time
+        if (player1TimeText != null)
+            player1TimeText.text = $"{currentGameStats.player1.completionTime:F1}s";
+
+        if (player2TimeText != null)
+            player2TimeText.text = $"{currentGameStats.player2.completionTime:F1}s";
+
+        Debug.Log("✅ Details data populated successfully");
+        Debug.Log($"Player1: {currentGameStats.player1.playerName} - Fruits: {currentGameStats.player1.fruitCollected}, Time: {currentGameStats.player1.completionTime:F1}s");
+        Debug.Log($"Player2: {currentGameStats.player2.playerName} - Fruits: {currentGameStats.player2.fruitCollected}, Time: {currentGameStats.player2.completionTime:F1}s");
+    }
+
+    private void RateOpponent(string rating)
+    {
+        Debug.Log($"🌟 Player {currentPlayerId} rated opponent: {rating}");
+
+        // TODO: Implement in Step 2:
+        // 1. Save rating to Match_History
+        // 2. Save gameStats to Match_History  
+        // 3. Return to MainMenu
+
+        Debug.Log("⚠️ Rating system not implemented yet - will be added in Step 2");
+
+        // For now, just return to menu
+        ReturnToMainMenu();
     }
 }
