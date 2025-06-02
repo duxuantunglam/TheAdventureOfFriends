@@ -16,6 +16,7 @@ public class LevelStats
     public float bestTime = 999f;
     public int bestFruitCollected = 0;
     public bool unlocked = false;
+    public int totalFruitsInLevel = 0;
 }
 
 [Serializable]

@@ -15,10 +15,14 @@ public class UI_LevelButton : MonoBehaviour
     public void SetupButton(int newLevelIndex)
     {
         levelIndex = newLevelIndex;
-
         levelNumberText.text = "Level " + levelIndex;
         sceneName = "Level_" + levelIndex;
 
+        RefreshButtonData();
+    }
+
+    public void RefreshButtonData()
+    {
         bestTimeText.text = TimerInfoText();
         fruitText.text = FruitInfoText();
     }
@@ -40,12 +44,22 @@ public class UI_LevelButton : MonoBehaviour
     {
         if (FirebaseManager.CurrentUser == null || !FirebaseManager.CurrentUser.levelProgress.ContainsKey(sceneName))
         {
-            return "Fruit: ? / ?";
+            return "Fruit: 0 / ?";
         }
 
-        int fruitCollected = FirebaseManager.CurrentUser.levelProgress[sceneName].bestFruitCollected;
+        LevelStats levelStats = FirebaseManager.CurrentUser.levelProgress[sceneName];
+        int fruitCollected = levelStats.bestFruitCollected;
+        int totalFruits = levelStats.totalFruitsInLevel;
 
-        return "Fruit: " + fruitCollected + " / ?";
+        if (totalFruits == 0)
+        {
+            if (fruitCollected == 0)
+                return "Fruit: 0 / ?";
+            else
+                return "Fruit: " + fruitCollected + " / ?";
+        }
+
+        return "Fruit: " + fruitCollected + " / " + totalFruits;
     }
 
     private string TimerInfoText()
@@ -57,11 +71,8 @@ public class UI_LevelButton : MonoBehaviour
 
         float timerValue = FirebaseManager.CurrentUser.levelProgress[sceneName].bestTime;
 
-        if (timerValue >= 999f)
-        {
-            return "Best Time: ?";
-        }
-
-        return "Best Time: " + timerValue.ToString("00:00");
+        int minutes = Mathf.FloorToInt(timerValue / 60f);
+        int seconds = Mathf.FloorToInt(timerValue % 60f);
+        return "Best Time: " + minutes.ToString("00") + ":" + seconds.ToString("00");
     }
 }

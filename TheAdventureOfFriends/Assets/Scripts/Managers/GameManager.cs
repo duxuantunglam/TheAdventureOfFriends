@@ -203,11 +203,15 @@ public class GameManager : MonoBehaviour
             FirebaseManager.CurrentUser.levelProgress[levelKey] = new LevelStats();
         }
 
-        int fruitCollectedBefore = FirebaseManager.CurrentUser.levelProgress[levelKey].bestFruitCollected;
+        LevelStats levelStats = FirebaseManager.CurrentUser.levelProgress[levelKey];
+
+        levelStats.totalFruitsInLevel = totalFruit;
+
+        int fruitCollectedBefore = levelStats.bestFruitCollected;
 
         if (fruitCollectedBefore < fruitCollected)
         {
-            FirebaseManager.CurrentUser.levelProgress[levelKey].bestFruitCollected = fruitCollected;
+            levelStats.bestFruitCollected = fruitCollected;
         }
 
         FirebaseManager.CurrentUser.totalFruitAmount += fruitCollected;
@@ -357,15 +361,16 @@ public class GameManager : MonoBehaviour
     {
         if (FirebaseManager.CurrentUser == null) return;
 
-        string nextLevelKey = "Level" + nextLevelIndex;
-        if (!FirebaseManager.CurrentUser.levelProgress.ContainsKey(nextLevelKey))
-        {
-            FirebaseManager.CurrentUser.levelProgress[nextLevelKey] = new LevelStats();
-        }
-        FirebaseManager.CurrentUser.levelProgress[nextLevelKey].unlocked = true;
-
         if (NoMoreLevels() == false)
         {
+            string nextLevelKey = "Level" + nextLevelIndex;
+            if (!FirebaseManager.CurrentUser.levelProgress.ContainsKey(nextLevelKey))
+            {
+                FirebaseManager.CurrentUser.levelProgress[nextLevelKey] = new LevelStats();
+            }
+            FirebaseManager.CurrentUser.levelProgress[nextLevelKey].unlocked = true;
+
+
             FirebaseManager.CurrentUser.gameProgress.continueLevelNumber = nextLevelIndex;
 
             SkinManager skinManager = SkinManager.instance;
