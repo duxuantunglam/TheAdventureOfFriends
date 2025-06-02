@@ -19693,7 +19693,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 4504366024242513464, guid: ba52afbf51c1cb2499174fd99930c66d, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0.4348154
+      value: 51.19579
       objectReference: {fileID: 0}
     - target: {fileID: 4504366024242513464, guid: ba52afbf51c1cb2499174fd99930c66d, type: 3}
       propertyPath: m_LocalPosition.y
@@ -33725,7 +33725,7 @@ MonoBehaviour:
   player2ResultsText: {fileID: 427110869}
   winnerText: {fileID: 1566446220}
   returnToMenuButton: {fileID: 5560305}
-  viewDetailsButton: {fileID: 0}
+  viewDetailsButton: {fileID: 292554453}
   detailsPanel: {fileID: 647643317}
   player1NameText: {fileID: 15297281}
   player2NameText: {fileID: 1077741071}
