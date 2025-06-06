@@ -84,8 +84,8 @@ public class PlayersRecommendationManager
 
     private readonly float[] contentBasedWeights = new float[] {
         1.0f, 0.5f, 1.5f, 0.3f, 1.5f, 1.0f, 2.0f, 0.8f, 1.3f, 0.8f, 1.8f, 0.6f,
-        2.5f, 3.0f, 2.8f, // wwin rates (All, L1W, L1M)
-        2.0f, 2.2f, 2.1f  // aaverage scores (All, L1W, L1M)
+        2.5f, 3.0f, 2.8f, // win rates (All, L1W, L1M)
+        2.0f, 2.2f, 2.1f  // average scores (All, L1W, L1M)
     };
     private readonly float[] collaborativeWeights = new float[] {
         1.0f, 1.5f, 2.0f, 1.5f, 1.0f, 1.0f, 0.8f, 0.8f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,

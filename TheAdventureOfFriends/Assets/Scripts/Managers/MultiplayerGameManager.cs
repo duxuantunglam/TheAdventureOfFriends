@@ -75,10 +75,10 @@ public class MultiplayerGameManager : MonoBehaviour
     [SerializeField] private ObjectCreator objectCreator;
 
     [Header("Multiplayer Settings")]
-    [SerializeField] private float fruitWeight = 2.0f;
-    [SerializeField] private float timeWeight = 1.5f;
-    [SerializeField] private float enemyWeight = 1.0f;
-    [SerializeField] private float knockbackWeight = -1.0f;
+    [SerializeField] private float fruitWeight = 1.5f;
+    [SerializeField] private float timeWeight = -0.05f;
+    [SerializeField] private float enemyWeight = 2.0f;
+    [SerializeField] private float knockbackWeight = -0.5f;
 
     private string currentRoomId;
     private string currentPlayerId;
