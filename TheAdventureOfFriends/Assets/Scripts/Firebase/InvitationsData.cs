@@ -8,5 +8,5 @@ public class InvitationData
     public string invitedId;
     public string inviterName;
     public object timestamp;
-    // Có thể thêm thời gian hết hạn lời mời nếu cần
+    // TODO: timestamp
 }
