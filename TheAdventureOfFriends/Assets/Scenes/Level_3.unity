@@ -189,10 +189,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 284626047}
     m_Modifications:
-    - target: {fileID: 4793775453370122289, guid: f8b4e779eb4017c429bdefe6ed058cb0, type: 3}
-      propertyPath: fruitType
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 7534217799504511505, guid: f8b4e779eb4017c429bdefe6ed058cb0, type: 3}
       propertyPath: m_LocalPosition.x
       value: -913.07764
@@ -299,10 +295,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 284626047}
     m_Modifications:
-    - target: {fileID: 1217842867709156740, guid: fba8d464788183942b811efe3c6342b6, type: 3}
-      propertyPath: fruitType
-      value: 7
-      objectReference: {fileID: 0}
     - target: {fileID: 3758934637742290400, guid: fba8d464788183942b811efe3c6342b6, type: 3}
       propertyPath: m_LocalPosition.x
       value: -916.0938
@@ -9881,10 +9873,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 284626047}
     m_Modifications:
-    - target: {fileID: 1217842867709156740, guid: fba8d464788183942b811efe3c6342b6, type: 3}
-      propertyPath: fruitType
-      value: 7
-      objectReference: {fileID: 0}
     - target: {fileID: 3758934637742290400, guid: fba8d464788183942b811efe3c6342b6, type: 3}
       propertyPath: m_LocalPosition.x
       value: -926.07
@@ -10016,10 +10004,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 284626047}
     m_Modifications:
-    - target: {fileID: 1217842867709156740, guid: fba8d464788183942b811efe3c6342b6, type: 3}
-      propertyPath: fruitType
-      value: 7
-      objectReference: {fileID: 0}
     - target: {fileID: 3758934637742290400, guid: fba8d464788183942b811efe3c6342b6, type: 3}
       propertyPath: m_LocalPosition.x
       value: -917.8438
@@ -10144,10 +10128,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 284626047}
     m_Modifications:
-    - target: {fileID: 1217842867709156740, guid: fba8d464788183942b811efe3c6342b6, type: 3}
-      propertyPath: fruitType
-      value: 7
-      objectReference: {fileID: 0}
     - target: {fileID: 3758934637742290400, guid: fba8d464788183942b811efe3c6342b6, type: 3}
       propertyPath: m_LocalPosition.x
       value: -916.9038
@@ -17239,10 +17219,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 284626047}
     m_Modifications:
-    - target: {fileID: 1217842867709156740, guid: fba8d464788183942b811efe3c6342b6, type: 3}
-      propertyPath: fruitType
-      value: 7
-      objectReference: {fileID: 0}
     - target: {fileID: 3758934637742290400, guid: fba8d464788183942b811efe3c6342b6, type: 3}
       propertyPath: m_LocalPosition.x
       value: -925.43
@@ -17305,10 +17281,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 284626047}
     m_Modifications:
-    - target: {fileID: 1217842867709156740, guid: fba8d464788183942b811efe3c6342b6, type: 3}
-      propertyPath: fruitType
-      value: 7
-      objectReference: {fileID: 0}
     - target: {fileID: 3758934637742290400, guid: fba8d464788183942b811efe3c6342b6, type: 3}
       propertyPath: m_LocalPosition.x
       value: -926.7238
