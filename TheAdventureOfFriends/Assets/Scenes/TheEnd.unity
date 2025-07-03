@@ -514,7 +514,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 600, y: 100}
+  m_SizeDelta: {x: 1000, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &696779658
 MonoBehaviour:
@@ -536,7 +536,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Visit dxtl.com
+  m_text: 'Visit my facebook to give me feedbacks:'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 86c2d1b5e3cc79242aa99715c6905e92, type: 2}
   m_sharedMaterial: {fileID: -4750573374894315923, guid: 86c2d1b5e3cc79242aa99715c6905e92, type: 2}
@@ -786,7 +786,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 600, y: 100}
+  m_SizeDelta: {x: 1300, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &927781534
 MonoBehaviour:
@@ -808,7 +808,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: to learn how to play games!
+  m_text: https://www.facebook.com/duxuantunglam.ck53hb/
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 86c2d1b5e3cc79242aa99715c6905e92, type: 2}
   m_sharedMaterial: {fileID: -4750573374894315923, guid: 86c2d1b5e3cc79242aa99715c6905e92, type: 2}
