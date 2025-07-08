@@ -94,6 +94,7 @@ public class Player : MonoBehaviour
             return;
 
         HandleEnemyDetection();
+        HandleMultiplayerEnemyDetection();
         HandleInput();
         HandleWallSlide();
         HandleMovement();
@@ -157,6 +158,25 @@ public class Player : MonoBehaviour
         foreach (var enemy in colliders)
         {
             Enemy newEnemy = enemy.GetComponent<Enemy>();
+            if (newEnemy != null)
+            {
+                AudioManager.instance.PlaySFX(1);
+                newEnemy.Die();
+                Jump();
+            }
+        }
+    }
+
+    private void HandleMultiplayerEnemyDetection()
+    {
+        if (rb.linearVelocity.y >= 0)
+            return;
+
+        Collider2D[] colliders = Physics2D.OverlapCircleAll(enemyCheck.position, enemyCheckRadius, whatIsEnemy);
+
+        foreach (var enemy in colliders)
+        {
+            MultiplayerEnemy newEnemy = enemy.GetComponent<MultiplayerEnemy>();
             if (newEnemy != null)
             {
                 AudioManager.instance.PlaySFX(1);
